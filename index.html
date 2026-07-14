@@ -362,11 +362,15 @@ async function loadData() {
     ]);
     clearTimeout(timeout);
     
-    // 用 arrayBuffer + Latin-1 解码，跳过 GBK 编码兼容问题
+    // 用 arrayBuffer 获取原始字节
     const qqqBuf = await qqqResp.arrayBuffer();
     const vixBuf  = await vixResp.arrayBuffer();
-    const qqqText = new TextDecoder('latin1').decode(qqqBuf);
-    const vixText = new TextDecoder('latin1').decode(vixBuf);
+    
+    // 手动按字节转字符串，不依赖任何TextDecoder
+    // ASCII字符(数字 0-9、小数点、~分隔符)被完美保留
+    // 中文字符的字节会变成乱码，但数值提取不受影响
+    const qqqText = String.fromCharCode(...new Uint8Array(qqqBuf));
+    const vixText = String.fromCharCode(...new Uint8Array(vixBuf));
     
     const qqq = parseQQQ(qqqText);
     const vixData = parseVIX(vixText);
