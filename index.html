@@ -223,7 +223,7 @@ function getAction(total, dd) {
     [1, 0.5, '🔍 谨慎试探',  '仅基础定投，不加码'],
     [-9,0.0, '⛔ 停止加仓',  '观望为主，不追加资金'],
   ];
-  for (const [t,m,l,d] of MAP) {
+  for (let [t,m,l,d] of MAP) {
     if (total >= t) {
       if (dd != null && dd < 5) m = Math.min(m, 0.5);
       return [m, l, d];
