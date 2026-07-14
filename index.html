@@ -345,18 +345,18 @@ async function loadData() {
   document.getElementById('refreshBtn').textContent = '⏳ 获取中...';
   
   try {
-    // 并行请求 QQQ + VIX
+    // 并行请求 QQQ + VIX（移除User-Agent头，浏览器会自动忽略自定义值）
     const [qqqResp, vixResp] = await Promise.all([
-      fetch('https://qt.gtimg.cn/q=usQQQ', {
-        headers: {'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17 like Mac OS X) AppleWebKit/605.1.15'}
-      }),
-      fetch('https://qt.gtimg.cn/q=usVIX', {
-        headers: {'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17 like Mac OS X) AppleWebKit/605.1.15'}
-      })
+      fetch('https://qt.gtimg.cn/q=usQQQ'),
+      fetch('https://qt.gtimg.cn/q=usVIX')
     ]);
     
-    const qqqText = await qqqResp.text();
-    const vixText = await vixResp.text();
+    // 按GBK解码（腾讯API返回GBK编码，不显式解码会导致汉字乱码）
+    const qqqBuf = await qqqResp.arrayBuffer();
+    const vixBuf  = await vixResp.arrayBuffer();
+    const decoder = new TextDecoder('gbk');
+    const qqqText = decoder.decode(qqqBuf);
+    const vixText = decoder.decode(vixBuf);
     
     const qqq = parseQQQ(qqqText);
     const vixData = parseVIX(vixText);
