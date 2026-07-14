@@ -232,7 +232,13 @@ function getAction(total, dd) {
   return [0, '等待', ''];
 }
 
-// ========== 解析腾讯API ==========
+// ========== 解析腾讯API（字节级解码，兼容所有浏览器）==========
+// 用 Latin-1 解码，每个字节直接映射为字符
+// ASCII字符(数字/字母/符号)完全保留，中文字符变乱码不影响数值提取
+function decodeBytes(buf) {
+  return new TextDecoder('iso-8859-1').decode(buf);
+}
+
 function parseQQQ(text) {
   const m = text.match(/v_usQQQ="(.*?)"/);
   if (!m) return null;
@@ -241,7 +247,7 @@ function parseQQQ(text) {
   const price = parseFloat(f[3]);
   const high52 = parseFloat(f[48]);
   if (isNaN(price) || isNaN(high52)) return null;
-  return {price, high52, name: f[1], time: f[30]};
+  return {price, high52, name: 'QQQ', time: f[30]};
 }
 
 function parseVIX(text) {
@@ -351,10 +357,13 @@ async function loadData() {
       fetch('https://qt.gtimg.cn/q=usVIX')
     ]);
     
-    // 用 text() 自动按 Content-Type 头 charset 解码
-    // 腾讯API返回 charset=GBK，浏览器会自动处理
-    const qqqText = await qqqResp.text();
-    const vixText = await vixResp.text();
+    // 用 arrayBuffer + Latin-1 解码，跳过 GBK 编码兼容问题
+    // iOS Safari 不支持 GBK 解码，但 Latin-1 所有浏览器都支持
+    // 数字和分隔符 ~ 都是 ASCII 字符，Latin-1 解码后完全保留
+    const qqqBuf = await qqqResp.arrayBuffer();
+    const vixBuf  = await vixResp.arrayBuffer();
+    const qqqText = new TextDecoder('iso-8859-1').decode(qqqBuf);
+    const vixText = new TextDecoder('iso-8859-1').decode(vixBuf);
     
     const qqq = parseQQQ(qqqText);
     const vixData = parseVIX(vixText);
