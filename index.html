@@ -174,6 +174,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
       <div class="label">建议加仓</div>
       <div class="value big" id="amount">¥0</div>
     </div>
+    <div class="result-row" style="padding-top:2px;padding-bottom:2px">
+      <div class="label" style="font-size:11px">倍率</div>
+      <div class="value" style="font-size:13px;color:#8b949e" id="multiplier">--</div>
+    </div>
     <div class="result-row">
       <div class="label">本周总投入</div>
       <div class="value big" id="totalAmount" style="color:#58a6ff">¥0</div>
@@ -339,10 +343,24 @@ function render(d) {
   document.getElementById('totalScore').style.color = d.color;
 
   // 金额
-  const extra = d.amount; // 建议加仓额
-  const total = base + extra;
-  document.getElementById('amount').textContent = '¥' + extra.toLocaleString();
-  document.getElementById('totalAmount').textContent = '¥' + total.toLocaleString();
+  const extra = d.extra;  // 正=加仓，负=减投，0=正常
+  const totalInv = d.totalInvest;
+  
+  let extraLabel, extraColor;
+  if (extra > 0) {
+    extraLabel = '建议加仓 +¥' + extra.toLocaleString();
+    extraColor = '#3fb950';
+  } else if (extra < 0) {
+    extraLabel = '建议减投 ¥' + Math.abs(extra).toLocaleString();
+    extraColor = '#f85149';
+  } else {
+    extraLabel = '正常定投，不加不减';
+    extraColor = '#8b949e';
+  }
+  document.getElementById('amount').textContent = extraLabel;
+  document.getElementById('amount').style.color = extraColor;
+  document.getElementById('totalAmount').textContent = '¥' + totalInv.toLocaleString();
+  document.getElementById('multiplier').textContent = d.mult.toFixed(1) + 'x';
 
   // 自动刷新倒计时
   startTimer(60);
@@ -391,7 +409,9 @@ async function loadData() {
     const ds = scoreDD(dd);
     const total = vs + ds;
     const mult = getAction(total, dd);
-    const amount = Math.round(base * mult);
+    // mult = 总投入倍数，1.0=正常定投，>1加仓，<1减投
+    const totalInvest = Math.round(base * mult);
+    const extra = totalInvest - base;  // 正=加仓，负=减投，0=正常
 
     let vixDesc = '数据不可用';
     if (v != null) {
@@ -414,7 +434,7 @@ async function loadData() {
       price: qqq.price, high52: qqq.high52, drawdown: Math.round(dd*10)/10,
       vix: v, vix_desc: vixDesc, vix_stale: vixD ? vixD.stale : false,
       dd_desc: ddDesc, vix_score: vs, dd_score: ds,
-      total_score: total, amount, color,
+      total_score: total, extra, totalInvest, mult, color,
     });
   } catch(e) {
     showError('网络请求失败: ' + (e.message || e.name || '未知错误'));
@@ -445,17 +465,8 @@ function saveSettings() {
   const val = parseInt(document.getElementById('baseInput').value) || 2000;
   saveBaseUnit(val);
   hideSettings();
-  // 刷新显示
-  const base = loadBaseUnit();
-  const amountEl = document.getElementById('amount');
-  const totalEl = document.getElementById('totalAmount');
-  if (amountEl.textContent !== '¥0') {
-    const extra = parseInt(amountEl.textContent.replace(/[^0-9]/g, '')) || 0;
-    const newExtra = Math.round(base * (extra / 2000)); // 按比例调整
-    amountEl.textContent = '¥' + newExtra.toLocaleString();
-    totalEl.textContent = '¥' + (base + newExtra).toLocaleString();
-  }
-  document.getElementById('baseDisplay').textContent = base.toLocaleString();
+  // 重新获取数据刷新显示
+  loadData();
 }
 
 // ========== 启动 ==========
