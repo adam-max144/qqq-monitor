@@ -350,20 +350,23 @@ async function loadData() {
   document.getElementById('refreshBtn').disabled = true;
   document.getElementById('refreshBtn').textContent = '⏳ 获取中...';
   
+  // 创建 15 秒超时控制器
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  
   try {
     // 并行请求 QQQ + VIX
     const [qqqResp, vixResp] = await Promise.all([
-      fetch('https://qt.gtimg.cn/q=usQQQ'),
-      fetch('https://qt.gtimg.cn/q=usVIX')
+      fetch('https://qt.gtimg.cn/q=usQQQ', { signal: controller.signal }),
+      fetch('https://qt.gtimg.cn/q=usVIX', { signal: controller.signal })
     ]);
+    clearTimeout(timeout);
     
     // 用 arrayBuffer + Latin-1 解码，跳过 GBK 编码兼容问题
-    // iOS Safari 不支持 GBK 解码，但 Latin-1 所有浏览器都支持
-    // 数字和分隔符 ~ 都是 ASCII 字符，Latin-1 解码后完全保留
     const qqqBuf = await qqqResp.arrayBuffer();
     const vixBuf  = await vixResp.arrayBuffer();
-    const qqqText = new TextDecoder('iso-8859-1').decode(qqqBuf);
-    const vixText = new TextDecoder('iso-8859-1').decode(vixBuf);
+    const qqqText = new TextDecoder('latin1').decode(qqqBuf);
+    const vixText = new TextDecoder('latin1').decode(vixBuf);
     
     const qqq = parseQQQ(qqqText);
     const vixData = parseVIX(vixText);
@@ -431,7 +434,7 @@ async function loadData() {
     });
     
   } catch(e) {
-    showError('网络请求失败: ' + e.message + '。请检查网络后重试');
+    showError('网络请求失败: ' + e.message + ' (' + e.name + ')。请检查网络后重试');
   } finally {
     document.getElementById('refreshBtn').disabled = false;
     document.getElementById('refreshBtn').textContent = '🔄 刷新';
