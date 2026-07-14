@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>QQQ 今日加仓建议</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans-serif;
+     background:#0d1117;color:#e6edf3;min-height:100vh;padding:0 0 40px}
+.status-bar{height:44px}
+.container{max-width:480px;margin:0 auto;padding:0 16px}
+
+/* 头部 */
+.header{text-align:center;padding:24px 0 8px}
+.header h1{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.header .ticker{font-size:13px;color:#8b949e;margin-top:4px}
+.header .ticker span{color:#58a6ff}
+
+/* 刷新时间 */
+.last-time{text-align:center;font-size:12px;color:#484f58;margin:4px 0 8px}
+
+/* 主信号卡 */
+.signal-card{border-radius:16px;padding:28px 24px;margin:16px 0;text-align:center;
+             background:linear-gradient(135deg,#1a1f2e,#161b22);border:1px solid #30363d;transition:border-color .5s}
+.signal-card .signal-icon{font-size:48px;margin-bottom:8px}
+.signal-card .signal-label{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.signal-card .signal-detail{font-size:14px;color:#8b949e;margin-top:6px}
+
+/* 数据网格 */
+.data-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.data-item{border-radius:12px;padding:16px;background:#161b22;border:1px solid #21262d}
+.data-item .label{font-size:12px;color:#8b949e;margin-bottom:4px}
+.data-item .value{font-size:22px;font-weight:600}
+.data-item .sub{font-size:12px;color:#8b949e;margin-top:2px}
+
+/* 分数条 */
+.score-section{margin:20px 0}
+.score-section .section-title{font-size:14px;color:#8b949e;margin-bottom:12px}
+.score-bar{display:flex;align-items:center;margin-bottom:10px}
+.score-bar .name{width:72px;font-size:13px;color:#c9d1d9;flex-shrink:0}
+.score-bar .track{flex:1;height:8px;background:#21262d;border-radius:4px;overflow:hidden}
+.score-bar .fill{height:100%;border-radius:4px;transition:width .6s ease}
+.score-bar .pts{width:28px;text-align:right;font-size:13px;font-weight:600;margin-left:8px;flex-shrink:0}
+.total-row{display:flex;justify-content:space-between;align-items:center;
+           padding:14px 16px;border-radius:10px;margin-top:14px;
+           background:#1c2128;border:1px solid #30363d}
+.total-row .label{font-size:14px;color:#8b949e}
+.total-row .value{font-size:24px;font-weight:700;letter-spacing:-.5px}
+
+/* 加仓金额 */
+.amount-box{text-align:center;padding:20px;margin:16px 0;
+            border-radius:12px;background:#1c2128;border:1px solid #30363d}
+.amount-box .label{font-size:13px;color:#8b949e}
+.amount-box .value{font-size:36px;font-weight:800;margin:6px 0;letter-spacing:-1px}
+.amount-box .sub{font-size:12px;color:#8b949e}
+
+/* 按钮 */
+.btn-group{display:flex;gap:10px;margin:16px 0}
+.btn{flex:1;padding:14px;border-radius:10px;border:none;font-size:16px;font-weight:600;cursor:pointer;
+     transition:opacity .2s;text-align:center}
+.btn:active{opacity:.7}
+.btn-primary{background:#238636;color:#fff}
+.btn-secondary{background:#21262d;color:#c9d1d9;border:1px solid #30363d}
+.btn:disabled{opacity:.4;pointer-events:none}
+
+/* 底部 */
+.footer-info{text-align:center;font-size:12px;color:#484f58;margin-top:24px;line-height:1.8}
+.footer-info a{color:#58a6ff;text-decoration:none}
+
+/* 陈旧标注 */
+.stale-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;
+             background:#3d3200;color:#d29922;margin-top:4px}
+
+/* 盘后提示 */
+.note-box{font-size:12px;color:#8b949e;text-align:center;padding:12px;
+          border-radius:8px;background:#1c2128;margin:12px 0;display:none}
+
+/* 加载态 */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0}
+.loading .spinner{width:36px;height:36px;border:3px solid #30363d;border-top-color:#58a6ff;
+                  border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{color:#8b949e;font-size:14px;margin-top:12px}
+
+/* 错误 */
+.error-box{text-align:center;padding:40px 20px}
+.error-box .icon{font-size:48px;margin-bottom:12px}
+.error-box .msg{color:#8b949e;font-size:14px;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="status-bar"></div>
+<div class="container" id="app">
+
+  <div class="header">
+    <h1>QQQ 加仓建议</h1>
+    <div class="ticker">纳斯达克100 ETF · 数据源：腾讯API</div>
+    <div class="last-time" id="updateTime">加载中...</div>
+  </div>
+
+  <!-- 加载 -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>正在获取实时数据...</p>
+  </div>
+
+  <!-- 错误 -->
+  <div class="error-box" id="error" style="display:none">
+    <div class="icon">⚠️</div>
+    <div class="msg" id="errorMsg">数据获取失败</div>
+    <button class="btn btn-primary" onclick="loadData()">重新获取</button>
+  </div>
+
+  <!-- 内容 -->
+  <div id="content" style="display:none">
+
+    <!-- 主信号 -->
+    <div class="signal-card" id="signalCard">
+      <div class="signal-icon" id="signalIcon">📊</div>
+      <div class="signal-label" id="signalLabel">--</div>
+      <div class="signal-detail" id="signalDetail">--</div>
+    </div>
+
+    <!-- 数据 -->
+    <div class="data-grid">
+      <div class="data-item">
+        <div class="label">当前价</div>
+        <div class="value" id="price">--</div>
+        <div class="sub">USD</div>
+      </div>
+      <div class="data-item">
+        <div class="label">高点回撤</div>
+        <div class="value" id="drawdown">--</div>
+        <div class="sub" id="ddDesc">--</div>
+      </div>
+      <div class="data-item">
+        <div class="label">VIX 恐慌指数</div>
+        <div class="value" id="vix">--</div>
+        <div class="sub" id="vixDesc">--</div>
+      </div>
+      <div class="data-item">
+        <div class="label">52周高点</div>
+        <div class="value" id="high52">--</div>
+        <div class="sub">USD</div>
+      </div>
+    </div>
+
+    <!-- VIX陈旧提示 -->
+    <div class="note-box" id="vixNote">⚠️ VIX数据为非交易时段数据，开盘后刷新更准</div>
+
+    <!-- 评分 -->
+    <div class="score-section">
+      <div class="section-title">评分详情</div>
+      <div class="score-bar">
+        <div class="name">VIX</div>
+        <div class="track"><div class="fill" id="vixBar" style="width:0%;background:#d29922"></div></div>
+        <div class="pts" id="vixPts">0</div>
+      </div>
+      <div class="score-bar">
+        <div class="name">回撤</div>
+        <div class="track"><div class="fill" id="ddBar" style="width:0%;background:#2ea043"></div></div>
+        <div class="pts" id="ddPts">0</div>
+      </div>
+      <div class="total-row">
+        <div class="label">综合评分</div>
+        <div class="value" id="totalScore">--</div>
+      </div>
+    </div>
+
+    <!-- 金额 -->
+    <div class="amount-box">
+      <div class="label">建议加仓金额</div>
+      <div class="value" id="amount">¥--</div>
+      <div class="sub">基准 ¥<span id="baseUnit">2000</span>/期，按倍率 <span id="multiplier">0</span>x</div>
+    </div>
+
+    <!-- 按钮 -->
+    <div class="btn-group">
+      <button class="btn btn-primary" id="refreshBtn" onclick="loadData()">🔄 刷新</button>
+    </div>
+
+    <div class="footer-info">
+      策略：VIX + 回撤双因子 · 仅供参考<br>
+      数据延迟约15分钟，开盘时段最准<br>
+      <span id="autoTimer"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== 策略参数 ==========
+const BASE_UNIT = 2000;
+const VIX_T = {complacent:15, normal:20, elevated:25, fearful:30, very_fearful:40};
+const DD_T  = {normal:5, dip:10, correction:15, deep:20};
+
+// ========== 评分 ==========
+function scoreVIX(v) {
+  if (v == null) return 0;
+  if (v < VIX_T.complacent) return -1;
+  if (v < VIX_T.normal) return 0;
+  if (v < VIX_T.elevated) return 1;
+  if (v < VIX_T.fearful) return 2;
+  if (v < VIX_T.very_fearful) return 3;
+  return 4;
+}
+function scoreDD(dd) {
+  if (dd == null) return 0;
+  if (dd < DD_T.normal) return 0;
+  if (dd < DD_T.dip) return 1;
+  if (dd < DD_T.correction) return 2;
+  if (dd < DD_T.deep) return 3;
+  return 4;
+}
+function getAction(total, dd) {
+  const MAP = [
+    [9, 3.0, '🚀 重仓出击',  '全力加仓，备用资金上场'],
+    [7, 2.0, '✅ 积极布局',  '正常加仓，可加大力度'],
+    [5, 1.5, '📈 适度加仓',  '按档位执行加仓计划'],
+    [3, 1.0, '📊 常规操作',  '正常定投+小幅加仓'],
+    [1, 0.5, '🔍 谨慎试探',  '仅基础定投，不加码'],
+    [-9,0.0, '⛔ 停止加仓',  '观望为主，不追加资金'],
+  ];
+  for (const [t,m,l,d] of MAP) {
+    if (total >= t) {
+      if (dd != null && dd < 5) m = Math.min(m, 0.5);
+      return [m, l, d];
+    }
+  }
+  return [0, '等待', ''];
+}
+
+// ========== 解析腾讯API ==========
+function parseQQQ(text) {
+  const m = text.match(/v_usQQQ="(.*?)"/);
+  if (!m) return null;
+  const f = m[1].split('~');
+  if (f.length < 68) return null;
+  const price = parseFloat(f[3]);
+  const high52 = parseFloat(f[48]);
+  if (isNaN(price) || isNaN(high52)) return null;
+  return {price, high52, name: f[1], time: f[30]};
+}
+
+function parseVIX(text) {
+  const m = text.match(/v_usVIX="(.*?)"/);
+  if (!m) return null;
+  const f = m[1].split('~');
+  if (f.length < 4) return null;
+  const v = parseFloat(f[3]);
+  if (isNaN(v) || v <= 0) return null;
+  const t = f[30] || '';
+  let stale = false;
+  if (t) {
+    try {
+      stale = (Date.now() - new Date(t.replace(/-/g,'/')).getTime()) > 86400000;
+    } catch(e) { stale = true; }
+  }
+  return {vix: v, time: t, stale};
+}
+
+// ========== 渲染 ==========
+function render(d) {
+  if (!d) return;
+  
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  
+  // 信号
+  const iconMap = {'🚀':'🚀','✅':'✅','📈':'📈','📊':'📊','🔍':'🔍','⛔':'⛔'};
+  const firstChar = d.signal.match(/^./)?.[0] || '📊';
+  document.getElementById('signalIcon').textContent = firstChar;
+  document.getElementById('signalLabel').textContent = d.signal.replace(/^[^\s]+\s*/, '');
+  document.getElementById('signalLabel').style.color = d.color;
+  document.getElementById('signalCard').style.borderColor = d.color;
+  document.getElementById('signalDetail').textContent = d.detail;
+  
+  // 数据
+  document.getElementById('price').textContent = d.price.toFixed(2);
+  document.getElementById('drawdown').textContent = d.drawdown + '%';
+  document.getElementById('high52').textContent = d.high52.toFixed(2);
+  document.getElementById('ddDesc').textContent = d.dd_desc;
+  document.getElementById('vix').textContent = d.vix != null ? d.vix.toFixed(1) : 'N/A';
+  document.getElementById('vixDesc').textContent = d.vix_desc;
+  document.getElementById('updateTime').textContent = '更新于 ' + d.check_time;
+  
+  // VIX陈旧提示
+  document.getElementById('vixNote').style.display = d.vix_stale ? 'block' : 'none';
+  
+  // 分数条
+  const vixPct = d.vix_score != null ? ((d.vix_score + 1) / 5 * 100) : 0;
+  const ddPct = d.dd_score != null ? (d.dd_score / 4 * 100) : 0;
+  document.getElementById('vixBar').style.width = Math.min(vixPct, 100) + '%';
+  document.getElementById('ddBar').style.width = Math.min(ddPct, 100) + '%';
+  
+  const vScore = (d.vix_score >= 0 ? '+' : '') + d.vix_score;
+  document.getElementById('vixPts').textContent = vScore;
+  document.getElementById('vixPts').style.color = 
+    d.vix_score > 0 ? '#3fb950' : d.vix_score < 0 ? '#f85149' : '#8b949e';
+  document.getElementById('ddPts').textContent = '+' + d.dd_score;
+  document.getElementById('ddPts').style.color = '#3fb950';
+  
+  // 总分
+  document.getElementById('totalScore').textContent = d.total_score + '/10';
+  document.getElementById('totalScore').style.color = 
+    d.total_score >= 5 ? '#2ea043' : d.total_score >= 1 ? '#d29922' : '#da3633';
+  
+  // 金额
+  document.getElementById('amount').textContent = '¥' + (d.amount || 0);
+  document.getElementById('baseUnit').textContent = BASE_UNIT;
+  document.getElementById('multiplier').textContent = d.multiplier.toFixed(1);
+  
+  // 自动刷新倒计时
+  startTimer(60);
+}
+
+// 自动刷新倒计时
+let timerInterval = null;
+function startTimer(seconds) {
+  if (timerInterval) clearInterval(timerInterval);
+  let remain = seconds;
+  const el = document.getElementById('autoTimer');
+  el.textContent = remain + '秒后自动刷新';
+  timerInterval = setInterval(() => {
+    remain--;
+    if (remain <= 0) {
+      clearInterval(timerInterval);
+      el.textContent = '正在自动刷新...';
+      loadData();
+    } else {
+      el.textContent = remain + '秒后自动刷新';
+    }
+  }, 1000);
+}
+
+// ========== 主数据获取 ==========
+async function loadData() {
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('content').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+  document.getElementById('refreshBtn').disabled = true;
+  document.getElementById('refreshBtn').textContent = '⏳ 获取中...';
+  
+  try {
+    // 并行请求 QQQ + VIX
+    const [qqqResp, vixResp] = await Promise.all([
+      fetch('https://qt.gtimg.cn/q=usQQQ', {
+        headers: {'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17 like Mac OS X) AppleWebKit/605.1.15'}
+      }),
+      fetch('https://qt.gtimg.cn/q=usVIX', {
+        headers: {'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17 like Mac OS X) AppleWebKit/605.1.15'}
+      })
+    ]);
+    
+    const qqqText = await qqqResp.text();
+    const vixText = await vixResp.text();
+    
+    const qqq = parseQQQ(qqqText);
+    const vixData = parseVIX(vixText);
+    
+    if (!qqq) {
+      showError('QQQ数据解析失败，请稍后重试');
+      return;
+    }
+    
+    // 计算
+    const dd = ((qqq.high52 - qqq.price) / qqq.high52) * 100;
+    const v = vixData ? vixData.vix : null;
+    
+    const vs = scoreVIX(v);
+    const ds = scoreDD(dd);
+    const total = vs + ds;
+    const [mult, label, detail] = getAction(total, dd);
+    const amount = Math.round(BASE_UNIT * mult);
+    
+    // VIX描述
+    let vixDesc = '数据不可用';
+    if (v != null) {
+      if (v < 15) vixDesc = '市场自满，注意风险';
+      else if (v < 20) vixDesc = '正常水平，观望';
+      else if (v < 25) vixDesc = '小幅恐慌，关注机会';
+      else if (v < 30) vixDesc = '恐慌区间，逢低布局';
+      else if (v < 40) vixDesc = '极度恐慌，加仓良机';
+      else vixDesc = '极端恐慌，别人恐惧我贪婪';
+    }
+    
+    // 回撤描述
+    let ddDesc = '正常波动，不加仓';
+    if (dd >= 20) ddDesc = '极端下跌，重仓出击';
+    else if (dd >= 15) ddDesc = '深度调整，积极布局';
+    else if (dd >= 10) ddDesc = '调整区间，执行加仓';
+    else if (dd >= 5) ddDesc = '小幅回调，可试探性小加';
+    
+    // 颜色
+    let color = '#c62828';
+    if (total >= 5) color = '#2e7d32';
+    else if (total >= 1) color = '#f57c00';
+    
+    const now = new Date();
+    const timeStr = now.getHours().toString().padStart(2,'0') + ':' + 
+                    now.getMinutes().toString().padStart(2,'0') + ':' + 
+                    now.getSeconds().toString().padStart(2,'0');
+    
+    render({
+      price: qqq.price,
+      high52: qqq.high52,
+      drawdown: Math.round(dd * 10) / 10,
+      vix: v,
+      vix_desc: vixDesc,
+      vix_stale: vixData ? vixData.stale : false,
+      dd_desc: ddDesc,
+      vix_score: vs,
+      dd_score: ds,
+      total_score: total,
+      signal: label,
+      detail: detail,
+      multiplier: mult,
+      amount: amount,
+      color: color,
+      check_time: timeStr,
+    });
+    
+  } catch(e) {
+    showError('网络请求失败: ' + e.message + '。请检查网络后重试');
+  } finally {
+    document.getElementById('refreshBtn').disabled = false;
+    document.getElementById('refreshBtn').textContent = '🔄 刷新';
+  }
+}
+
+function showError(msg) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'none';
+  document.getElementById('error').style.display = 'block';
+  document.getElementById('errorMsg').textContent = msg;
+}
+
+// ========== 启动 ==========
+loadData();
+</script>
+</body>
+</html>
