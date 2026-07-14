@@ -171,7 +171,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
       <div class="value" style="color:#8b949e">¥<span id="baseDisplay">2000</span></div>
     </div>
     <div class="result-row">
-      <div class="label">建议加仓</div>
+      <div class="label">加仓/减仓</div>
       <div class="value big" id="amount">¥0</div>
     </div>
     <div class="result-row" style="padding-top:2px;padding-bottom:2px">
@@ -343,18 +343,15 @@ function render(d) {
   document.getElementById('totalScore').style.color = d.color;
 
   // 金额
-  const extra = d.extra;  // 正=加仓，负=减投，0=正常
+  const extra = d.extra;
   const totalInv = d.totalInvest;
   
   let extraLabel, extraColor;
   if (extra > 0) {
-    extraLabel = '建议加仓 +¥' + extra.toLocaleString();
+    extraLabel = '+¥' + extra.toLocaleString();
     extraColor = '#3fb950';
-  } else if (extra < 0) {
-    extraLabel = '建议减投 ¥' + Math.abs(extra).toLocaleString();
-    extraColor = '#f85149';
   } else {
-    extraLabel = '正常定投，不加不减';
+    extraLabel = '不加仓，只定投';
     extraColor = '#8b949e';
   }
   document.getElementById('amount').textContent = extraLabel;
@@ -409,9 +406,9 @@ async function loadData() {
     const ds = scoreDD(dd);
     const total = vs + ds;
     const mult = getAction(total, dd);
-    // mult = 总投入倍数，1.0=正常定投，>1加仓，<1减投
-    const totalInvest = Math.round(base * mult);
-    const extra = totalInvest - base;  // 正=加仓，负=减投，0=正常
+    // 倍率含义：≤1.0 = 只做基础定投不加仓，>1.0 = 按比例加仓
+    const extra = mult > 1.0 ? Math.round(base * (mult - 1.0)) : 0;
+    const totalInvest = base + extra;
 
     let vixDesc = '数据不可用';
     if (v != null) {
