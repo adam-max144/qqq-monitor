@@ -459,7 +459,6 @@ function render(d){
   // VIX
   document.getElementById('vix').textContent=d.vix!=null?d.vix.toFixed(1):'N/A';
   document.getElementById('vixDesc').textContent=d.vix_desc;
-  document.getElementById('vixStaleDot').className=d.vix_stale?'stale-dot':'';
   document.getElementById('vixBanner').style.display=(d.vix_stale&&d.vix!=null)?'block':'none';
 
   // RSI
