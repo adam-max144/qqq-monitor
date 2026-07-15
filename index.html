@@ -333,40 +333,41 @@ function render(d) {
   }
   dl.innerHTML=html;
 
-  // ===== 止盈/减仓逻辑 =====
+  // ===== 止盈/减仓逻辑（始终显示） =====
   const profit=loadProfit();
   const tpEl=document.getElementById('tpBox');
   const tpLines=document.getElementById('tpLines');
   let tpHtml='';
-  let tpShow=false;
 
   // 规则1：高位减仓（VIX低位泡沫区）
   if(d.vix!=null&&d.vix<18&&profit>=35){
-    tpShow=true;
-    tpHtml+='<div class="tp-line"><span class="tag sell">卖出</span>高位减仓信号</div>';
+    tpHtml+='<div class="tp-line"><span class="tag sell">🛑 卖出</span>高位减仓信号已触发</div>';
     tpHtml+='<div class="tp-line">VIX='+d.vix.toFixed(1)+'<18 + 盈利'+profit+'%≥35%</div>';
     tpHtml+='<div class="tp-line">操作：卖出总仓位25%，资金划入备用池，等下跌买回</div>';
   }else if(d.vix!=null&&d.vix<18){
-    tpShow=true;
-    tpHtml+='<div class="tp-line"><span class="tag warn">监控</span>VIX='+d.vix.toFixed(1)+'<18，泡沫区预警</div>';
-    tpHtml+='<div class="tp-line">当前盈利'+profit+'%，达35%触发减仓</div>';
+    tpHtml+='<div class="tp-line"><span class="tag warn">👀 监控</span>VIX='+d.vix.toFixed(1)+'<18，泡沫区预警</div>';
+    tpHtml+='<div class="tp-line">盈利'+profit+'%，达35%触发减仓（还差'+(35-profit)+'%）</div>';
+  }else{
+    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>VIX='+(d.vix!=null?d.vix.toFixed(1):'N/A')+'≥18，未进入泡沫区</div>';
+    tpHtml+='<div class="tp-line">盈利'+profit+'%，暂不需止盈操作</div>';
   }
 
   // 规则2：大幅回撤保护性减仓
   if(d.vix!=null&&d.vix>35&&d.drawdown>=40){
-    tpShow=true;
-    tpHtml+='<div class="tp-line"><span class="tag sell">减仓</span>极端趋势走熊保护</div>';
-    tpHtml+='<div class="tp-line">VIX>35 + 回撤≥40%</div>';
+    tpHtml+='<div class="tp-line"><span class="tag sell">🛡️ 减仓</span>极端趋势走熊保护</div>';
+    tpHtml+='<div class="tp-line">VIX>35 + 回撤'+d.drawdown+'%≥40%</div>';
     tpHtml+='<div class="tp-line">操作：减仓10%保留底仓，剩余留到更深位置加仓</div>';
     tpHtml+='<div class="tp-line" style="color:#484f58;font-size:10px">⚠️ 需确认连续下跌≥8周再执行</div>';
+  }else if(d.vix!=null&&d.vix>35){
+    tpHtml+='<div class="tp-line"><span class="tag warn">👀 监控</span>VIX>35但回撤'+d.drawdown+'%不足40%</div>';
+  }else if(d.drawdown>=20){
+    tpHtml+='<div class="tp-line"><span class="tag warn">👀 监控</span>回撤已较深('+d.drawdown+'%)，但VIX='+(d.vix!=null?d.vix.toFixed(1):'N/A')+'未>35</div>';
+  }else{
+    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>未触发保护性减仓条件</div>';
   }
 
-  if(tpShow){
     tpEl.style.display='block';
     tpLines.innerHTML=tpHtml;
-  }else{
-    tpEl.style.display='none';
-  }
 
   startTimer(60);
 }
