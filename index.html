@@ -378,11 +378,11 @@ let _loading=false;
 // ========== 五档加仓标准 ==========
 const TIERS=[
   {tier:0,label:'平静区',mult:0,vixTh:0,ddTh:0},
-  {tier:1,label:'小幅回调',mult:0.5,vixTh:20,ddTh:10},
+  {tier:1,label:'小幅回调',mult:0.5,vixTh:20,ddTh:8},
   {tier:2,label:'中度回调',mult:1.0,vixTh:25,ddTh:15},
-  {tier:3,label:'恐慌性回调',mult:1.5,vixTh:30,ddTh:17},
-  {tier:4,label:'深度熊市',mult:2.0,vixTh:35,ddTh:20},
-  {tier:5,label:'史诗级崩盘',mult:3.0,vixTh:40,ddTh:30}
+  {tier:3,label:'恐慌性回调',mult:1.5,vixTh:30,ddTh:20},
+  {tier:4,label:'深度熊市',mult:2.0,vixTh:35,ddTh:25},
+  {tier:5,label:'史诗级崩盘',mult:2.5,vixTh:40,ddTh:30}
 ];
 function getTier(vix,dd){
   if(vix==null)return{...TIERS[0],msg:'VIX数据不可用，仅保留基础定投'};
@@ -399,7 +399,7 @@ function getTier(vix,dd){
 function calcTrend(price, high52, low52) {
   if (price == null || high52 == null || low52 == null || high52 <= low52) return null;
   const pos = (price - low52) / (high52 - low52) * 100;
-  const isBull = pos > 66;
+  const isBull = pos > 71;
   const isBear = pos < 33;
   return {
     pos: Math.round(pos * 10) / 10,
