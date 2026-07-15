@@ -194,9 +194,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
           <div class="sub" id="vixDesc">--</div>
         </div>
         <div class="data-block">
-          <div class="lbl">RSI-14</div>
-          <div class="val" id="rsiVal">--</div>
-          <div class="sub" id="rsiDesc">--</div>
+          <div class="lbl">52周位</div>
+          <div class="val" id="rangePos">--</div>
+          <div class="sub" id="rangeDesc">--</div>
         </div>
       </div>
 
@@ -253,7 +253,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
       </div>
 
       <div class="footer">
-        五档+趋势+RSI · 牛市上限T2 · 每周末投前刷新
+        五档+52周趋势 · 牛市上限T2 · 每周末投前刷新
       </div>
     </div>
     <button class="btn-primary" id="refreshBtn" onclick="loadData()">🔄 刷新数据</button>
@@ -322,20 +322,21 @@ function getTier(vix,dd){
   return{...TIERS[0],msg:'未触发任何加仓档位'};
 }
 
-// ========== K线计算 ==========
-function calcMA(closes,period){
-  if(closes.length<period)return null;
-  const r=closes.slice(-period);
-  return r.reduce((a,b)=>a+b,0)/period;
-}
-function calcRSI(closes,period){
-  if(closes.length<period+1)return null;
-  const r=closes.slice(-period-1);
-  let g=0,l=0;
-  for(let i=1;i<r.length;i++){const d=r[i]-r[i-1];if(d>0)g+=d;else l-=d}
-  const ag=g/period,al=l/period;
-  if(al===0)return 100;
-  return 100-100/(1+ag/al);
+// ========== 趋势计算（基于52周高低位） ==========
+// 用价格在52周区间中的位置替代MA200，因为无法获取美股日K线数据
+function calcTrend(price, high52, low52) {
+  if (price == null || high52 == null || low52 == null || high52 <= low52) return null;
+  const pos = (price - low52) / (high52 - low52) * 100;
+  const isBull = pos > 66;
+  const isBear = pos < 33;
+  return {
+    pos: Math.round(pos * 10) / 10,
+    status: isBull ? 'bull' : (isBear ? 'bear' : 'neutral'),
+    label: isBull ? '牛市' : (isBear ? '熊市' : '中性'),
+    icon: isBull ? '📈' : (isBear ? '📉' : '➡️'),
+    color: isBull ? '#3fb950' : (isBear ? '#f85149' : '#d29922'),
+    msg: isBull ? '价格在52周高位区域，市场强势' : (isBear ? '价格在52周低位区域，市场弱势' : '价格在52周中位区域，趋势不明')
+  };
 }
 
 // ========== 解析 ==========
@@ -374,30 +375,26 @@ function daysUntilNextDCA(dcaDay){
 }
 
 // ========== 推荐操作 ==========
-function getAction(tier,price,ma200,rsi,vix,dd,profit){
+function getAction(tier,price,trend,vix,dd,profit){
   let mult=tier.mult;
   let actionText='',actionIcon='',actionColor='#8b949e';
   let notes=[];
 
-  // 1. 趋势过滤
+  // 趋势过滤（基于52周区间位置）
   let isBull=null,trendCap=false;
-  if(price!=null&&ma200!=null&&ma200>0){
-    isBull=price>ma200;
+  if(trend!=null){
+    isBull=trend.status==='bull';
     if(isBull&&tier.tier>=3){
-      mult=2.0; // Cap at tier 2 effective
+      mult=2.0;
       trendCap=true;
-      notes.push('牛市趋势，加仓上限T2');
+      notes.push('52周高位区，加仓上限T2');
+    }
+    if(trend.status==='bear'){
+      notes.push('52周低位区，允许全部档位');
     }
   }
 
-  // 2. RSI 确认（T3+）
-  let rsiNote=false;
-  if(rsi!=null&&tier.tier>=3&&rsi>=40){
-    notes.push('RSI='+rsi.toFixed(0)+'未超卖(<40)，重仓信号需确认');
-    rsiNote=true;
-  }
-
-  // 3. 推荐操作
+  // 推荐操作
   if(profit>=35&&vix!=null&&vix<18){
     actionIcon='🛑';actionText='减仓止盈';actionColor='#f85149';
   }else if(profit>=50){
@@ -409,13 +406,12 @@ function getAction(tier,price,ma200,rsi,vix,dd,profit){
   }else if(tier.tier>=3){actionIcon='⚡';actionText='双倍定投+';actionColor='#f57c00';
   }else if(tier.tier>=2){actionIcon='🌊';actionText='双倍定投';actionColor='#d29922';
   }else if(tier.tier>=1){actionIcon='💧';actionText='小额加仓';actionColor='#58a6ff';
-  }else{if(isBull===true&&ma200){actionIcon='☀️';actionText='正常定投';actionColor='#3fb950'}
+  }else{if(trend&&trend.status==='bull'){actionIcon='☀️';actionText='正常定投';actionColor='#3fb950'}
        else{actionIcon='📊';actionText='正常定投';actionColor='#8b949e'}}
 
-  // Trend note for action
   if(trendCap)actionText='🔹'+actionText;
 
-  return{mult,actionText,actionIcon,actionColor,notes,isBull,trendCap,rsiNote};
+  return{mult,actionText,actionIcon,actionColor,notes,isBull,trendCap};
 }
 
 // ========== 渲染 ==========
@@ -464,14 +460,15 @@ function render(d){
   document.getElementById('vixDesc').textContent=d.vix_desc;
   document.getElementById('vixBanner').style.display=(d.vix_stale&&d.vix!=null)?'block':'none';
 
-  // RSI
-  const rsiEl=document.getElementById('rsiVal');
-  const rsiDescEl=document.getElementById('rsiDesc');
-  if(d.rsi!=null){
-    rsiEl.textContent=d.rsi.toFixed(0);
-    rsiEl.className='val'+(d.rsi<40?' val-up':(d.rsi>70?' val-down':' val-flat'));
-    rsiDescEl.textContent=d.rsi<40?'超卖区':(d.rsi>70?'超买区':'中性区');
-  }else{rsiEl.textContent='--';rsiEl.className='val val-flat';rsiDescEl.textContent='无数据';}
+  // 52周位
+  const rpEl=document.getElementById('rangePos');
+  const rpDesc=document.getElementById('rangeDesc');
+  if(d.trend!=null){
+    rpEl.textContent=d.trend.pos.toFixed(0)+'%';
+    rpEl.className='val'+(d.trend.pos>66?' val-up':(d.trend.pos<33?' val-down':' val-flat'));
+    rpDesc.textContent=d.trend.label;
+    rpDesc.style.color=d.trend.color;
+  }else{rpEl.textContent='--';rpEl.className='val val-flat';rpDesc.textContent='无数据';}
 
   // ---- 趋势条 ----
   const trendBar=document.getElementById('trendBar');
@@ -479,25 +476,26 @@ function render(d){
   const trendText=document.getElementById('trendText');
   const trendNote=document.getElementById('trendNote');
   const trendBadge=document.getElementById('trendBadge');
-  if(d.ma200!=null){
-    const bull=d.price>d.ma200;
-    trendIcon.textContent=bull?'📈':'📉';
-    trendText.textContent='价格$'+d.price.toFixed(0)+' vs MA200 $'+d.ma200.toFixed(0)+' = '+(bull?'牛市':'熊市');
-    trendText.style.color=bull?'#3fb950':'#f85149';
-    trendNote.textContent=bull?'牛市上限T2，不追高':'熊市允许触发全部档位，越低越买';
-    trendBadge.style.display=d.trendCap?'inline':'none';
-    trendBadge.className='trend-cap-badge'+(bull?' bull':' bear');
-    trendBar.style.borderColor=bull?'#002d1a':'#3d0000';
+  if(d.trend!=null){
+    const t=d.trend;
+    const isBull=t.status==='bull';
+    trendIcon.textContent=t.icon;
+    trendText.textContent='52周区间位 '+t.pos.toFixed(0)+'% = '+t.label+' | 区间 $'+d.price.toFixed(0);
+    trendText.style.color=t.color;
+    trendNote.textContent=t.msg+(isBull?' | 牛市上限T2，不追高':'');
+    trendBadge.style.display=isBull?'inline':'none';
+    trendBadge.className='trend-cap-badge'+(isBull?' bull':' bear');
+    trendBar.style.borderColor=isBull?'#002d1a':'#3d0000';
   }else{
     trendIcon.textContent='📊';
-    trendText.textContent='MA200计算中（需200个交易日数据）';
+    trendText.textContent='趋势数据不可用';
     trendText.style.color='#8b949e';
     trendNote.textContent='--';
     trendBadge.style.display='none';
   }
 
   // ---- 操作推荐卡 ----
-  const act=getAction(d.tierObj,d.price,d.ma200,d.rsi,d.vix,d.drawdown,d.profit);
+  const act=getAction(d.tierObj,d.price,d.trend,d.vix,d.drawdown,d.profit);
   document.getElementById('actionIcon').textContent=act.actionIcon;
   document.getElementById('actionText').textContent=act.actionText;
   document.getElementById('actionText').style.color=act.actionColor;
@@ -530,8 +528,8 @@ function render(d){
     act.notes.forEach(n=>{metaHtml+='<span>ℹ️ '+n+'</span>';});
   }
   // Trend info
-  if(d.ma200!=null&&act.isBull!==null){
-    metaHtml+='<span>'+(act.isBull?'📈 牛市':'📉 熊市')+'</span>';
+  if(d.trend!=null&&act.isBull!==null){
+    metaHtml+='<span>'+d.trend.icon+' '+d.trend.label+' ('+d.trend.pos.toFixed(0)+'%)</span>';
   }
   metaEl.innerHTML=metaHtml;
 
@@ -579,10 +577,7 @@ function render(d){
   // ---- 判断详情 ----
   const dl=document.getElementById('detailLines');
   let html='';
-  html+='<div class="detail-line">VIX='+(d.vix!=null?d.vix.toFixed(1):'N/A')+'，回撤='+d.drawdown+'%';
-  if(d.rsi!=null)html+='，RSI-14='+d.rsi.toFixed(0);
-  if(d.ma200!=null)html+='，MA200='+d.ma200.toFixed(2);
-  html+='</div>';
+  html+='<div class="detail-line">VIX='+(d.vix!=null?d.vix.toFixed(1):'N/A')+'，回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
 
   html+='<div class="detail-line"><span class="tag '+(d.tierObj.tier>0?'green':'gray')+'">T'+d.tierObj.tier+'</span>'+d.tierObj.msg+'</div>';
 
@@ -591,10 +586,9 @@ function render(d){
     html+='<div class="detail-line">基础¥'+baseAmt.toLocaleString()+' × '+d.tierObj.mult+' = +¥'+Math.round(baseAmt*d.tierObj.mult).toLocaleString()+'</div>';
   }
 
-  if(act.trendCap)html+='<div class="detail-line"><span class="tag yellow">🔒 趋势过滤</span>牛市上限T2，有效倍率从'+d.tierObj.mult+'×降至'+act.mult+'×</div>';
-  if(act.rsiNote)html+='<div class="detail-line"><span class="tag yellow">⚠️ RSI确认</span>RSI='+(d.rsi!=null?d.rsi.toFixed(0):'N/A')+'≥40，重仓档需RSI<40确认</div>';
-  if(d.ma200!=null&&act.isBull!==null){
-    html+='<div class="detail-line"><span class="tag '+(act.isBull?'green':'red')+'">'+(act.isBull?'📈 牛市':'📉 熊市')+'</span>价格$'+d.price.toFixed(0)+(act.isBull?'>':'<')+'MA200 $'+d.ma200.toFixed(0)+'</div>';
+  if(act.trendCap)html+='<div class="detail-line"><span class="tag yellow">🔒 趋势过滤</span>52周高位上限T2，有效倍率从'+d.tierObj.mult+'×降至'+act.mult+'×</div>';
+  if(d.trend){
+    html+='<div class="detail-line"><span class="tag '+(d.trend.status==='bull'?'green':(d.trend.status==='bear'?'red':'yellow'))+'">'+d.trend.icon+' '+d.trend.label+'</span>价格在52周区间 '+d.trend.pos.toFixed(0)+'% 位置'+(d.trend.status==='bull'?'（上限T2）':'')+'</div>';
   }
   dl.innerHTML=html;
 
@@ -683,10 +677,9 @@ async function loadData(){
   const to=setTimeout(()=>ctrl.abort(),15000);
 
   try{
-    const [qr,vr,kr]=await Promise.all([
+    const [qr,vr]=await Promise.all([
       fetch('https://qt.gtimg.cn/q=usQQQ',{signal:ctrl.signal}),
-      fetch('https://qt.gtimg.cn/q=usVIX',{signal:ctrl.signal}),
-      fetch('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=usQQQ,day,,,200,qfq',{signal:ctrl.signal})
+      fetch('https://qt.gtimg.cn/q=usVIX',{signal:ctrl.signal})
     ]);
     clearTimeout(to);
     _loading=false;
@@ -696,22 +689,12 @@ async function loadData(){
     const qqq=parseQQQ(qt);
     if(!qqq){showError('QQQ数据解析失败');return;}
 
-    // Parse VIX
+    // VIX
     const vt=bytesToStr(await vr.arrayBuffer());
     const vixD=parseVIX(vt);
 
-    // Parse K-line
-    let closes=[],ma200=null,rsi=null;
-    try{
-      const kd=await kr.json();
-      const days=kd.data.usQQQ.day;
-      if(days&&days.length>0){
-        // Format: [date, open, close, high, low, volume]
-        closes=days.map(d=>parseFloat(d[2])).filter(v=>!isNaN(v));
-        ma200=calcMA(closes,200);
-        rsi=calcRSI(closes,14);
-      }
-    }catch(e){/* K-line parse fail, continue without MA/RSI */}
+    // 计算趋势（基于52周区间位置）
+    const trend=calcTrend(qqq.price, qqq.high52, qqq.low52);
 
     const dd=((qqq.high52-qqq.price)/qqq.high52)*100;
     const v=vixD?vixD.vix:null;
@@ -732,7 +715,7 @@ async function loadData(){
       drawdown:Math.round(dd*10)/10,time:qqq.time,
       vix:v,vix_desc:vixDesc,vix_stale:vixD?vixD.stale:false,
       dd_desc:ddDesc,
-      tierObj,ma200,rsi,profit
+      tierObj,trend,profit
     });
   }catch(e){
     clearTimeout(to);_loading=false;
