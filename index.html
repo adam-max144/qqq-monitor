@@ -409,12 +409,16 @@ function getAction(tier,price,trend,vix,dd,profit){
     }
   }
 
-  // 推荐操作
-  if(profit>=35&&vix!=null&&vix<18){
+  // 推荐操作（阈值跟随盈利模式）
+  const isAnnualA=loadProfitMode()==='annual';
+  const r1A=isAnnualA?35:80;
+  const r2aA=isAnnualA?50:100;
+  const r2bA=isAnnualA?20:50;
+  if(profit>=r1A&&vix!=null&&vix<18){
     actionIcon='🛑';actionText='减仓止盈';actionColor='#f85149';
-  }else if(profit>=50){
+  }else if(profit>=r2aA&&vix!=null&&vix<18){
     actionIcon='💰';actionText='大幅止盈';actionColor='#f85149';
-  }else if(profit>=20&&vix!=null&&vix<18){
+  }else if(profit>=r2bA&&vix!=null&&vix<18){
     actionIcon='💵';actionText='部分止盈';actionColor='#d29922';
   }else if(tier.tier>=5){actionIcon='🚀';actionText='全力加仓';actionColor='#c62828';
   }else if(tier.tier>=4){actionIcon='🔥';actionText='三倍定投';actionColor='#f85149';
