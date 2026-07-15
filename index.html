@@ -204,7 +204,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
       <div class="trend-bar" id="trendBar">
         <div class="trend-left"><span class="trend-icon" id="trendIcon">📊</span><span id="trendText">--</span></div>
         <span class="trend-note" id="trendNote">--</span>
-        <span class="trend-cap-badge" id="trendBadge" style="display:none">上限T2</span>
+        <span class="trend-cap-badge" id="trendBadge" style="display:none">上限2×</span>
       </div>
 
       <!-- VIX 过期警告 -->
@@ -253,7 +253,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
       </div>
 
       <div class="footer">
-        五档+52周趋势 · 牛市上限T2 · 每周末投前刷新
+        五档+52周趋势 · 牛市上限2× · 每周末投前刷新
       </div>
     </div>
     <button class="btn-primary" id="refreshBtn" onclick="loadData()">🔄 刷新数据</button>
@@ -402,7 +402,7 @@ function getAction(tier,price,trend,vix,dd,profit){
     if(isBull&&tier.tier>=3){
       mult=2.0;
       trendCap=true;
-      notes.push('52周高位区，加仓上限T2');
+      notes.push('52周高位区，加仓上限2×');
     }
     if(trend.status==='bear'){
       notes.push('52周低位区，允许全部档位');
@@ -501,7 +501,7 @@ function render(d){
     trendIcon.textContent=t.icon;
     trendText.textContent='52周区间位 '+t.pos.toFixed(0)+'% = '+t.label+' | 区间 $'+d.price.toFixed(0);
     trendText.style.color=t.color;
-    trendNote.textContent=t.msg+(isBull?' | 牛市上限T2，不追高':'');
+    trendNote.textContent=t.msg+(isBull?' | 牛市上限2×，不追高':'');
     trendBadge.style.display=isBull?'inline':'none';
     trendBadge.className='trend-cap-badge'+(isBull?' bull':' bear');
     trendBar.style.borderColor=isBull?'#002d1a':'#3d0000';
@@ -605,9 +605,9 @@ function render(d){
     html+='<div class="detail-line">基础¥'+baseAmt.toLocaleString()+' × '+d.tierObj.mult+' = +¥'+Math.round(baseAmt*d.tierObj.mult).toLocaleString()+'</div>';
   }
 
-  if(act.trendCap)html+='<div class="detail-line"><span class="tag yellow">🔒 趋势过滤</span>52周高位上限T2，有效倍率从'+d.tierObj.mult+'×降至'+act.mult+'×</div>';
+  if(act.trendCap)html+='<div class="detail-line"><span class="tag yellow">🔒 趋势过滤</span>52周高位上限2×，倍率从'+d.tierObj.mult+'×调整为'+act.mult+'×</div>';
   if(d.trend){
-    html+='<div class="detail-line"><span class="tag '+(d.trend.status==='bull'?'green':(d.trend.status==='bear'?'red':'yellow'))+'">'+d.trend.icon+' '+d.trend.label+'</span>价格在52周区间 '+d.trend.pos.toFixed(0)+'% 位置'+(d.trend.status==='bull'?'（上限T2）':'')+'</div>';
+    html+='<div class="detail-line"><span class="tag '+(d.trend.status==='bull'?'green':(d.trend.status==='bear'?'red':'yellow'))+'">'+d.trend.icon+' '+d.trend.label+'</span>价格在52周区间 '+d.trend.pos.toFixed(0)+'% 位置'+(d.trend.status==='bull'?'（上限2×）':'')+'</div>';
   }
   dl.innerHTML=html;
 
