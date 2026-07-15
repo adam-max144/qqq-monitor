@@ -255,7 +255,25 @@ function render(d) {
   document.getElementById('baseDisplay').textContent=base.toLocaleString();
 
   const now=new Date();
-  document.getElementById('updateTime').textContent='更新 '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  let timeDisplay;
+  if(d.time){
+    // API时间格式: "2026-07-13 16:00:01"
+    const parts=d.time.split(' ');
+    if(parts.length>=2){
+      const dateParts=parts[0].split('-');
+      const todayStr=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0');
+      if(parts[0]===todayStr){
+        timeDisplay='今日 '+parts[1];
+      }else{
+        timeDisplay='昨收 '+parts[1];
+      }
+    }else{
+      timeDisplay=d.time;
+    }
+  }else{
+    timeDisplay=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  }
+  document.getElementById('updateTime').textContent=timeDisplay;
 
   // 数据
   document.getElementById('price').textContent=d.price.toFixed(2);
@@ -417,7 +435,7 @@ async function loadData(){
     const tierDdThresh=[0,10,15,20,30][tier]||0;
 
     render({
-      price:qqq.price,drawdown:Math.round(dd*10)/10,
+      price:qqq.price,drawdown:Math.round(dd*10)/10,time:qqq.time,
       vix:v,vix_desc:vixDesc,vix_stale:vixD?vixD.stale:false,
       dd_desc:ddDesc,tier,mult,tierMsg:msg,
       tierVixThresh,tierDdThresh,
