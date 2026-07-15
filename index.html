@@ -169,6 +169,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
           <span class="action-amount" id="actionAmount">--</span>
         </div>
         <div class="action-meta" id="actionMeta"></div>
+        <button class="btn-mark" id="btnMarkTp" style="display:none;margin-top:6px;padding:4px 10px;border-radius:6px;border:1px solid #30363d;background:#1c2128;color:#d29922;font-size:10px;cursor:pointer;width:100%" onclick="markTpExec()">✅ 标记止盈已执行</button>
       </div>
 
       <!-- 五数据 -->
@@ -375,6 +376,33 @@ function applyCap(extraBuy){
 
 let _loading=false;
 
+// ========== 止盈冷却期（避免重复执行） ==========
+const TPL='qqq_tp_light',TPM='qqq_tp_mid',TPH='qqq_tp_heavy',TPHD='qqq_tp_hard';
+const COOLDOWN={light:90,mid:180,heavy:365,hard:365}; // 天
+
+function markTpDone(key){
+  localStorage.setItem(key, Date.now().toString());
+}
+function tpCooldownMs(key,days){
+  const last=parseInt(localStorage.getItem(key))||0;
+  if(!last) return 0;
+  return Math.max(0, days*86400000-(Date.now()-last));
+}
+function isTpCooldown(key,days){
+  return tpCooldownMs(key,days)>0;
+}
+function fmtCooldown(ms){
+  const d=Math.floor(ms/86400000);
+  if(d>=30) return Math.floor(d/30)+'月'+d%30+'天';
+  return d+'天';
+}
+function tpNextDate(key,days){
+  const last=parseInt(localStorage.getItem(key))||0;
+  if(!last) return '';
+  const next=new Date(last+days*86400000);
+  return next.getFullYear()+'-'+(next.getMonth()+1).toString().padStart(2,'0')+'-'+next.getDate().toString().padStart(2,'0');
+}
+
 // ========== 五档加仓标准 ==========
 const TIERS=[
   {tier:0,label:'平静区',mult:0,vixTh:0,ddTh:0},
@@ -451,6 +479,7 @@ function getAction(tier,price,trend,vix,dd,profit){
   let mult=tier.mult;
   let actionText='',actionIcon='',actionColor='#8b949e';
   let notes=[];
+  let tpInfo=null; // 止盈状态
 
   // 趋势过滤（基于52周区间位置）
   let isBull=null,trendCap=false;
@@ -471,16 +500,23 @@ function getAction(tier,price,trend,vix,dd,profit){
   const rLightA=isAnnualA?20:50;
   const rMidA=isAnnualA?35:80;
   const rHeavyA=isAnnualA?50:100;
-  const rHardA=isAnnualA?50:100; // 硬止盈阈值同重止盈
-  if(profit>=rHeavyA&&vix!=null&&vix<18){
-    actionIcon='💰';actionText='重止盈';actionColor='#f85149';
-  }else if(profit>=rMidA&&vix!=null&&vix<18){
-    actionIcon='💵';actionText='中止盈';actionColor='#d29922';
-  }else if(profit>=rLightA&&vix!=null&&vix<18){
-    actionIcon='💧';actionText='轻止盈';actionColor='#58a6ff';
-  }else if(profit>=rHardA){
-    actionIcon='🔒';actionText='硬止盈';actionColor='#f57c00';
-  }else if(tier.tier>=5){actionIcon='🚀';actionText='全力加仓';actionColor='#c62828';
+  const rHardA=isAnnualA?50:100;
+  const vLow=vix!=null&&vix<18;
+  // 冷却期检查辅助
+  function tpState(key,days,label,icon,pct){
+    const cd=isTpCooldown(key,days);
+    tpInfo={label,pct,key,days,cooldown:cd,nextDate:tpNextDate(key,days)};
+    if(!cd){
+      actionIcon=icon;actionText=label;actionColor='#f85149';mult=0;
+    }else{
+      actionIcon='✅';actionText=label+'(已执行)';actionColor='#8b949e';mult=0;
+    }
+  }
+  if(profit>=rHeavyA&&vLow){tpState(TPH,COOLDOWN.heavy,'重止盈','💰',30);}
+  else if(profit>=rMidA&&vLow){tpState(TPM,COOLDOWN.mid,'中止盈','💵',20);}
+  else if(profit>=rLightA&&vLow){tpState(TPL,COOLDOWN.light,'轻止盈','💧',10);}
+  else if(profit>=rHardA){tpState(TPHD,COOLDOWN.hard,'硬止盈','🔒',10);}
+  else if(tier.tier>=5){actionIcon='🚀';actionText='全力加仓';actionColor='#c62828';
   }else if(tier.tier>=4){actionIcon='🔥';actionText='三倍定投';actionColor='#f85149';
   }else if(tier.tier>=3){actionIcon='⚡';actionText='双倍定投+';actionColor='#f57c00';
   }else if(tier.tier>=2){actionIcon='🌊';actionText='双倍定投';actionColor='#d29922';
@@ -490,7 +526,7 @@ function getAction(tier,price,trend,vix,dd,profit){
 
   if(trendCap)actionText='🔹'+actionText;
 
-  return{mult,actionText,actionIcon,actionColor,notes,isBull,trendCap};
+  return{mult,actionText,actionIcon,actionColor,notes,isBull,trendCap,tpInfo};
 }
 
 // ========== 渲染 ==========
@@ -613,6 +649,18 @@ function render(d){
   }else if(cap.curRatio){
     metaHtml+='<span>📊 QQQ占比 '+cap.curRatio+'</span>';
   }
+  // Take-profit cooldown info in meta
+  if(act.tpInfo){
+    if(act.tpInfo.cooldown){
+      metaHtml+='<span>✅ '+act.tpInfo.label+' 已执行（冷却至 '+act.tpInfo.nextDate+'）</span>';
+    }else{
+      metaHtml+='<span>⏳ '+act.tpInfo.label+' 待执行（冷却'+act.tpInfo.days+'天）</span>';
+    }
+  }
+  // Show/hide mark button
+  const btnMark=document.getElementById('btnMarkTp');
+  if(act.tpInfo&&!act.tpInfo.cooldown){btnMark.style.display='block';btnMark.dataset.key=act.tpInfo.key;}
+  else{btnMark.style.display='none';}
   // Trend info
   if(d.trend!=null&&act.isBull!==null){
     metaHtml+='<span>'+d.trend.icon+' '+d.trend.label+' ('+d.trend.pos.toFixed(0)+'%)</span>';
@@ -706,6 +754,15 @@ function render(d){
     tpHtml+='<div class="tp-line"><span class="tag warn">👀 高盈利预警</span>'+pModeLabel+' '+profit+'%≥'+rHeavy+'%，但VIX='+d.vix.toFixed(1)+'≥18未确认泡沫，持有观察</div>';
   }else{
     tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>'+pModeLabel+' '+profit+'%，VIX≥18未进入泡沫区</div>';
+  }
+
+  // 冷却期状态（从act获取止盈信息）
+  if(act.tpInfo){
+    if(act.tpInfo.cooldown){
+      tpHtml+='<div class="tp-line" style="color:#8b949e;font-size:10px">✅ '+act.tpInfo.label+' 冷却中，下次可用 '+act.tpInfo.nextDate+'</div>';
+    }else{
+      tpHtml+='<div class="tp-line" style="color:#d29922;font-size:10px">⏳ '+act.tpInfo.label+' 待执行，冷却期 '+act.tpInfo.days+' 天</div>';
+    }
   }
 
   // R0: 硬止盈（不看VIX，纯盈利保护兜底）
@@ -831,6 +888,15 @@ function showError(m){
   document.getElementById('error').style.display='flex';
   document.getElementById('errorMsg').textContent=m;
   hideRefreshProgress();
+}
+
+// ========== 止盈标记执行 ==========
+function markTpExec(){
+  const btn=document.getElementById('btnMarkTp');
+  const key=btn.dataset.key;
+  if(!key)return;
+  markTpDone(key);
+  loadData();
 }
 
 // ========== 设置 ==========
