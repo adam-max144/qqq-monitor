@@ -624,13 +624,18 @@ function render(d){
     tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>VIX≥18，未进入泡沫区</div>';
   }
 
-  // R2: 20% / 50% 止盈
-  if(profit>=50){
-    tpHtml+='<div class="tp-line"><span class="tag sell">💰 卖出30%</span>'+pModeLabel+' '+profit+'%≥50%，大幅锁定利润</div>';
-  }else if(profit>=20){
-    tpHtml+='<div class="tp-line"><span class="tag sell">💵 卖出10%</span>'+pModeLabel+' '+profit+'%≥20%，落袋为安</div>';
+  // R2: 20% / 50% 止盈（需 VIX<18 确认泡沫才触发）
+  const vixLow=d.vix!=null&&d.vix<18;
+  if(vixLow&&profit>=50){
+    tpHtml+='<div class="tp-line"><span class="tag sell">💰 卖出30%</span>'+pModeLabel+' '+profit+'%≥50% + VIX<18，锁定利润</div>';
+  }else if(vixLow&&profit>=20){
+    tpHtml+='<div class="tp-line"><span class="tag sell">💵 卖出10%</span>'+pModeLabel+' '+profit+'%≥20% + VIX<18，落袋为安</div>';
+  }else if(vixLow){
+    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 持有</span>'+pModeLabel+' '+profit+'%，VIX<18但未达20%止盈线（差'+(20-profit)+'%）</div>';
+  }else if(profit>=50){
+    tpHtml+='<div class="tp-line"><span class="tag warn">👀 高盈利预警</span>'+pModeLabel+' '+profit+'%≥50%，但VIX='+(d.vix!=null?d.vix.toFixed(1):'N/A')+'≥18未确认泡沫，持有观察</div>';
   }else{
-    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 持有</span>'+pModeLabel+' '+profit+'%，未达20%止盈线</div>';
+    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>'+pModeLabel+' '+profit+'%，VIX≥18未进入泡沫区</div>';
   }
 
   // R3: 保护性减仓
