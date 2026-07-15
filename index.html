@@ -294,6 +294,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
     </select>
     <div class="form-hint">每周哪一天执行定投操作</div>
   </div>
+  <div class="form-group">
+    <label>定投基数模式</label>
+    <select id="dcaModeInput" onchange="updateDcaHint()">
+      <option value="fixed">固定金额</option>
+      <option value="pct">按总资产0.1%/周</option>
+    </select>
+    <div class="form-hint" id="dcaModeHint">固定 = 手动填入上方金额</div>
+  </div>
+  <div class="form-group">
+    <label>总资产（元）</label>
+    <input type="number" id="totalAssetsInput" placeholder="0" step="10000" inputmode="numeric">
+    <div class="form-hint">含现金+其他投资+QQQ，用于仓位上限计算</div>
+  </div>
+  <div class="form-group">
+    <label>QQQ持仓市值（元）</label>
+    <input type="number" id="qqqPosInput" placeholder="0" step="1000" inputmode="numeric">
+    <div class="form-hint">当前QQQ持仓总市值，用于计算仓位占比</div>
+  </div>
   <button class="btn-primary" onclick="saveSettings()">保存</button>
 </div>
 
@@ -301,7 +319,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 // ========== 全局错误捕获 ==========
 window.onerror=function(msg,url,line){showError('JS错误 L'+line+': '+msg);};
 // ========== 存储 ==========
-const SK='qqq_base',SP='qqq_profit',SD='qqq_dca_day',SM='qqq_profit_mode';
+const SK='qqq_base',SP='qqq_profit',SD='qqq_dca_day',SM='qqq_profit_mode',
+      TA='qqq_total_assets',QP='qqq_position',DM='qqq_dca_mode';
 function loadBase(){return parseInt(localStorage.getItem(SK))||675}
 function saveBase(v){localStorage.setItem(SK,v.toString())}
 function loadProfit(){return parseInt(localStorage.getItem(SP))||0}
@@ -310,10 +329,48 @@ function loadDcaDay(){return parseInt(localStorage.getItem(SD))||5}
 function saveDcaDay(v){localStorage.setItem(SD,v.toString())}
 function loadProfitMode(){return localStorage.getItem(SM)||'annual'}
 function saveProfitMode(v){localStorage.setItem(SM,v)}
+function loadTotalAssets(){return parseInt(localStorage.getItem(TA))||0}
+function saveTotalAssets(v){localStorage.setItem(TA,v.toString())}
+function loadQqqPosition(){return parseInt(localStorage.getItem(QP))||0}
+function saveQqqPosition(v){localStorage.setItem(QP,v.toString())}
+function loadDcaMode(){return localStorage.getItem(DM)||'fixed'}
+function saveDcaMode(v){localStorage.setItem(DM,v)}
+
 function profitModeLabel(){return loadProfitMode()==='annual'?'当年收益率':'累计收益率'}
 function updateProfitHint(){
   const el=document.getElementById('profitHint');
   if(el)el.textContent=loadProfitMode()==='annual'?'填入今年至今的收益率 %':'填入全部持仓累计总收益率 %';
+}
+function updateDcaHint(){
+  const el=document.getElementById('dcaModeHint');
+  if(el)el.textContent=loadDcaMode()==='pct'?'总资产×0.1%自动计算（建议持仓超10万后使用）':'固定 = 手动填入上方金额';
+}
+
+// 动态计算基础金额
+function calcBase(){
+  const mode=loadDcaMode();
+  if(mode==='pct'){
+    const assets=loadTotalAssets();
+    return Math.max(100, Math.round(assets*0.001)); // 0.1%/周，最低100
+  }
+  return loadBase();
+}
+
+// 仓位上限检查（QQQ不超过总资产70%）
+function applyCap(extraBuy){
+  const assets=loadTotalAssets();
+  const position=loadQqqPosition();
+  if(assets<=0||position<=0) return {extra:extraBuy,capped:false};
+  const curRatio=position/assets;
+  // 加仓后是否超过70%
+  const newPos=position+extraBuy;
+  if(newPos/assets>0.7){
+    const maxPos=Math.floor(assets*0.7);
+    const maxExtra=Math.max(0, maxPos-position);
+    const newRatio=maxPos/assets;
+    return {extra:maxExtra,capped:true,curRatio:Math.round(curRatio*100)+'%',newRatio:Math.round(newRatio*100)+'%',limit:'70%'};
+  }
+  return {extra:extraBuy,capped:false,curRatio:Math.round(curRatio*100)+'%',newRatio:Math.round((newPos/assets)*100)+'%'};
 }
 
 let _loading=false;
@@ -414,12 +471,15 @@ function getAction(tier,price,trend,vix,dd,profit){
   const rLightA=isAnnualA?20:50;
   const rMidA=isAnnualA?35:80;
   const rHeavyA=isAnnualA?50:100;
+  const rHardA=isAnnualA?50:100; // 硬止盈阈值同重止盈
   if(profit>=rHeavyA&&vix!=null&&vix<18){
     actionIcon='💰';actionText='重止盈';actionColor='#f85149';
   }else if(profit>=rMidA&&vix!=null&&vix<18){
     actionIcon='💵';actionText='中止盈';actionColor='#d29922';
   }else if(profit>=rLightA&&vix!=null&&vix<18){
     actionIcon='💧';actionText='轻止盈';actionColor='#58a6ff';
+  }else if(profit>=rHardA){
+    actionIcon='🔒';actionText='硬止盈';actionColor='#f57c00';
   }else if(tier.tier>=5){actionIcon='🚀';actionText='全力加仓';actionColor='#c62828';
   }else if(tier.tier>=4){actionIcon='🔥';actionText='三倍定投';actionColor='#f85149';
   }else if(tier.tier>=3){actionIcon='⚡';actionText='双倍定投+';actionColor='#f57c00';
@@ -436,7 +496,7 @@ function getAction(tier,price,trend,vix,dd,profit){
 // ========== 渲染 ==========
 function render(d){
   try{
-  const base=loadBase();
+  const base=calcBase();
   document.getElementById('loading').style.display='none';
   document.getElementById('error').style.display='none';
   document.getElementById('content').style.display='block';
@@ -521,9 +581,10 @@ function render(d){
   document.getElementById('actionCard').style.borderColor=act.actionColor;
 
   // Effective multiplier display
-  const baseAmt=loadBase();
-  const effExtra=Math.round(baseAmt*act.mult);
-  const effTotal=baseAmt+effExtra;
+  const effExtraRaw=Math.round(base*act.mult);
+  const cap=applyCap(effExtraRaw);
+  const effExtra=cap.extra;
+  const effTotal=base+effExtra;
   document.getElementById('actionAmount').textContent='¥'+effTotal.toLocaleString();
   document.getElementById('actionAmount').style.color=act.actionColor;
 
@@ -546,6 +607,12 @@ function render(d){
   if(act.notes.length>0){
     act.notes.forEach(n=>{metaHtml+='<span>ℹ️ '+n+'</span>';});
   }
+  // Position cap
+  if(cap.capped){
+    metaHtml+='<span>🔒 仓位已达上限('+cap.limit+') 当前'+cap.curRatio+'→调整后'+cap.newRatio+'</span>';
+  }else if(cap.curRatio){
+    metaHtml+='<span>📊 QQQ占比 '+cap.curRatio+'</span>';
+  }
   // Trend info
   if(d.trend!=null&&act.isBull!==null){
     metaHtml+='<span>'+d.trend.icon+' '+d.trend.label+' ('+d.trend.pos.toFixed(0)+'%)</span>';
@@ -565,7 +632,7 @@ function render(d){
   }
 
   // ---- 金额 ----
-  document.getElementById('baseDisplay').textContent=baseAmt.toLocaleString();
+  document.getElementById('baseDisplay').textContent=base.toLocaleString();
   document.getElementById('effMultDisplay').textContent=d.tierObj.mult+'×';
 
   const effMultLabel=document.getElementById('effLabel');
@@ -602,7 +669,7 @@ function render(d){
 
   if(d.tierObj.tier>0){
     html+='<div class="detail-line">条件：VIX≥'+d.tierObj.vixTh+' + 回撤≥'+d.tierObj.ddTh+'%</div>';
-    html+='<div class="detail-line">基础¥'+baseAmt.toLocaleString()+' × '+d.tierObj.mult+' = +¥'+Math.round(baseAmt*d.tierObj.mult).toLocaleString()+'</div>';
+    html+='<div class="detail-line">基础¥'+base.toLocaleString()+' × '+d.tierObj.mult+' = +¥'+Math.round(base*d.tierObj.mult).toLocaleString()+'</div>';
   }
 
   if(act.trendCap)html+='<div class="detail-line"><span class="tag yellow">🔒 趋势过滤</span>52周高位上限2×，倍率从'+d.tierObj.mult+'×调整为'+act.mult+'×</div>';
@@ -639,6 +706,13 @@ function render(d){
     tpHtml+='<div class="tp-line"><span class="tag warn">👀 高盈利预警</span>'+pModeLabel+' '+profit+'%≥'+rHeavy+'%，但VIX='+d.vix.toFixed(1)+'≥18未确认泡沫，持有观察</div>';
   }else{
     tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>'+pModeLabel+' '+profit+'%，VIX≥18未进入泡沫区</div>';
+  }
+
+  // R0: 硬止盈（不看VIX，纯盈利保护兜底）
+  const rHard=isAnnual?50:100;
+  if(profit>=rHard && (d.vix==null||d.vix>=18) && !vixLow){
+    tpHtml+='<div class="tp-line"><span class="tag sell">🔒 硬止盈 · 卖出10%</span>'+pModeLabel+' '+profit+'%≥'+rHard+'%，VIX未确认泡沫但盈利已达标</div>';
+    tpHtml+='<div class="tp-line">→ 强制落袋10%，不等泡沫信号</div>';
   }
 
   // R3: 保护性减仓
@@ -765,7 +839,11 @@ function showSettings(){
   document.getElementById('profitInput').value=loadProfit();
   document.getElementById('profitModeInput').value=loadProfitMode();
   document.getElementById('dcaDayInput').value=loadDcaDay();
+  document.getElementById('totalAssetsInput').value=loadTotalAssets();
+  document.getElementById('qqqPosInput').value=loadQqqPosition();
+  document.getElementById('dcaModeInput').value=loadDcaMode();
   updateProfitHint();
+  updateDcaHint();
   document.getElementById('overlay').classList.add('show');
   document.getElementById('sheet').classList.add('show');
 }
@@ -778,7 +856,11 @@ function saveSettings(){
   const p=parseInt(document.getElementById('profitInput').value)||0;
   const m=document.getElementById('profitModeInput').value;
   const d=parseInt(document.getElementById('dcaDayInput').value)||5;
+  const ta=parseInt(document.getElementById('totalAssetsInput').value)||0;
+  const qp=parseInt(document.getElementById('qqqPosInput').value)||0;
+  const dm=document.getElementById('dcaModeInput').value;
   saveBase(v);saveProfit(p);saveProfitMode(m);saveDcaDay(d);
+  saveTotalAssets(ta);saveQqqPosition(qp);saveDcaMode(dm);
   hideSettings();loadData();
 }
 
