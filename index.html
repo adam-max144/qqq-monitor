@@ -647,13 +647,19 @@ let ti=null;
 function startTimer(s){if(ti)clearInterval(ti);let r=s;ti=setInterval(()=>{r--;if(r<=0){clearInterval(ti);loadData()}},1000)}
 
 function showRefreshProgress(){
-  document.getElementById('refreshBar').className='refresh-bar active';
-  document.getElementById('refreshFill').className='fill running';
+  const rb=document.getElementById('refreshBar');
+  const rf=document.getElementById('refreshFill');
+  if(rb)rb.className='refresh-bar active';
+  if(rf)rf.className='fill running';
 }
 function hideRefreshProgress(){
   const fill=document.getElementById('refreshFill');
-  fill.className='fill done';
-  setTimeout(()=>{document.getElementById('refreshBar').className='refresh-bar';fill.className='fill';},500);
+  if(fill)fill.className='fill done';
+  setTimeout(()=>{
+    const rb=document.getElementById('refreshBar');
+    if(rb)rb.className='refresh-bar';
+    if(fill)fill.className='fill';
+  },500);
 }
 
 // ========== 数据获取 ==========
@@ -730,8 +736,8 @@ async function loadData(){
     });
   }catch(e){
     clearTimeout(to);_loading=false;
-    if(e.name==='AbortError')showError('请求超时，请检查网络连接');
-    else showError('请求失败: '+(e.message||e.name||''));
+    var errType=typeof e, errMsg=e?.message||e?.name||String(e), errStack=(e?.stack||'').split('\n').slice(0,3).join(' | ');
+    showError('请求失败 ['+errType+']: '+errMsg+' | '+errStack);
   }finally{
     btn.disabled=false;
     btn.textContent='🔄 刷新数据';
