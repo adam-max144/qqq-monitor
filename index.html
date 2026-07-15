@@ -610,30 +610,35 @@ function render(d){
   // ---- 止盈 ----
   const profit=d.profit;
   const pModeLabel=profitModeLabel();
+  const isAnnual=loadProfitMode()==='annual';
+  // 阈值：当年模式用标准值，累计模式放大（累计收益率是多年积累，阈值理应更高）
+  const r1Thresh=isAnnual?35:80;   // 当年35%，累计80%
+  const r2aThresh=isAnnual?50:100; // 当年50%，累计100%
+  const r2bThresh=isAnnual?20:50;  // 当年20%，累计50%
   const tpEl=document.getElementById('tpBox');
   const tpLines=document.getElementById('tpLines');
   let tpHtml='';
 
-  // R1: VIX<18 + profit≥35
-  if(d.vix!=null&&d.vix<18&&profit>=35){
-    tpHtml+='<div class="tp-line"><span class="tag sell">🛑 卖出25%</span>VIX<18 + '+pModeLabel+' '+profit+'%≥35%</div>';
+  // R1: VIX<18 + 盈利达标
+  if(d.vix!=null&&d.vix<18&&profit>=r1Thresh){
+    tpHtml+='<div class="tp-line"><span class="tag sell">🛑 卖出25%</span>VIX<18 + '+pModeLabel+' '+profit+'%≥'+r1Thresh+'%</div>';
     tpHtml+='<div class="tp-line">→ 卖出总仓位25%，资金划入备用池</div>';
   }else if(d.vix!=null&&d.vix<18){
-    tpHtml+='<div class="tp-line"><span class="tag warn">👀 泡沫预警</span>VIX<18，'+pModeLabel+' '+profit+'%，达35%触发（差'+(35-profit)+'%）</div>';
+    tpHtml+='<div class="tp-line"><span class="tag warn">👀 泡沫预警</span>VIX<18，'+pModeLabel+' '+profit+'%，达'+r1Thresh+'%触发（差'+(r1Thresh-profit)+'%）</div>';
   }else{
     tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>VIX≥18，未进入泡沫区</div>';
   }
 
-  // R2: 20% / 50% 止盈（需 VIX<18 确认泡沫才触发）
+  // R2: 中高止盈（需 VIX<18 确认泡沫才触发）
   const vixLow=d.vix!=null&&d.vix<18;
-  if(vixLow&&profit>=50){
-    tpHtml+='<div class="tp-line"><span class="tag sell">💰 卖出30%</span>'+pModeLabel+' '+profit+'%≥50% + VIX<18，锁定利润</div>';
-  }else if(vixLow&&profit>=20){
-    tpHtml+='<div class="tp-line"><span class="tag sell">💵 卖出10%</span>'+pModeLabel+' '+profit+'%≥20% + VIX<18，落袋为安</div>';
+  if(vixLow&&profit>=r2aThresh){
+    tpHtml+='<div class="tp-line"><span class="tag sell">💰 卖出30%</span>'+pModeLabel+' '+profit+'%≥'+r2aThresh+'% + VIX<18，锁定利润</div>';
+  }else if(vixLow&&profit>=r2bThresh){
+    tpHtml+='<div class="tp-line"><span class="tag sell">💵 卖出10%</span>'+pModeLabel+' '+profit+'%≥'+r2bThresh+'% + VIX<18，落袋为安</div>';
   }else if(vixLow){
-    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 持有</span>'+pModeLabel+' '+profit+'%，VIX<18但未达20%止盈线（差'+(20-profit)+'%）</div>';
-  }else if(profit>=50){
-    tpHtml+='<div class="tp-line"><span class="tag warn">👀 高盈利预警</span>'+pModeLabel+' '+profit+'%≥50%，但VIX='+(d.vix!=null?d.vix.toFixed(1):'N/A')+'≥18未确认泡沫，持有观察</div>';
+    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 持有</span>'+pModeLabel+' '+profit+'%，VIX<18但未达'+r2bThresh+'%止盈线（差'+(r2bThresh-profit)+'%）</div>';
+  }else if(profit>=r2aThresh){
+    tpHtml+='<div class="tp-line"><span class="tag warn">👀 高盈利预警</span>'+pModeLabel+' '+profit+'%≥'+r2aThresh+'%，但VIX='+(d.vix!=null?d.vix.toFixed(1):'N/A')+'≥18未确认泡沫，持有观察</div>';
   }else{
     tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>'+pModeLabel+' '+profit+'%，VIX≥18未进入泡沫区</div>';
   }
