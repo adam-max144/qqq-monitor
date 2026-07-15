@@ -290,6 +290,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 </div>
 
 <script>
+// ========== 全局错误捕获 ==========
+window.onerror=function(msg,url,line){showError('JS错误 L'+line+': '+msg);};
 // ========== 存储 ==========
 const SK='qqq_base',SP='qqq_profit',SD='qqq_dca_day';
 function loadBase(){return parseInt(localStorage.getItem(SK))||675}
@@ -418,6 +420,7 @@ function getAction(tier,price,ma200,rsi,vix,dd,profit){
 
 // ========== 渲染 ==========
 function render(d){
+  try{
   const base=loadBase();
   document.getElementById('loading').style.display='none';
   document.getElementById('error').style.display='none';
@@ -634,6 +637,9 @@ function render(d){
   tpLines.innerHTML=tpHtml;
 
   startTimer(60);
+  }catch(e){
+    showError('渲染错误: '+e.message);
+  }
 }
 
 // ========== 定时器 ==========
