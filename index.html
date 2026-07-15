@@ -271,9 +271,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
     <div class="form-hint">基准金额，各档位在此基础上加仓</div>
   </div>
   <div class="form-group">
-    <label>账户累计盈利 %</label>
+    <label>账户盈利 %</label>
     <input type="number" id="profitInput" placeholder="0" step="5" inputmode="decimal">
-    <div class="form-hint">用于触发止盈信号</div>
+    <div class="form-hint" id="profitHint">用于触发止盈信号</div>
+  </div>
+  <div class="form-group">
+    <label>盈利模式</label>
+    <select id="profitModeInput" onchange="updateProfitHint()">
+      <option value="annual">当年收益率（推荐）</option>
+      <option value="cumulative">累计收益率</option>
+    </select>
+    <div class="form-hint">当年 = 今年涨幅；累计 = 全部持仓总收益</div>
   </div>
   <div class="form-group">
     <label>定投日（每周）</label>
@@ -293,13 +301,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 // ========== 全局错误捕获 ==========
 window.onerror=function(msg,url,line){showError('JS错误 L'+line+': '+msg);};
 // ========== 存储 ==========
-const SK='qqq_base',SP='qqq_profit',SD='qqq_dca_day';
+const SK='qqq_base',SP='qqq_profit',SD='qqq_dca_day',SM='qqq_profit_mode';
 function loadBase(){return parseInt(localStorage.getItem(SK))||675}
 function saveBase(v){localStorage.setItem(SK,v.toString())}
 function loadProfit(){return parseInt(localStorage.getItem(SP))||0}
 function saveProfit(v){localStorage.setItem(SP,v.toString())}
 function loadDcaDay(){return parseInt(localStorage.getItem(SD))||5}
 function saveDcaDay(v){localStorage.setItem(SD,v.toString())}
+function loadProfitMode(){return localStorage.getItem(SM)||'annual'}
+function saveProfitMode(v){localStorage.setItem(SM,v)}
+function profitModeLabel(){return loadProfitMode()==='annual'?'当年收益率':'累计收益率'}
+function updateProfitHint(){
+  const el=document.getElementById('profitHint');
+  if(el)el.textContent=loadProfitMode()==='annual'?'填入今年至今的收益率 %':'填入全部持仓累计总收益率 %';
+}
 
 let _loading=false;
 
@@ -594,27 +609,28 @@ function render(d){
 
   // ---- 止盈 ----
   const profit=d.profit;
+  const pModeLabel=profitModeLabel();
   const tpEl=document.getElementById('tpBox');
   const tpLines=document.getElementById('tpLines');
   let tpHtml='';
 
   // R1: VIX<18 + profit≥35
   if(d.vix!=null&&d.vix<18&&profit>=35){
-    tpHtml+='<div class="tp-line"><span class="tag sell">🛑 卖出25%</span>VIX<18 + 盈利'+profit+'%≥35%</div>';
+    tpHtml+='<div class="tp-line"><span class="tag sell">🛑 卖出25%</span>VIX<18 + '+pModeLabel+' '+profit+'%≥35%</div>';
     tpHtml+='<div class="tp-line">→ 卖出总仓位25%，资金划入备用池</div>';
   }else if(d.vix!=null&&d.vix<18){
-    tpHtml+='<div class="tp-line"><span class="tag warn">👀 泡沫预警</span>VIX<18，盈利'+profit+'%，达35%触发（差'+(35-profit)+'%）</div>';
+    tpHtml+='<div class="tp-line"><span class="tag warn">👀 泡沫预警</span>VIX<18，'+pModeLabel+' '+profit+'%，达35%触发（差'+(35-profit)+'%）</div>';
   }else{
     tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>VIX≥18，未进入泡沫区</div>';
   }
 
   // R2: 20% / 50% 止盈
   if(profit>=50){
-    tpHtml+='<div class="tp-line"><span class="tag sell">💰 卖出30%</span>盈利'+profit+'%≥50%，大幅锁定利润</div>';
+    tpHtml+='<div class="tp-line"><span class="tag sell">💰 卖出30%</span>'+pModeLabel+' '+profit+'%≥50%，大幅锁定利润</div>';
   }else if(profit>=20){
-    tpHtml+='<div class="tp-line"><span class="tag sell">💵 卖出10%</span>盈利'+profit+'%≥20%，落袋为安</div>';
+    tpHtml+='<div class="tp-line"><span class="tag sell">💵 卖出10%</span>'+pModeLabel+' '+profit+'%≥20%，落袋为安</div>';
   }else{
-    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 持有</span>盈利'+profit+'%，未达20%止盈线</div>';
+    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 持有</span>'+pModeLabel+' '+profit+'%，未达20%止盈线</div>';
   }
 
   // R3: 保护性减仓
@@ -739,7 +755,9 @@ function showError(m){
 function showSettings(){
   document.getElementById('baseInput').value=loadBase();
   document.getElementById('profitInput').value=loadProfit();
+  document.getElementById('profitModeInput').value=loadProfitMode();
   document.getElementById('dcaDayInput').value=loadDcaDay();
+  updateProfitHint();
   document.getElementById('overlay').classList.add('show');
   document.getElementById('sheet').classList.add('show');
 }
@@ -750,8 +768,9 @@ function hideSettings(){
 function saveSettings(){
   const v=parseInt(document.getElementById('baseInput').value)||675;
   const p=parseInt(document.getElementById('profitInput').value)||0;
+  const m=document.getElementById('profitModeInput').value;
   const d=parseInt(document.getElementById('dcaDayInput').value)||5;
-  saveBase(v);saveProfit(p);saveDcaDay(d);
+  saveBase(v);saveProfit(p);saveProfitMode(m);saveDcaDay(d);
   hideSettings();loadData();
 }
 
