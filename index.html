@@ -64,6 +64,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 .detail-line .tag.red{background:#3d0000;color:#f85149}
 .detail-line .tag.gray{background:#1c2128;color:#8b949e}
 
+/* 止盈区 */
+.tp-box{margin:8px 0;padding:12px;border-radius:10px;background:#161b22;border:1px solid #21262d;display:none}
+.tp-box .tp-title{font-size:11px;color:#8b949e;margin-bottom:6px}
+.tp-line{font-size:12px;padding:3px 0;color:#c9d1d9}
+.tp-line .tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;margin-right:4px}
+.tp-line .tag.sell{background:#3d0000;color:#f85149}
+.tp-line .tag.hold{background:#002d1a;color:#3fb950}
+.tp-line .tag.warn{background:#3d3200;color:#d29922}
+
 /* 底部 */
 .footer{text-align:center;font-size:10px;color:#484f58;padding:8px 0;flex-shrink:0}
 
@@ -176,6 +185,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
         <div id="detailLines"></div>
       </div>
 
+      <!-- 止盈/减仓 -->
+      <div class="tp-box" id="tpBox">
+        <div class="tp-title">止盈 / 减仓信号</div>
+        <div id="tpLines"></div>
+      </div>
+
       <div class="footer">
         VIX+回撤四档加仓 · 平静区不加码<br>
         每周末投前刷新一次 · 仅供参考
@@ -195,14 +210,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
     <input type="number" id="baseInput" placeholder="675" min="100" step="50">
     <div class="form-hint">用于计算各档位加仓额度</div>
   </div>
+  <div class="form-group">
+    <label>账户累计盈利 %</label>
+    <input type="number" id="profitInput" placeholder="0" step="5">
+    <div class="form-hint">你的QQQ持仓总盈利百分比，用于触发止盈信号</div>
+  </div>
   <button class="btn-primary" onclick="saveSettings()">保存</button>
 </div>
 
 <script>
 // ========== 存储 ==========
-const SK = 'qqq_base';
+const SK='qqq_base';const SP='qqq_profit';
 function loadBase(){return parseInt(localStorage.getItem(SK))||675}
 function saveBase(v){localStorage.setItem(SK,v.toString())}
+function loadProfit(){return parseInt(localStorage.getItem(SP))||0}
+function saveProfit(v){localStorage.setItem(SP,v.toString())}
 
 // ========== 四档加仓标准 ==========
 function getTier(vix, dd) {
@@ -311,6 +333,41 @@ function render(d) {
   }
   dl.innerHTML=html;
 
+  // ===== 止盈/减仓逻辑 =====
+  const profit=loadProfit();
+  const tpEl=document.getElementById('tpBox');
+  const tpLines=document.getElementById('tpLines');
+  let tpHtml='';
+  let tpShow=false;
+
+  // 规则1：高位减仓（VIX低位泡沫区）
+  if(d.vix!=null&&d.vix<18&&profit>=35){
+    tpShow=true;
+    tpHtml+='<div class="tp-line"><span class="tag sell">卖出</span>高位减仓信号</div>';
+    tpHtml+='<div class="tp-line">VIX='+d.vix.toFixed(1)+'<18 + 盈利'+profit+'%≥35%</div>';
+    tpHtml+='<div class="tp-line">操作：卖出总仓位25%，资金划入备用池，等下跌买回</div>';
+  }else if(d.vix!=null&&d.vix<18){
+    tpShow=true;
+    tpHtml+='<div class="tp-line"><span class="tag warn">监控</span>VIX='+d.vix.toFixed(1)+'<18，泡沫区预警</div>';
+    tpHtml+='<div class="tp-line">当前盈利'+profit+'%，达35%触发减仓</div>';
+  }
+
+  // 规则2：大幅回撤保护性减仓
+  if(d.vix!=null&&d.vix>35&&d.drawdown>=40){
+    tpShow=true;
+    tpHtml+='<div class="tp-line"><span class="tag sell">减仓</span>极端趋势走熊保护</div>';
+    tpHtml+='<div class="tp-line">VIX>35 + 回撤≥40%</div>';
+    tpHtml+='<div class="tp-line">操作：减仓10%保留底仓，剩余留到更深位置加仓</div>';
+    tpHtml+='<div class="tp-line" style="color:#484f58;font-size:10px">⚠️ 需确认连续下跌≥8周再执行</div>';
+  }
+
+  if(tpShow){
+    tpEl.style.display='block';
+    tpLines.innerHTML=tpHtml;
+  }else{
+    tpEl.style.display='none';
+  }
+
   startTimer(60);
 }
 
@@ -374,9 +431,9 @@ async function loadData(){
 function showError(m){document.getElementById('loading').style.display='none';document.getElementById('error').style.display='flex';document.getElementById('errorMsg').textContent=m}
 
 // ========== 设置 ==========
-function showSettings(){document.getElementById('baseInput').value=loadBase();document.getElementById('overlay').classList.add('show');document.getElementById('sheet').classList.add('show')}
+function showSettings(){document.getElementById('baseInput').value=loadBase();document.getElementById('profitInput').value=loadProfit();document.getElementById('overlay').classList.add('show');document.getElementById('sheet').classList.add('show')}
 function hideSettings(){document.getElementById('overlay').classList.remove('show');document.getElementById('sheet').classList.remove('show')}
-function saveSettings(){const v=parseInt(document.getElementById('baseInput').value)||675;saveBase(v);hideSettings();loadData()}
+function saveSettings(){const v=parseInt(document.getElementById('baseInput').value)||675;const p=parseInt(document.getElementById('profitInput').value)||0;saveBase(v);saveProfit(p);hideSettings();loadData()}
 
 loadData();
 </script>
