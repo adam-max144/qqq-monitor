@@ -190,7 +190,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
           <div class="sub" id="ddDesc">--</div>
         </div>
         <div class="data-block">
-          <div class="lbl">VIX</div>
+          <div class="lbl">VIX<span id="vixStaleDot"></span></div>
           <div class="val" id="vix">--</div>
           <div class="sub" id="vixDesc">--</div>
         </div>
@@ -451,9 +451,28 @@ function parseVIX(t){
   const m=t.match(/v_usVIX="(.*?)"/);if(!m)return null;
   const f=m[1].split('~');if(f.length<4)return null;
   const v=parseFloat(f[3]);if(isNaN(v)||v<=0)return null;
-  const ts=f[30]||'';let stale=false;
-  if(ts){try{stale=(Date.now()-new Date(ts.replace(/-/g,'/')).getTime())>86400000}catch(e){stale=true}}
-  return{vix:v,stale,time:ts};
+  const ts=f[30]||'';
+  // 判断美东时间，识别盘中/盘后
+  const now=new Date();
+  const utcH=now.getUTCHours(),utcM=now.getUTCMinutes();
+  const mon=now.getUTCMonth()+1,dom=now.getUTCDate();
+  const isEDT=(mon>3&&mon<11)||(mon===3&&dom>=8)||(mon===11&&dom<=1);
+  const etH=utcH-(isEDT?4:5),etM=utcM;
+  const dow=now.getDay();
+  const isWk=dow===0||dow===6;
+  const isOpen=!isWk&&(etH>9||(etH===9&&etM>=30))&&etH<16;
+  let stale=false,period='';
+  if(isOpen){
+    period='盘中';
+    if(ts){try{stale=(Date.now()-new Date(ts.replace(/-/g,'/')).getTime())>900000}catch(e){stale=true}}
+    else stale=true;
+  }else{
+    period='盘后';
+    if(ts){
+      try{const d=ts.split(' ')[0];const t=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0');stale=d!==t;}catch(e){stale=true}
+    }else stale=true;
+  }
+  return{vix:v,stale,time:ts,period};
 }
 
 // ========== 定投日计算 ==========
@@ -572,8 +591,18 @@ function render(d){
 
   // VIX
   document.getElementById('vix').textContent=d.vix!=null?d.vix.toFixed(1):'N/A';
-  document.getElementById('vixDesc').textContent=d.vix_desc;
-  document.getElementById('vixBanner').style.display=(d.vix_stale&&d.vix!=null)?'block':'none';
+  const vixDescEl=document.getElementById('vixDesc');
+  let vixLabel=d.vix_desc;
+  if(d.vix_period)vixLabel+=' · '+d.vix_period;
+  if(d.vix_stale&&d.vix!=null)vixLabel+=' ⚠️';
+  vixDescEl.textContent=vixLabel;
+  document.getElementById('vixStaleDot').className=(d.vix_stale&&d.vix!=null)?'stale-dot':'';
+  const vixBanner=document.getElementById('vixBanner');
+  if(d.vix_stale&&d.vix!=null){
+    const isOpen=d.vix_period==='盘中';
+    vixBanner.textContent=isOpen?'⚠️ VIX 数据超过15分钟未更新，API可能延迟':'⚠️ 非交易时段 VIX 为上一收盘数据';
+    vixBanner.style.display='block';
+  }else{vixBanner.style.display='none';}
 
   // 52周位
   const rpEl=document.getElementById('rangePos');
@@ -868,7 +897,7 @@ async function loadData(){
     render({
       price:qqq.price,prevClose:qqq.prevClose,
       drawdown:Math.round(dd*10)/10,time:qqq.time,
-      vix:v,vix_desc:vixDesc,vix_stale:vixD?vixD.stale:false,
+      vix:v,vix_desc:vixDesc,vix_stale:vixD?vixD.stale:false,vix_period:vixD?vixD.period:'',
       dd_desc:ddDesc,
       tierObj,trend,profit
     });
