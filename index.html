@@ -758,7 +758,9 @@ function render(d){
   // ---- 判断详情 ----
   const dl=document.getElementById('detailLines');
   let html='';
-  html+='<div class="detail-line">VXN≈'+(d.vix!=null?d.vix.toFixed(1):'N/A')+'（平滑分段估算），回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
+  const vxnTag=d.vxn_real?'VXN':(d.vxn_manual?'VXN':'VXN≈');
+  const vxnSrc=d.vxn_real?'Yahoo实时':(d.vxn_manual?'手动输入':'平滑分段估算');
+  html+='<div class="detail-line">'+vxnTag+'='+(d.vix!=null?d.vix.toFixed(1):'N/A')+'（'+vxnSrc+'），回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
 
   html+='<div class="detail-line"><span class="tag '+(d.tierObj.tier>0?'green':'gray')+'">T'+d.tierObj.tier+'</span>'+d.tierObj.msg+'</div>';
 
