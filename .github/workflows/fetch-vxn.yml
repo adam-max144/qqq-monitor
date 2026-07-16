@@ -2,7 +2,6 @@ name: Fetch VXN Data
 
 on:
   schedule:
-    # 每30分钟抓一次（覆盖全天）
     - cron: '*/30 * * * *'
   workflow_dispatch:
 
@@ -15,57 +14,39 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch VXN from FRED and update
+      - name: Fetch and save VXN
         run: |
-          python3 << 'PYEOF'
-          import json, base64, urllib.request, os
-          from datetime import datetime, timezone
+          python3 -c "
+import json, urllib.request
+from datetime import datetime, timezone
 
-          # 1. Try VXN from FRED
-          vxn, date, source = None, None, None
-          try:
-              req = urllib.request.Request(
-                  "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VXNCLS&cosd=2026-01-01",
-                  headers={"User-Agent": "Mozilla/5.0"}
-              )
-              with urllib.request.urlopen(req, timeout=30) as resp:
-                  lines = resp.read().decode().strip().split("\n")
-              last = lines[-1].split(",")
-              vxn, date = round(float(last[1]), 2), last[0]
-              source = "fred_vxncls"
-              print(f"FRED VXN: {vxn} ({date})")
-          except Exception as e:
-              print(f"VXN failed: {e}")
+def get_csv(url):
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    with urllib.request.urlopen(req, timeout=90) as r:
+        lines = r.read().decode().strip().split('\n')
+    last = lines[-1].split(',')
+    return last[0].strip(), float(last[1])
 
-          # 2. Fallback: VIX from FRED
-          if vxn is None:
-              try:
-                  req = urllib.request.Request(
-                      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS&cosd=2026-01-01",
-                      headers={"User-Agent": "Mozilla/5.0"}
-                  )
-                  with urllib.request.urlopen(req, timeout=30) as resp:
-                      lines = resp.read().decode().strip().split("\n")
-                  last = lines[-1].split(",")
-                  vix, date = float(last[1]), last[0]
-                  vxn, source = round(vix + 4.0, 1), "fred_vix_estimate"
-                  print(f"FRED VIX: {vix} → VXN≈{vxn} ({date})")
-              except Exception as e:
-                  print(f"Both FRED calls failed: {e}")
-                  raise SystemExit(1)
+try:
+    d, v = get_csv('https://fred.stlouisfed.org/graph/fredgraph.csv?id=VXNCLS&cosd=2026-01-01')
+    v = round(v, 2); s = 'fred_vxncls'
+    print(f'VXN={v} ({d})')
+except Exception as e:
+    print(f'VXN fail: {e}')
+    try:
+        d, vi = get_csv('https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS&cosd=2026-01-01')
+        v = round(vi + 4.0, 1); s = 'fred_vix_estimate'
+        print(f'VIX={vi} -> VXN={v} ({d})')
+    except Exception as e2:
+        print(f'All failed: {e2}'); raise SystemExit(1)
 
-          # 3. Write vxn.json
-          output = {
-              "vxn": vxn,
-              "date": date,
-              "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-              "source": source
-          }
-          with open("vxn.json", "w") as f:
-              json.dump(output, f, indent=2)
-          print(f"Written vxn.json: VXN={vxn}")
+o = {'vxn': v, 'date': d, 'fetched_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), 'source': s}
+with open('vxn.json', 'w') as f:
+    json.dump(o, f, indent=2)
+print('Done')
+"
 
-      - name: Commit and push if changed
+      - name: Commit and push
         run: |
           git config user.name "VXN Bot"
           git config user.email "vxn-bot@qqq-monitor"
@@ -75,5 +56,5 @@ jobs:
           else
             git commit -m "auto: update VXN data"
             git push
-            echo "Pushed VXN update"
+            echo "Pushed"
           fi
