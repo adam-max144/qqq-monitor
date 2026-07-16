@@ -448,11 +448,11 @@ function parseQQQ(t){
   return(!isNaN(p)&&!isNaN(h52))?{price:p,prevClose:pc,high52:h52,low52:l52,time:f[30]}:null;
 }
 function parseVXN(t){
-  // VXN ≈ VIX + 4.0（20年历史均值4.115，取整折中）
+  // VXN = 1.868 + 1.177×VIX（20年线性回归 R²=0.966）
   const m=t.match(/v_usVIX="(.*?)"/);if(!m)return null;
   const f=m[1].split('~');if(f.length<4)return null;
   const v=parseFloat(f[3]);if(isNaN(v)||v<=0)return null;
-  const vxn=v+4.0;
+  const vxn=1.868+1.177*v;
   const ts=f[30]||'';
   // 判断美东时间，识别盘中/盘后
   const now=new Date();
@@ -476,7 +476,7 @@ function parseVXN(t){
   }
   return{vix:vxn,stale,time:ts,period};
 }
-// VXN≈VIX+4.0（20年均值4.115取整，手机端估算）
+// VXN=1.868+1.177×VIX（20年回归R²=0.966，手机端估算）
 
 // ========== 定投日计算 ==========
 function daysUntilNextDCA(dcaDay){
@@ -744,7 +744,7 @@ function render(d){
   // ---- 判断详情 ----
   const dl=document.getElementById('detailLines');
   let html='';
-  html+='<div class="detail-line">VXN≈'+(d.vix!=null?d.vix.toFixed(1):'N/A')+'（VIX+4.0估算），回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
+  html+='<div class="detail-line">VXN≈'+(d.vix!=null?d.vix.toFixed(1):'N/A')+'（1.868+1.177×VIX），回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
 
   html+='<div class="detail-line"><span class="tag '+(d.tierObj.tier>0?'green':'gray')+'">T'+d.tierObj.tier+'</span>'+d.tierObj.msg+'</div>';
 
@@ -877,7 +877,7 @@ async function loadData(){
     const qqq=parseQQQ(qt);
     if(!qqq){showError('QQQ数据解析失败');return;}
 
-    // VXN(手机端VIX+4.0估算)
+    // VXN(手机端线性回归估算)
     let vxnReal=null,vxnFromJson=false,vxnTs=null;
     // 尝试读 vxn.json（PC脚本更新时可用，手机端无视）
     try{
