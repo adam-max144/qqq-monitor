@@ -11,49 +11,50 @@ permissions:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch VXN
+      - name: Fetch VXN from Yahoo Finance
         run: |
-          echo "=== Attempt 1: FRED VXN ==="
-          CSV=$(curl -s --max-time 180 -4 "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VXNCLS&cosd=2026-01-01")
-          if [ -n "$CSV" ]; then
-            LAST=$(echo "$CSV" | tail -1)
-            DATE=$(echo "$LAST" | cut -d, -f1)
-            VAL=$(echo "$LAST" | cut -d, -f2)
-            VXN=$(python3 -c "print(round(float($VAL),2))")
-            SRC="fred_vxncls"
-            echo "VXN=$VXN ($DATE)"
-          else
-            echo "=== Attempt 2: FRED VIX ==="
-            CSV=$(curl -s --max-time 180 -4 "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS&cosd=2026-01-01")
-            if [ -n "$CSV" ]; then
-              LAST=$(echo "$CSV" | tail -1)
-              DATE=$(echo "$LAST" | cut -d, -f1)
-              VIX=$(echo "$LAST" | cut -d, -f2)
-              VXN=$(python3 -c "print(round(float($VIX)+4.0,1))")
-              SRC="fred_vix_estimate"
-              echo "VIX=$VIX -> VXN=$VXN ($DATE)"
-            else
-              echo "=== Attempt 3: backup source ==="
-              echo "FRED unavailable, will skip this run"
-              exit 0
-            fi
-          fi
-
-          echo "=== Writing vxn.json ==="
-          python3 -c "
-import json
+          pip install yfinance -q
+          python3 << 'EOF'
+import yfinance as yf, json, os
 from datetime import datetime, timezone
-o = {'vxn': $VXN, 'date': '$DATE', 'fetched_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), 'source': '$SRC'}
-with open('vxn.json', 'w') as f: json.dump(o, f, indent=2)
-print('VXN=$VXN')
-"
+
+# Try VXN first
+try:
+    tk = yf.Ticker("^VXN")
+    hist = tk.history(period="2d")
+    if len(hist) > 0:
+        price = round(float(hist["Close"].iloc[-1]), 2)
+        date = hist.index[-1].strftime("%Y-%m-%d")
+        src = "yahoo_^VXN"
+        print(f"VXN={price} ({date})")
+    else:
+        raise Exception("No data")
+except Exception as e:
+    print(f"VXN failed: {e}")
+    # Fallback: VIX
+    try:
+        tk = yf.Ticker("^VIX")
+        hist = tk.history(period="2d")
+        price = round(float(hist["Close"].iloc[-1]) + 4.0, 1)
+        date = hist.index[-1].strftime("%Y-%m-%d")
+        src = "yahoo_^VIX+estimate"
+        print(f"VIX fallback -> VXN={price} ({date})")
+    except Exception as e2:
+        print(f"Both failed: {e2}")
+        exit(0)
+
+data = {"vxn": price, "date": date,
+        "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "source": src}
+with open("vxn.json", "w") as f:
+    json.dump(data, f, indent=2)
+print(f"Written: VXN={price}")
+EOF
 
       - name: Commit and push
-        if: success()
         run: |
           git config user.name "VXN Bot"
           git config user.email "vxn-bot@qqq-monitor"
