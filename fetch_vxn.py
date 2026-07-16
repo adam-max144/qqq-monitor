@@ -27,8 +27,15 @@ FETCH_TIMEOUT = 15  # 秒
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 # 腾讯 API（国内可访问，作为回退）
 TENCENT_VIX_URL = "https://qt.gtimg.cn/q=usVIX"
-# VXN = 1.868 + 1.177 × VIX（20年线性回归 R²=0.966）
-VIX_TO_VXN_OFFSET = None  # no longer used, using regression model
+# 平滑分段: 低波+2.8/正常+4.5/高波+6.3，过渡区线性插值
+def estimate_vxn(vix):
+    if vix < 13: offset = 2.8
+    elif vix < 17: offset = 2.8 + (vix - 13) / 4 * (4.5 - 2.8)
+    elif vix < 23: offset = 4.5
+    elif vix < 27: offset = 4.5 + (vix - 23) / 4 * (6.3 - 4.5)
+    else: offset = 6.3
+    return round(vix + offset, 1)
+
 
 
 def log(msg):
@@ -127,8 +134,8 @@ def fetch_vix_tencent():
             html = bytes_to_str(raw)
             vix, ts = parse_tencent_vix(html)
             if vix is not None:
-                vxn = round(1.868 + 1.177 * vix, 1)
-                log(f"腾讯 VIX={vix} → VXN≈{vxn}（回归 1.868+1.177×VIX）")
+                vxn = estimate_vxn(vix)
+                log(f"腾讯 VIX={vix} → VXN≈{vxn}（平滑分段）")
                 return vxn, ts
             else:
                 log("腾讯 VIX 解析失败")
