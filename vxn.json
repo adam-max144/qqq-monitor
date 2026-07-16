@@ -1,1 +1,6 @@
-{"vxn": 26.28, "date": "2026-07-14", "fetched_at": "2026-07-16T08:20:37Z", "source": "fred_vxncls"}
+{
+  "vxn": 25.65,
+  "date": "2026-07-15",
+  "fetched_at": "2026-07-16T08:40:04Z",
+  "source": "yahoo_^VXN"
+}
