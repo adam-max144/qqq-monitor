@@ -483,7 +483,7 @@ function parseVXN(t){
   }
   return{vix:vxn,stale,time:ts,period};
 }
-// VXN = 平滑分段估算（低波+2.8/正常+4.5/高波+6.3）
+// VXN = 分段线性回归（当前为平滑过渡近似，待Wind数据精算）
 
 // ========== 定投日计算 ==========
 function daysUntilNextDCA(dcaDay){
