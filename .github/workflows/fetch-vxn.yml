@@ -14,39 +14,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch and save VXN
+      - name: Fetch VXN from FRED via curl
         run: |
+          # Try VXN first
+          CSV=$(curl -s --max-time 90 "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VXNCLS&cosd=2026-01-01")
+          if [ $? -eq 0 ] && [ -n "$CSV" ]; then
+            LAST=$(echo "$CSV" | tail -1)
+            DATE=$(echo "$LAST" | cut -d, -f1)
+            VAL=$(echo "$LAST" | cut -d, -f2)
+            VXN=$(python3 -c "print(round(float($VAL),2))")
+            SRC="fred_vxncls"
+            echo "VXN=$VXN ($DATE)"
+          else
+            echo "VXN failed, trying VIX..."
+            CSV=$(curl -s --max-time 90 "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS&cosd=2026-01-01")
+            LAST=$(echo "$CSV" | tail -1)
+            DATE=$(echo "$LAST" | cut -d, -f1)
+            VIX=$(echo "$LAST" | cut -d, -f2)
+            VXN=$(python3 -c "print(round(float($VIX)+4.0,1))")
+            SRC="fred_vix_estimate"
+            echo "VIX=$VIX -> VXN=$VXN ($DATE)"
+          fi
+
+          NOW=$(python3 -c "from datetime import datetime,timezone;print(datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'))")
           python3 -c "
-import json, urllib.request
-from datetime import datetime, timezone
-
-def get_csv(url):
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(req, timeout=90) as r:
-        lines = r.read().decode().strip().split('\n')
-    last = lines[-1].split(',')
-    return last[0].strip(), float(last[1])
-
-try:
-    d, v = get_csv('https://fred.stlouisfed.org/graph/fredgraph.csv?id=VXNCLS&cosd=2026-01-01')
-    v = round(v, 2); s = 'fred_vxncls'
-    print(f'VXN={v} ({d})')
-except Exception as e:
-    print(f'VXN fail: {e}')
-    try:
-        d, vi = get_csv('https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS&cosd=2026-01-01')
-        v = round(vi + 4.0, 1); s = 'fred_vix_estimate'
-        print(f'VIX={vi} -> VXN={v} ({d})')
-    except Exception as e2:
-        print(f'All failed: {e2}'); raise SystemExit(1)
-
-o = {'vxn': v, 'date': d, 'fetched_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), 'source': s}
+import json
+o = {'vxn': $VXN, 'date': '$DATE', 'fetched_at': '$NOW', 'source': '$SRC'}
 with open('vxn.json', 'w') as f:
     json.dump(o, f, indent=2)
-print('Done')
+print('Written: VXN=$VXN')
 "
 
-      - name: Commit and push
+      - name: Commit and push if changed
         run: |
           git config user.name "VXN Bot"
           git config user.email "vxn-bot@qqq-monitor"
