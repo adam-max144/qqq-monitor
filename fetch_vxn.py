@@ -27,7 +27,7 @@ FETCH_TIMEOUT = 15  # 秒
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 # 腾讯 API（国内可访问，作为回退）
 TENCENT_VIX_URL = "https://qt.gtimg.cn/q=usVIX"
-VIX_TO_VXN_OFFSET = 3.5
+VIX_TO_VXN_OFFSET = 4.0
 
 
 def log(msg):

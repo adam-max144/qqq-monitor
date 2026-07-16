@@ -448,11 +448,11 @@ function parseQQQ(t){
   return(!isNaN(p)&&!isNaN(h52))?{price:p,prevClose:pc,high52:h52,low52:l52,time:f[30]}:null;
 }
 function parseVXN(t){
-  // VXN ≈ VIX + 3.5（腾讯API无VXN，手机端现场估算）
+  // VXN ≈ VIX + 4.0（20年历史均值4.115，取整折中）
   const m=t.match(/v_usVIX="(.*?)"/);if(!m)return null;
   const f=m[1].split('~');if(f.length<4)return null;
   const v=parseFloat(f[3]);if(isNaN(v)||v<=0)return null;
-  const vxn=v+3.5;
+  const vxn=v+4.0;
   const ts=f[30]||'';
   // 判断美东时间，识别盘中/盘后
   const now=new Date();
@@ -476,7 +476,7 @@ function parseVXN(t){
   }
   return{vix:vxn,stale,time:ts,period};
 }
-// VXN≈VIX+3.5（手机端直连腾讯API估算）
+// VXN≈VIX+4.0（20年均值4.115取整，手机端估算）
 
 // ========== 定投日计算 ==========
 function daysUntilNextDCA(dcaDay){
