@@ -448,7 +448,7 @@ function parseQQQ(t){
   return(!isNaN(p)&&!isNaN(h52))?{price:p,prevClose:pc,high52:h52,low52:l52,time:f[30]}:null;
 }
 function parseVXN(t){
-  // 腾讯API无VXN，用VIX估算：VXN ≈ VIX + 3.5（相关性>0.9）
+  // VXN ≈ VIX + 3.5（腾讯API无VXN，手机端现场估算）
   const m=t.match(/v_usVIX="(.*?)"/);if(!m)return null;
   const f=m[1].split('~');if(f.length<4)return null;
   const v=parseFloat(f[3]);if(isNaN(v)||v<=0)return null;
@@ -476,7 +476,7 @@ function parseVXN(t){
   }
   return{vix:vxn,stale,time:ts,period};
 }
-// VXN≈VIX+3.5（腾讯API无VXN，估算）
+// VXN≈VIX+3.5（手机端直连腾讯API估算）
 
 // ========== 定投日计算 ==========
 function daysUntilNextDCA(dcaDay){
@@ -877,8 +877,9 @@ async function loadData(){
     const qqq=parseQQQ(qt);
     if(!qqq){showError('QQQ数据解析失败');return;}
 
-    // VXN: 优先读 vxn.json（GitHub Actions定时抓取Yahoo真实数据）
+    // VXN(手机端VIX+3.5估算)
     let vxnReal=null,vxnFromJson=false,vxnTs=null;
+    // 尝试读 vxn.json（PC脚本更新时可用，手机端无视）
     try{
       const vxnResp=await fetch('vxn.json?t='+Date.now(),{signal:ctrl.signal});
       if(vxnResp.ok){
@@ -890,7 +891,7 @@ async function loadData(){
       }
     }catch(e){}
 
-    // VIX回退（解析+3.5估算）
+    // VIX回退（腾讯API直连，手机端实时估算）
     const vt=bytesToStr(await vr.arrayBuffer());
     const vixD=parseVXN(vt);
 
