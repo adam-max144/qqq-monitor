@@ -389,7 +389,12 @@ const TPL='qqq_tp_light',TPM='qqq_tp_mid',TPH='qqq_tp_heavy',TPHD='qqq_tp_hard';
 const COOLDOWN={light:90,mid:180,heavy:365,hard:365}; // 天
 
 function markTpDone(key){
-  localStorage.setItem(key, Date.now().toString());
+  const now=Date.now().toString();
+  // 任何一档止盈触发时，同步标记所有档位冷却期，防止同月多次止盈
+  localStorage.setItem(TPL,now);
+  localStorage.setItem(TPM,now);
+  localStorage.setItem(TPH,now);
+  localStorage.setItem(TPHD,now);
 }
 function tpCooldownMs(key,days){
   const last=parseInt(localStorage.getItem(key))||0;
