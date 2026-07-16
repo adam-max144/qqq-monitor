@@ -1,6 +1,6 @@
 {
-  "vxn": null,
-  "timestamp": null,
-  "fetched_at": null,
-  "source": "placeholder"
+  "vxn": 25.2,
+  "timestamp": "2026-02-06 09:30:00",
+  "fetched_at": "2026-07-16T03:22:10Z",
+  "source": "yahoo_finance_^VXN"
 }
