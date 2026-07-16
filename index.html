@@ -744,7 +744,7 @@ function render(d){
   // ---- 判断详情 ----
   const dl=document.getElementById('detailLines');
   let html='';
-  html+='<div class="detail-line">VXN≈'+(d.vix!=null?d.vix.toFixed(1):'N/A')+'（VIX+3.5估算），回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
+  html+='<div class="detail-line">VXN≈'+(d.vix!=null?d.vix.toFixed(1):'N/A')+'（VIX+4.0估算），回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
 
   html+='<div class="detail-line"><span class="tag '+(d.tierObj.tier>0?'green':'gray')+'">T'+d.tierObj.tier+'</span>'+d.tierObj.msg+'</div>';
 
@@ -877,7 +877,7 @@ async function loadData(){
     const qqq=parseQQQ(qt);
     if(!qqq){showError('QQQ数据解析失败');return;}
 
-    // VXN(手机端VIX+3.5估算)
+    // VXN(手机端VIX+4.0估算)
     let vxnReal=null,vxnFromJson=false,vxnTs=null;
     // 尝试读 vxn.json（PC脚本更新时可用，手机端无视）
     try{
