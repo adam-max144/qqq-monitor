@@ -1,0 +1,79 @@
+name: Fetch VXN Data
+
+on:
+  schedule:
+    # 每30分钟抓一次（覆盖全天）
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch VXN from FRED and update
+        run: |
+          python3 << 'PYEOF'
+          import json, base64, urllib.request, os
+          from datetime import datetime, timezone
+
+          # 1. Try VXN from FRED
+          vxn, date, source = None, None, None
+          try:
+              req = urllib.request.Request(
+                  "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VXNCLS&cosd=2026-01-01",
+                  headers={"User-Agent": "Mozilla/5.0"}
+              )
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  lines = resp.read().decode().strip().split("\n")
+              last = lines[-1].split(",")
+              vxn, date = round(float(last[1]), 2), last[0]
+              source = "fred_vxncls"
+              print(f"FRED VXN: {vxn} ({date})")
+          except Exception as e:
+              print(f"VXN failed: {e}")
+
+          # 2. Fallback: VIX from FRED
+          if vxn is None:
+              try:
+                  req = urllib.request.Request(
+                      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS&cosd=2026-01-01",
+                      headers={"User-Agent": "Mozilla/5.0"}
+                  )
+                  with urllib.request.urlopen(req, timeout=30) as resp:
+                      lines = resp.read().decode().strip().split("\n")
+                  last = lines[-1].split(",")
+                  vix, date = float(last[1]), last[0]
+                  vxn, source = round(vix + 4.0, 1), "fred_vix_estimate"
+                  print(f"FRED VIX: {vix} → VXN≈{vxn} ({date})")
+              except Exception as e:
+                  print(f"Both FRED calls failed: {e}")
+                  raise SystemExit(1)
+
+          # 3. Write vxn.json
+          output = {
+              "vxn": vxn,
+              "date": date,
+              "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "source": source
+          }
+          with open("vxn.json", "w") as f:
+              json.dump(output, f, indent=2)
+          print(f"Written vxn.json: VXN={vxn}")
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "VXN Bot"
+          git config user.email "vxn-bot@qqq-monitor"
+          git add vxn.json
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "auto: update VXN data"
+            git push
+            echo "Pushed VXN update"
+          fi
