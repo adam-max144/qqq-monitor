@@ -190,7 +190,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
           <div class="sub" id="ddDesc">--</div>
         </div>
         <div class="data-block">
-          <div class="lbl">VXN≈<span id="vxnStaleDot"></span></div>
+          <div class="lbl"><span id="vxnLabel">VXN≈</span><span id="vxnStaleDot"></span></div>
           <div class="val" id="vxn">--</div>
           <div class="sub" id="vxnDesc">--</div>
         </div>
@@ -594,6 +594,7 @@ function render(d){
 
   // VXN
   document.getElementById('vxn').textContent=d.vix!=null?d.vix.toFixed(1):'N/A';
+  document.getElementById('vxnLabel').textContent=d.vxn_real?'VXN':'VXN≈';
   const vixDescEl=document.getElementById('vxnDesc');
   let vixLabel=d.vix_desc;
   if(d.vix_period)vixLabel+=' · '+d.vix_period;
@@ -876,7 +877,20 @@ async function loadData(){
     const qqq=parseQQQ(qt);
     if(!qqq){showError('QQQ数据解析失败');return;}
 
-    // VXN(通过VIX+3.5估算)
+    // VXN: 优先读 vxn.json（GitHub Actions定时抓取Yahoo真实数据）
+    let vxnReal=null,vxnFromJson=false,vxnTs=null;
+    try{
+      const vxnResp=await fetch('vxn.json?t='+Date.now(),{signal:ctrl.signal});
+      if(vxnResp.ok){
+        const j=await vxnResp.json();
+        if(j.vxn!=null&&j.fetched_at){
+          const age=Date.now()-new Date(j.fetched_at).getTime();
+          if(age<3600000){vxnReal=j.vxn;vxnFromJson=true;vxnTs=j.timestamp;}
+        }
+      }
+    }catch(e){}
+
+    // VIX回退（解析+3.5估算）
     const vt=bytesToStr(await vr.arrayBuffer());
     const vixD=parseVXN(vt);
 
@@ -884,14 +898,15 @@ async function loadData(){
     const trend=calcTrend(qqq.price, qqq.high52, qqq.low52);
 
     const dd=((qqq.high52-qqq.price)/qqq.high52)*100;
-    const v=vixD?vixD.vix:null;
+    const v=vxnReal!==null?vxnReal:(vixD?vixD.vix:null);
     const tierObj=getTier(v,dd);
     const profit=loadProfit();
 
-    let vixDesc='估算';
+    let vixDesc=vxnFromJson?'实时':'估算';
+    const descPrefix=vxnFromJson?'':'估算·';
     if(v!=null){
-      if(v<19)vixDesc='估算·自满';else if(v<24)vixDesc='估算·正常';else if(v<29)vixDesc='估算·关注';
-      else if(v<34)vixDesc='估算·恐慌';else if(v<45)vixDesc='估算·极度恐慌';else vixDesc='估算·极端恐慌';
+      if(v<19)vixDesc=descPrefix+'自满';else if(v<24)vixDesc=descPrefix+'正常';else if(v<29)vixDesc=descPrefix+'关注';
+      else if(v<34)vixDesc=descPrefix+'恐慌';else if(v<45)vixDesc=descPrefix+'极度恐慌';else vixDesc=descPrefix+'极端恐慌';
     }
     let ddDesc='正常波动';
     if(dd>=30)ddDesc='崩盘';else if(dd>=20)ddDesc='深度调整';else if(dd>=17)ddDesc='恐慌性回调';
@@ -900,9 +915,10 @@ async function loadData(){
     render({
       price:qqq.price,prevClose:qqq.prevClose,
       drawdown:Math.round(dd*10)/10,time:qqq.time,
-      vix:v,vix_desc:vixDesc,vix_stale:vixD?vixD.stale:false,vix_period:vixD?vixD.period:'',
+      vix:v,vix_desc:vixDesc,vix_stale:!vxnFromJson&&(vixD?vixD.stale:false),vix_period:vxnFromJson?'':(vixD?vixD.period:''),
       dd_desc:ddDesc,
-      tierObj,trend,profit
+      tierObj,trend,profit,
+      vxn_real:vxnFromJson
     });
   }catch(e){
     clearTimeout(to);_loading=false;
