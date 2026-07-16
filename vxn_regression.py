@@ -11,6 +11,7 @@ vxn_regression.py - 基于 Wind/iFinD 导出的 VIX+VXN 历史数据，计算分
 """
 
 import csv
+import io
 import os
 import re
 import sys
@@ -21,13 +22,83 @@ REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 INDEX_HTML = os.path.join(REPO_DIR, "index.html")
 FETCH_SCRIPT = os.path.join(REPO_DIR, "fetch_vxn.py")
 
-# === 修改这里：你的 CSV 文件路径 ===
+# FRED 数据源（无需导出，直接下载）
+FRED_VXN_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VXNCLS&cosd=2001-01-01"
+FRED_VIX_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS&cosd=1990-01-01"
+
+# === 如果不想从FRED下载，可以改为本地CSV路径 ===
 CSV_PATH = os.path.join(REPO_DIR, "vix_vxn_data.csv")
 
 
 def log(msg):
     ts = datetime.now().strftime("%H:%M:%S")
     print(f"[{ts}] {msg}")
+
+
+def fetch_from_fred():
+    """直接从 FRED 下载 VIX 和 VXN 数据"""
+    log("从 FRED 下载 VIX 数据...")
+    vix = _download_fred_csv(FRED_VIX_URL)
+    if not vix:
+        return None, None
+    log(f"   {len(vix)} 行")
+
+    log("从 FRED 下载 VXN 数据...")
+    vxn = _download_fred_csv(FRED_VXN_URL)
+    if not vxn:
+        return None, None
+    log(f"   {len(vxn)} 行")
+
+    # 按日期对齐
+    vix_dict = dict(vix)
+    vxn_dict = dict(vxn)
+    common_dates = sorted(set(vix_dict.keys()) & set(vxn_dict.keys()))
+
+    if not common_dates:
+        log("❌ VIX 和 VXN 数据日期无重叠")
+        return None, None
+
+    vix_list = [vix_dict[d] for d in common_dates]
+    vxn_list = [vxn_dict[d] for d in common_dates]
+    log(f"   对齐后 {len(vix_list)} 个交易日 ({common_dates[0]} ~ {common_dates[-1]})")
+    return vix_list, vxn_list
+
+
+def _download_fred_csv(url):
+    """下载 FRED CSV 并解析为 [(date, value), ...]"""
+    import urllib.request
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            text = resp.read().decode("utf-8")
+    except Exception as e:
+        log(f"  FRED 下载失败: {e}")
+        return None
+
+    reader = csv.reader(io.StringIO(text))
+    next(reader)  # 表头
+    data = []
+    for row in reader:
+        if len(row) >= 2 and row[1].strip():
+            try:
+                data.append((row[0].strip(), float(row[1])))
+            except ValueError:
+                continue
+    return data
+
+
+def load_data():
+    """加载数据：优先 FRED 下载，回退本地 CSV"""
+    vix_list, vxn_list = fetch_from_fred()
+    if vix_list and len(vix_list) > 500:
+        return vix_list, vxn_list
+
+    log("FRED 下载失败，尝试本地 CSV...")
+    if os.path.exists(CSV_PATH):
+        return load_csv(CSV_PATH)
+
+    log("本地 CSV 也不存在")
+    return None, None
 
 
 def load_csv(path):
@@ -293,7 +364,7 @@ def main():
         log(f"  2006-01-04,12.01,14.89")
         return 1
 
-    vix_list, vxn_list = load_csv(CSV_PATH)
+    vix_list, vxn_list = load_data()
     if vix_list is None or len(vix_list) < 100:
         log(f"❌ 数据不足 ({len(vix_list) if vix_list else 0}行)，需要至少100个交易日")
         return 1
