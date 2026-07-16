@@ -848,14 +848,15 @@ async function loadData(){
     if(!qqq){showError('QQQ数据解析失败');return;}
 
     // VXN = 从 vxn.json 读取（GitHub Actions 每30分钟抓取 FRED 数据）
-    let vxnReal=null,vxnFromJson=false;
+    let vxnReal=null,vxnFromJson=false,vxnDate='';
     try{
       const vxnResp=await fetch('vxn.json?t='+Date.now(),{signal:ctrl.signal});
       if(vxnResp.ok){
         const j=await vxnResp.json();
-        if(j.vxn!=null&&j.fetched_at){
-          const age=Date.now()-new Date(j.fetched_at).getTime();
-          if(age<3600000){vxnReal=j.vxn;vxnFromJson=true;}
+        if(j.vxn!=null){
+          vxnReal=j.vxn;
+          vxnFromJson=true;
+          vxnDate=j.date||'';
         }
       }
     }catch(e){}
@@ -869,8 +870,9 @@ async function loadData(){
     const profit=loadProfit();
 
     let vixDesc='';
-    if(vxnFromJson)vixDesc='实时';
-    else vixDesc='无';
+    if(vxnFromJson){
+      vixDesc=vxnDate?vxnDate.slice(5):'昨收';
+    }else vixDesc='无';
     if(v!=null){
       if(v<19)vixDesc+='·自满';else if(v<24)vixDesc+='·正常';else if(v<29)vixDesc+='·关注';
       else if(v<34)vixDesc+='·恐慌';else if(v<45)vixDesc+='·极度恐慌';else vixDesc+='·极端恐慌';
