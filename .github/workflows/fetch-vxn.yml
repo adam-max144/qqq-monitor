@@ -16,45 +16,86 @@ jobs:
 
       - name: Fetch VXN from Yahoo Finance
         run: |
-          pip install yfinance -q
-          python3 << 'EOF'
-import yfinance as yf, json, os
-from datetime import datetime, timezone
+          # ^VXN = %5EVXN in URL encoding
+          JSON=$(curl -s --max-time 30 \
+            "https://query1.finance.yahoo.com/v8/finance/chart/%5EVXN?interval=1d&range=5d" \
+            -H "User-Agent: Mozilla/5.0" -H "Accept: application/json")
+          
+          if [ -n "$JSON" ]; then
+            # Extract price from JSON
+            PRICE=$(echo "$JSON" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+meta=d['chart']['result'][0]['meta']
+price=meta.get('regularMarketPrice')
+if price is None:
+    quotes=d['chart']['result'][0]['indicators']['quote'][0]
+    closes=quotes.get('close',[])
+    for v in reversed(closes):
+        if v is not None:
+            price=v
+            break
+if price is None:
+    price=meta.get('chartPreviousClose')
+ts=meta.get('regularMarketTime')
+from datetime import datetime
+date=datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d') if ts else 'unknown'
+print(f'{round(price,2)},{date}')
+")
+            VXN=$(echo "$PRICE" | cut -d, -f1)
+            DATE=$(echo "$PRICE" | cut -d, -f2)
+            SRC="yahoo_^VXN"
+            echo "VXN=$VXN ($DATE)"
+          fi
 
-# Try VXN first
-try:
-    tk = yf.Ticker("^VXN")
-    hist = tk.history(period="2d")
-    if len(hist) > 0:
-        price = round(float(hist["Close"].iloc[-1]), 2)
-        date = hist.index[-1].strftime("%Y-%m-%d")
-        src = "yahoo_^VXN"
-        print(f"VXN={price} ({date})")
-    else:
-        raise Exception("No data")
-except Exception as e:
-    print(f"VXN failed: {e}")
-    # Fallback: VIX
-    try:
-        tk = yf.Ticker("^VIX")
-        hist = tk.history(period="2d")
-        price = round(float(hist["Close"].iloc[-1]) + 4.0, 1)
-        date = hist.index[-1].strftime("%Y-%m-%d")
-        src = "yahoo_^VIX+estimate"
-        print(f"VIX fallback -> VXN={price} ({date})")
-    except Exception as e2:
-        print(f"Both failed: {e2}")
-        exit(0)
+          # Fallback: VIX
+          if [ -z "$VXN" ] || [ "$VXN" = "0" ]; then
+            echo "VXN failed, trying VIX..."
+            JSON=$(curl -s --max-time 30 \
+              "https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=5d" \
+              -H "User-Agent: Mozilla/5.0" -H "Accept: application/json")
+            if [ -n "$JSON" ]; then
+              VIX=$(echo "$JSON" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+meta=d['chart']['result'][0]['meta']
+price=meta.get('regularMarketPrice')
+if price is None:
+    quotes=d['chart']['result'][0]['indicators']['quote'][0]
+    closes=quotes.get('close',[])
+    for v in reversed(closes):
+        if v is not None:
+            price=v
+            break
+if price is None:
+    price=meta.get('chartPreviousClose')
+ts=meta.get('regularMarketTime')
+from datetime import datetime
+date=datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d') if ts else 'unknown'
+print(f'{round(price,2)},{date}')
+")
+              VIX_VAL=$(echo "$VIX" | cut -d, -f1)
+              DATE=$(echo "$VIX" | cut -d, -f2)
+              VXN=$(python3 -c "print(round(float($VIX_VAL)+4.0,1))")
+              SRC="yahoo_^VIX+estimate"
+              echo "VIX=$VIX_VAL -> VXN=$VXN ($DATE)"
+            fi
+          fi
 
-data = {"vxn": price, "date": date,
-        "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "source": src}
-with open("vxn.json", "w") as f:
-    json.dump(data, f, indent=2)
-print(f"Written: VXN={price}")
-EOF
+          if [ -z "$VXN" ] || [ "$VXN" = "0" ]; then
+            echo "All sources failed, skipping"
+            exit 0
+          fi
 
-      - name: Commit and push
+          python3 -c "
+import json
+from datetime import datetime,timezone
+o={'vxn':$VXN,'date':'$DATE','fetched_at':datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),'source':'$SRC'}
+with open('vxn.json','w') as f: json.dump(o,f,indent=2)
+print('Written: VXN=$VXN')
+"
+
+      - name: Commit and push if changed
         run: |
           git config user.name "VXN Bot"
           git config user.email "vxn-bot@qqq-monitor"
