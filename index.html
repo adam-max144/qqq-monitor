@@ -288,10 +288,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
     <label>定投日（每周）</label>
     <select id="dcaDayInput">
       <option value="1">周一</option>
-      <option value="2">周二</option>
+      <option value="2" selected>周二</option>
       <option value="3">周三</option>
       <option value="4">周四</option>
-      <option value="5" selected>周五</option>
+      <option value="5">周五</option>
     </select>
     <div class="form-hint">每周哪一天执行定投操作</div>
   </div>
@@ -327,7 +327,7 @@ function loadBase(){return parseInt(localStorage.getItem(SK))||675}
 function saveBase(v){localStorage.setItem(SK,v.toString())}
 function loadProfit(){return parseInt(localStorage.getItem(SP))||0}
 function saveProfit(v){localStorage.setItem(SP,v.toString())}
-function loadDcaDay(){return parseInt(localStorage.getItem(SD))||5}
+function loadDcaDay(){return parseInt(localStorage.getItem(SD))||2}
 function saveDcaDay(v){localStorage.setItem(SD,v.toString())}
 function loadProfitMode(){return localStorage.getItem(SM)||'annual'}
 function saveProfitMode(v){localStorage.setItem(SM,v)}
