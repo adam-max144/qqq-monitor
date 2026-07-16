@@ -60,8 +60,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 .trend-cap-badge.bull{background:#002d1a;color:#3fb950}
 .trend-cap-badge.bear{background:#3d0000;color:#f85149}
 
-/* VIX过期横幅 */
-.vix-banner{background:#3d3200;color:#d29922;font-size:9px;padding:3px 8px;border-radius:6px;margin:2px 0;text-align:center;display:none}
+/* VXN过期横幅 */
+.vxn-banner{background:#3d3200;color:#d29922;font-size:9px;padding:3px 8px;border-radius:6px;margin:2px 0;text-align:center;display:none}
 
 /* 档位 */
 .tier-bar{display:flex;gap:3px;margin:4px 0}
@@ -190,9 +190,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
           <div class="sub" id="ddDesc">--</div>
         </div>
         <div class="data-block">
-          <div class="lbl">VIX<span id="vixStaleDot"></span></div>
-          <div class="val" id="vix">--</div>
-          <div class="sub" id="vixDesc">--</div>
+          <div class="lbl">VXN<span id="vxnStaleDot"></span></div>
+          <div class="val" id="vxn">--</div>
+          <div class="sub" id="vxnDesc">--</div>
         </div>
         <div class="data-block">
           <div class="lbl">52周位</div>
@@ -208,8 +208,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
         <span class="trend-cap-badge" id="trendBadge" style="display:none">上限2×</span>
       </div>
 
-      <!-- VIX 过期警告 -->
-      <div class="vix-banner" id="vixBanner">⚠️ VIX 数据非交易时段，可能已过时</div>
+      <!-- VXN 过期警告 -->
+      <div class="vxn-banner" id="vxnBanner">⚠️ VXN 数据非交易时段，可能已过时</div>
 
       <!-- 档位 -->
       <div class="tier-bar" id="tierBar">
@@ -406,18 +406,18 @@ function tpNextDate(key,days){
 // ========== 五档加仓标准 ==========
 const TIERS=[
   {tier:0,label:'平静区',mult:0,vixTh:0,ddTh:0},
-  {tier:1,label:'小幅回调',mult:0.5,vixTh:20,ddTh:8},
-  {tier:2,label:'中度回调',mult:1.0,vixTh:25,ddTh:15},
-  {tier:3,label:'恐慌性回调',mult:1.5,vixTh:30,ddTh:20},
-  {tier:4,label:'深度熊市',mult:2.0,vixTh:35,ddTh:25},
-  {tier:5,label:'史诗级崩盘',mult:2.5,vixTh:40,ddTh:30}
+  {tier:1,label:'小幅回调',mult:0.5,vixTh:24,ddTh:8},
+  {tier:2,label:'中度回调',mult:1.0,vixTh:29,ddTh:15},
+  {tier:3,label:'恐慌性回调',mult:1.5,vixTh:34,ddTh:20},
+  {tier:4,label:'深度熊市',mult:2.0,vixTh:40,ddTh:25},
+  {tier:5,label:'史诗级崩盘',mult:2.5,vixTh:45,ddTh:30}
 ];
 function getTier(vix,dd){
-  if(vix==null)return{...TIERS[0],msg:'VIX数据不可用，仅保留基础定投'};
-  if(vix<20)return{...TIERS[0],msg:'VIX<20：市场过热/泡沫区，禁止额外加仓'};
+  if(vix==null)return{...TIERS[0],msg:'VXN数据不可用，仅保留基础定投'};
+  if(vix<24)return{...TIERS[0],msg:'VXN<24：市场过热/泡沫区，禁止额外加仓'};
   for(let i=5;i>=1;i--){
     const t=TIERS[i];
-    if(vix>=t.vixTh&&dd>=t.ddTh)return{...t,msg:t.label+'触发, VIX≥'+t.vixTh+', 回撤≥'+t.ddTh+'%'};
+    if(vix>=t.vixTh&&dd>=t.ddTh)return{...t,msg:t.label+'触发, VXN≥'+t.vixTh+', 回撤≥'+t.ddTh+'%'};
   }
   return{...TIERS[0],msg:'未触发任何加仓档位'};
 }
@@ -447,8 +447,8 @@ function parseQQQ(t){
   const p=parseFloat(f[3]),pc=parseFloat(f[4]),h52=parseFloat(f[48]),l52=parseFloat(f[49]);
   return(!isNaN(p)&&!isNaN(h52))?{price:p,prevClose:pc,high52:h52,low52:l52,time:f[30]}:null;
 }
-function parseVIX(t){
-  const m=t.match(/v_usVIX="(.*?)"/);if(!m)return null;
+function parseVXN(t){
+  const m=t.match(/v_usVXN="(.*?)"/);if(!m)return null;
   const f=m[1].split('~');if(f.length<4)return null;
   const v=parseFloat(f[3]);if(isNaN(v)||v<=0)return null;
   const ts=f[30]||'';
@@ -474,6 +474,7 @@ function parseVIX(t){
   }
   return{vix:v,stale,time:ts,period};
 }
+// parseVXN -> internal var kept as 'vix' for minimal diff
 
 // ========== 定投日计算 ==========
 function daysUntilNextDCA(dcaDay){
@@ -520,7 +521,7 @@ function getAction(tier,price,trend,vix,dd,profit){
   const rMidA=isAnnualA?35:80;
   const rHeavyA=isAnnualA?50:100;
   const rHardA=isAnnualA?50:100;
-  const vLow=vix!=null&&vix<18;
+  const vLow=vix!=null&&vix<21;
   // 冷却期检查辅助
   function tpState(key,days,label,icon,pct){
     const cd=isTpCooldown(key,days);
@@ -589,18 +590,18 @@ function render(d){
   document.getElementById('drawdown').textContent=d.drawdown+'%';
   document.getElementById('ddDesc').textContent=d.dd_desc;
 
-  // VIX
-  document.getElementById('vix').textContent=d.vix!=null?d.vix.toFixed(1):'N/A';
-  const vixDescEl=document.getElementById('vixDesc');
+  // VXN
+  document.getElementById('vxn').textContent=d.vix!=null?d.vix.toFixed(1):'N/A';
+  const vixDescEl=document.getElementById('vxnDesc');
   let vixLabel=d.vix_desc;
   if(d.vix_period)vixLabel+=' · '+d.vix_period;
   if(d.vix_stale&&d.vix!=null)vixLabel+=' ⚠️';
   vixDescEl.textContent=vixLabel;
-  document.getElementById('vixStaleDot').className=(d.vix_stale&&d.vix!=null)?'stale-dot':'';
-  const vixBanner=document.getElementById('vixBanner');
+  document.getElementById('vxnStaleDot').className=(d.vix_stale&&d.vix!=null)?'stale-dot':'';
+  const vixBanner=document.getElementById('vxnBanner');
   if(d.vix_stale&&d.vix!=null){
     const isOpen=d.vix_period==='盘中';
-    vixBanner.textContent=isOpen?'⚠️ VIX 数据超过15分钟未更新，API可能延迟':'⚠️ 非交易时段 VIX 为上一收盘数据';
+    vixBanner.textContent=isOpen?'⚠️ VXN 数据超过15分钟未更新，API可能延迟':'⚠️ 非交易时段 VXN 为上一收盘数据';
     vixBanner.style.display='block';
   }else{vixBanner.style.display='none';}
 
@@ -740,12 +741,12 @@ function render(d){
   // ---- 判断详情 ----
   const dl=document.getElementById('detailLines');
   let html='';
-  html+='<div class="detail-line">VIX='+(d.vix!=null?d.vix.toFixed(1):'N/A')+'，回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
+  html+='<div class="detail-line">VXN='+(d.vix!=null?d.vix.toFixed(1):'N/A')+'，回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
 
   html+='<div class="detail-line"><span class="tag '+(d.tierObj.tier>0?'green':'gray')+'">T'+d.tierObj.tier+'</span>'+d.tierObj.msg+'</div>';
 
   if(d.tierObj.tier>0){
-    html+='<div class="detail-line">条件：VIX≥'+d.tierObj.vixTh+' + 回撤≥'+d.tierObj.ddTh+'%</div>';
+    html+='<div class="detail-line">条件：VXN≥'+d.tierObj.vixTh+' + 回撤≥'+d.tierObj.ddTh+'%</div>';
     html+='<div class="detail-line">基础¥'+base.toLocaleString()+' × '+d.tierObj.mult+' = +¥'+Math.round(base*d.tierObj.mult).toLocaleString()+'</div>';
   }
 
@@ -765,24 +766,24 @@ function render(d){
   const tpEl=document.getElementById('tpBox');
   const tpLines=document.getElementById('tpLines');
   let tpHtml='';
-  const vixLow=d.vix!=null&&d.vix<18;
+  const vixLow=d.vix!=null&&d.vix<21;
 
   // 主标签：显示当前触发的是哪一档
   if(vixLow&&profit>=rHeavy){
-    tpHtml+='<div class="tp-line"><span class="tag sell">💰 重止盈 · 卖出30%</span>'+pModeLabel+' '+profit+'%≥'+rHeavy+'% + VIX<18</div>';
+    tpHtml+='<div class="tp-line"><span class="tag sell">💰 重止盈 · 卖出30%</span>'+pModeLabel+' '+profit+'%≥'+rHeavy+'% + VXN<21</div>';
     tpHtml+='<div class="tp-line">→ 泡沫区高盈利，大幅减仓锁定利润</div>';
   }else if(vixLow&&profit>=rMid){
-    tpHtml+='<div class="tp-line"><span class="tag sell">💵 中止盈 · 卖出20%</span>'+pModeLabel+' '+profit+'%≥'+rMid+'% + VIX<18</div>';
+    tpHtml+='<div class="tp-line"><span class="tag sell">💵 中止盈 · 卖出20%</span>'+pModeLabel+' '+profit+'%≥'+rMid+'% + VXN<21</div>';
     tpHtml+='<div class="tp-line">→ 泡沫区盈利可观，适度减仓</div>';
   }else if(vixLow&&profit>=rLight){
-    tpHtml+='<div class="tp-line"><span class="tag sell">💧 轻止盈 · 卖出10%</span>'+pModeLabel+' '+profit+'%≥'+rLight+'% + VIX<18</div>';
+    tpHtml+='<div class="tp-line"><span class="tag sell">💧 轻止盈 · 卖出10%</span>'+pModeLabel+' '+profit+'%≥'+rLight+'% + VXN<21</div>';
     tpHtml+='<div class="tp-line">→ 泡沫区小幅盈利，轻仓锁定</div>';
   }else if(vixLow){
-    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 持有</span>'+pModeLabel+' '+profit+'%，VIX<18但未达'+rLight+'%止盈线（差'+(rLight-profit)+'%）</div>';
+    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 持有</span>'+pModeLabel+' '+profit+'%，VXN<21但未达'+rLight+'%止盈线（差'+(rLight-profit)+'%）</div>';
   }else if(profit>=rHeavy&&d.vix!=null){
-    tpHtml+='<div class="tp-line"><span class="tag warn">👀 高盈利预警</span>'+pModeLabel+' '+profit+'%≥'+rHeavy+'%，但VIX='+d.vix.toFixed(1)+'≥18未确认泡沫，持有观察</div>';
+    tpHtml+='<div class="tp-line"><span class="tag warn">👀 高盈利预警</span>'+pModeLabel+' '+profit+'%≥'+rHeavy+'%，但VXN='+d.vix.toFixed(1)+'≥21未确认泡沫，持有观察</div>';
   }else{
-    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>'+pModeLabel+' '+profit+'%，VIX≥18未进入泡沫区</div>';
+    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>'+pModeLabel+' '+profit+'%，VXN≥21未进入泡沫区</div>';
   }
 
   // 冷却期状态（从act获取止盈信息）
@@ -794,19 +795,19 @@ function render(d){
     }
   }
 
-  // R0: 硬止盈（不看VIX，纯盈利保护兜底）
+  // R0: 硬止盈（不看VXN，纯盈利保护兜底）
   const rHard=isAnnual?50:100;
-  if(profit>=rHard && (d.vix==null||d.vix>=18) && !vixLow){
-    tpHtml+='<div class="tp-line"><span class="tag sell">🔒 硬止盈 · 卖出10%</span>'+pModeLabel+' '+profit+'%≥'+rHard+'%，VIX未确认泡沫但盈利已达标</div>';
+  if(profit>=rHard && (d.vix==null||d.vix>=21) && !vixLow){
+    tpHtml+='<div class="tp-line"><span class="tag sell">🔒 硬止盈 · 卖出10%</span>'+pModeLabel+' '+profit+'%≥'+rHard+'%，VXN未确认泡沫但盈利已达标</div>';
     tpHtml+='<div class="tp-line">→ 强制落袋10%，不等泡沫信号</div>';
   }
 
   // R3: 保护性减仓
-  if(d.vix!=null&&d.vix>35&&d.drawdown>=40){
+  if(d.vix!=null&&d.vix>40&&d.drawdown>=40){
     tpHtml+='<div class="tp-line"><span class="tag sell">🛡️ 减仓10%</span>极端趋势走熊保护</div>';
     tpHtml+='<div class="tp-line">→ 需确认连续下跌≥8周再执行</div>';
-  }else if(d.vix!=null&&d.vix>35){
-    tpHtml+='<div class="tp-line"><span class="tag warn">👀 监控</span>VIX>35但回撤'+d.drawdown+'%不足40%</div>';
+  }else if(d.vix!=null&&d.vix>40){
+    tpHtml+='<div class="tp-line"><span class="tag warn">👀 监控</span>VXN>40但回撤'+d.drawdown+'%不足40%</div>';
   }else{
     tpHtml+='<div class="tp-line"><span class="tag hold">✅ 正常</span>未触发保护性减仓</div>';
   }
@@ -863,7 +864,7 @@ async function loadData(){
   try{
     const [qr,vr]=await Promise.all([
       fetch('https://qt.gtimg.cn/q=usQQQ',{signal:ctrl.signal}),
-      fetch('https://qt.gtimg.cn/q=usVIX',{signal:ctrl.signal})
+      fetch('https://qt.gtimg.cn/q=usVXN',{signal:ctrl.signal})
     ]);
     clearTimeout(to);
     _loading=false;
@@ -873,9 +874,9 @@ async function loadData(){
     const qqq=parseQQQ(qt);
     if(!qqq){showError('QQQ数据解析失败');return;}
 
-    // VIX
+    // VXN
     const vt=bytesToStr(await vr.arrayBuffer());
-    const vixD=parseVIX(vt);
+    const vixD=parseVXN(vt);
 
     // 计算趋势（基于52周区间位置）
     const trend=calcTrend(qqq.price, qqq.high52, qqq.low52);
@@ -887,8 +888,8 @@ async function loadData(){
 
     let vixDesc='N/A';
     if(v!=null){
-      if(v<15)vixDesc='自满';else if(v<20)vixDesc='正常';else if(v<25)vixDesc='关注';
-      else if(v<30)vixDesc='恐慌';else if(v<40)vixDesc='极度恐慌';else vixDesc='极端恐慌';
+      if(v<19)vixDesc='自满';else if(v<24)vixDesc='正常';else if(v<29)vixDesc='关注';
+      else if(v<34)vixDesc='恐慌';else if(v<45)vixDesc='极度恐慌';else vixDesc='极端恐慌';
     }
     let ddDesc='正常波动';
     if(dd>=30)ddDesc='崩盘';else if(dd>=20)ddDesc='深度调整';else if(dd>=17)ddDesc='恐慌性回调';
