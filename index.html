@@ -303,11 +303,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
     </select>
     <div class="form-hint" id="dcaModeHint">固定 = 手动填入上方金额</div>
   </div>
-  <div class="form-group">
-    <label>VIX 当前值（手机手动输入）</label>
-    <input type="number" id="vixManualInput" placeholder="留空自动" step="0.1" inputmode="decimal">
-    <div class="form-hint">从财经App/网站看当前VIX填入，留空则用腾讯旧数据</div>
-  </div>
+
   <div class="form-group">
     <label>总资产（元）</label>
     <input type="number" id="totalAssetsInput" placeholder="0" step="10000" inputmode="numeric">
@@ -326,7 +322,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 window.onerror=function(msg,url,line){showError('JS错误 L'+line+': '+msg);};
 // ========== 存储 ==========
 const SK='qqq_base',SP='qqq_profit',SD='qqq_dca_day',SM='qqq_profit_mode',
-      TA='qqq_total_assets',QP='qqq_position',DM='qqq_dca_mode',VM='qqq_vix_manual';
+      TA='qqq_total_assets',QP='qqq_position',DM='qqq_dca_mode';
 function loadBase(){return parseInt(localStorage.getItem(SK))||675}
 function saveBase(v){localStorage.setItem(SK,v.toString())}
 function loadProfit(){return parseInt(localStorage.getItem(SP))||0}
@@ -341,8 +337,6 @@ function loadQqqPosition(){return parseInt(localStorage.getItem(QP))||0}
 function saveQqqPosition(v){localStorage.setItem(QP,v.toString())}
 function loadDcaMode(){return localStorage.getItem(DM)||'fixed'}
 function saveDcaMode(v){localStorage.setItem(DM,v)}
-function loadVixManual(){var v=parseFloat(localStorage.getItem(VM));return isNaN(v)||v<=0?null:v}
-function saveVixManual(v){if(v&&v>0)localStorage.setItem(VM,v.toString());else localStorage.removeItem(VM)}
 
 function profitModeLabel(){return loadProfitMode()==='annual'?'当年收益率':'累计收益率'}
 function updateProfitHint(){
@@ -454,43 +448,6 @@ function parseQQQ(t){
   const p=parseFloat(f[3]),pc=parseFloat(f[4]),h52=parseFloat(f[48]),l52=parseFloat(f[49]);
   return(!isNaN(p)&&!isNaN(h52))?{price:p,prevClose:pc,high52:h52,low52:l52,time:f[30]}:null;
 }
-function parseVXN(t){
-  // VXN = 1.868 + 1.177×VIX（20年线性回归 R²=0.966）
-  const m=t.match(/v_usVIX="(.*?)"/);if(!m)return null;
-  const f=m[1].split('~');if(f.length<4)return null;
-  const v=parseFloat(f[3]);if(isNaN(v)||v<=0)return null;
-  // 平滑分段: 不同VIX区间用不同偏移，过渡区线性插值避免跳变
-  let offset;
-  if(v<13)offset=2.8;
-  else if(v<17)offset=2.8+(v-13)/4*(4.5-2.8);
-  else if(v<23)offset=4.5;
-  else if(v<27)offset=4.5+(v-23)/4*(6.3-4.5);
-  else offset=6.3;
-  const vxn=v+offset;
-  const ts=f[30]||'';
-  // 判断美东时间，识别盘中/盘后
-  const now=new Date();
-  const utcH=now.getUTCHours(),utcM=now.getUTCMinutes();
-  const mon=now.getUTCMonth()+1,dom=now.getUTCDate();
-  const isEDT=(mon>3&&mon<11)||(mon===3&&dom>=8)||(mon===11&&dom<=1);
-  const etH=utcH-(isEDT?4:5),etM=utcM;
-  const dow=now.getDay();
-  const isWk=dow===0||dow===6;
-  const isOpen=!isWk&&(etH>9||(etH===9&&etM>=30))&&etH<16;
-  let stale=false,period='';
-  if(isOpen){
-    period='盘中';
-    if(ts){try{stale=(Date.now()-new Date(ts.replace(/-/g,'/')).getTime())>900000}catch(e){stale=true}}
-    else stale=true;
-  }else{
-    period='盘后';
-    if(ts){
-      try{const d=ts.split(' ')[0];const t=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0');stale=d!==t;}catch(e){stale=true}
-    }else stale=true;
-  }
-  return{vix:vxn,stale,time:ts,period};
-}
-// VXN = 分段线性回归（当前为平滑过渡近似，待Wind数据精算）
 
 // ========== 定投日计算 ==========
 function daysUntilNextDCA(dcaDay){
@@ -608,7 +565,7 @@ function render(d){
 
   // VXN
   document.getElementById('vxn').textContent=d.vix!=null?d.vix.toFixed(1):'N/A';
-  document.getElementById('vxnLabel').textContent=d.vxn_real||d.vxn_manual?'VXN':'VXN≈';
+  document.getElementById('vxnLabel').textContent=d.vxn_real?'VXN':'VXN≈';
   const vixDescEl=document.getElementById('vxnDesc');
   let vixLabel=d.vix_desc;
   if(d.vix_period)vixLabel+=' · '+d.vix_period;
@@ -881,10 +838,7 @@ async function loadData(){
   const to=setTimeout(()=>ctrl.abort(),15000);
 
   try{
-    const [qr,vr]=await Promise.all([
-      fetch('https://qt.gtimg.cn/q=usQQQ',{signal:ctrl.signal}),
-      fetch('https://qt.gtimg.cn/q=usVIX',{signal:ctrl.signal})
-    ]);
+    const qr=await fetch('https://qt.gtimg.cn/q=usQQQ',{signal:ctrl.signal});
     clearTimeout(to);
     _loading=false;
 
@@ -893,48 +847,33 @@ async function loadData(){
     const qqq=parseQQQ(qt);
     if(!qqq){showError('QQQ数据解析失败');return;}
 
-    // VXN = 平滑分段（低波+2.8/正常+4.5/高波+6.3）
-    let vxnReal=null,vxnFromJson=false,vxnTs=null;
-    // 尝试读 vxn.json（PC脚本更新时可用，手机端无视）
+    // VXN = 从 vxn.json 读取（GitHub Actions 每30分钟抓取 FRED 数据）
+    let vxnReal=null,vxnFromJson=false;
     try{
       const vxnResp=await fetch('vxn.json?t='+Date.now(),{signal:ctrl.signal});
       if(vxnResp.ok){
         const j=await vxnResp.json();
         if(j.vxn!=null&&j.fetched_at){
           const age=Date.now()-new Date(j.fetched_at).getTime();
-          if(age<3600000){vxnReal=j.vxn;vxnFromJson=true;vxnTs=j.timestamp;}
+          if(age<3600000){vxnReal=j.vxn;vxnFromJson=true;}
         }
       }
     }catch(e){}
-
-    // VIX回退（腾讯API直连，手机端实时估算）
-    const vt=bytesToStr(await vr.arrayBuffer());
-    const vixD=parseVXN(vt);
 
     // 计算趋势（基于52周区间位置）
     const trend=calcTrend(qqq.price, qqq.high52, qqq.low52);
 
     const dd=((qqq.high52-qqq.price)/qqq.high52)*100;
-    // 手动VIX（手机用户自己填，无需电脑）
-    const manualVix=loadVixManual();
-    let manualVxn=null;
-    if(manualVix!==null){
-      let o;const v=manualVix;
-      if(v<13)o=2.8;else if(v<17)o=2.8+(v-13)/4*(4.5-2.8);else if(v<23)o=4.5;
-      else if(v<27)o=4.5+(v-23)/4*(6.3-4.5);else o=6.3;
-      manualVxn=Math.round((v+o)*10)/10;
-    }
-    const v=manualVxn!==null?manualVxn:(vxnReal!==null?vxnReal:(vixD?vixD.vix:null));
+    const v=vxnReal;
     const tierObj=getTier(v,dd);
     const profit=loadProfit();
 
-    let vixDesc,descPrefix;
-    if(manualVxn!==null){vixDesc='手动';descPrefix='手动·';}
-    else if(vxnFromJson){vixDesc='实时';descPrefix='';}
-    else{vixDesc='估算';descPrefix='估算·';}
+    let vixDesc='';
+    if(vxnFromJson)vixDesc='实时';
+    else vixDesc='无';
     if(v!=null){
-      if(v<19)vixDesc=descPrefix+'自满';else if(v<24)vixDesc=descPrefix+'正常';else if(v<29)vixDesc=descPrefix+'关注';
-      else if(v<34)vixDesc=descPrefix+'恐慌';else if(v<45)vixDesc=descPrefix+'极度恐慌';else vixDesc=descPrefix+'极端恐慌';
+      if(v<19)vixDesc+='·自满';else if(v<24)vixDesc+='·正常';else if(v<29)vixDesc+='·关注';
+      else if(v<34)vixDesc+='·恐慌';else if(v<45)vixDesc+='·极度恐慌';else vixDesc+='·极端恐慌';
     }
     let ddDesc='正常波动';
     if(dd>=30)ddDesc='崩盘';else if(dd>=20)ddDesc='深度调整';else if(dd>=17)ddDesc='恐慌性回调';
@@ -943,10 +882,10 @@ async function loadData(){
     render({
       price:qqq.price,prevClose:qqq.prevClose,
       drawdown:Math.round(dd*10)/10,time:qqq.time,
-      vix:v,vix_desc:vixDesc,vix_stale:!vxnFromJson&&!manualVxn&&(vixD?vixD.stale:false),vix_period:vxnFromJson?'':(vixD?vixD.period:''),
+      vix:v,vix_desc:vixDesc,vix_stale:false,vix_period:'',
       dd_desc:ddDesc,
       tierObj,trend,profit,
-      vxn_real:vxnFromJson,vxn_manual:manualVxn!==null
+      vxn_real:vxnFromJson
     });
   }catch(e){
     clearTimeout(to);_loading=false;
@@ -981,7 +920,6 @@ function showSettings(){
   document.getElementById('profitInput').value=loadProfit();
   document.getElementById('profitModeInput').value=loadProfitMode();
   document.getElementById('dcaDayInput').value=loadDcaDay();
-  document.getElementById('vixManualInput').value=loadVixManual()||'';
   document.getElementById('totalAssetsInput').value=loadTotalAssets();
   document.getElementById('qqqPosInput').value=loadQqqPosition();
   document.getElementById('dcaModeInput').value=loadDcaMode();
@@ -999,11 +937,10 @@ function saveSettings(){
   const p=parseInt(document.getElementById('profitInput').value)||0;
   const m=document.getElementById('profitModeInput').value;
   const d=parseInt(document.getElementById('dcaDayInput').value)||5;
-  const vm=parseFloat(document.getElementById('vixManualInput').value)||null;
   const ta=parseInt(document.getElementById('totalAssetsInput').value)||0;
   const qp=parseInt(document.getElementById('qqqPosInput').value)||0;
   const dm=document.getElementById('dcaModeInput').value;
-  saveBase(v);saveProfit(p);saveProfitMode(m);saveDcaDay(d);saveVixManual(vm);
+  saveBase(v);saveProfit(p);saveProfitMode(m);saveDcaDay(d);
   saveTotalAssets(ta);saveQqqPosition(qp);saveDcaMode(dm);
   hideSettings();loadData();
 }
