@@ -441,11 +441,12 @@ const COOLDOWN={light:90,mid:180,heavy:365,hard:365}; // 天
 
 function markTpDone(key){
   const now=Date.now().toString();
-  // 任何一档止盈触发时，同步标记所有档位冷却期，防止同月多次止盈
+  // 分级冷却：低级止盈不锁高级止盈
+  // 轻(TPL) → 只锁自己; 中(TPM) → 锁轻+中; 重(TPH) → 锁轻+中+重; 硬(TPHD) → 锁全部
   localStorage.setItem(TPL,now);
-  localStorage.setItem(TPM,now);
-  localStorage.setItem(TPH,now);
-  localStorage.setItem(TPHD,now);
+  if(key===TPM||key===TPH||key===TPHD)localStorage.setItem(TPM,now);
+  if(key===TPH||key===TPHD)localStorage.setItem(TPH,now);
+  if(key===TPHD)localStorage.setItem(TPHD,now);
 }
 function tpCooldownMs(key,days){
   const last=parseInt(localStorage.getItem(key))||0;
@@ -470,7 +471,7 @@ function tpNextDate(key,days){
 // ========== 五档加仓标准 ==========
 const TIERS=[
   {tier:0,label:'平静区',mult:0,vixTh:0,ddTh:0},
-  {tier:1,label:'小幅回调',mult:0.5,vixTh:24,ddTh:5},
+  {tier:1,label:'小幅回调',mult:0.5,vixTh:0,ddTh:5},
   {tier:2,label:'中度回调',mult:1.0,vixTh:27,ddTh:10},
   {tier:3,label:'恐慌性回调',mult:1.5,vixTh:34,ddTh:18},
   {tier:4,label:'深度熊市',mult:2.0,vixTh:40,ddTh:23},
@@ -478,7 +479,7 @@ const TIERS=[
 ];
 function getTier(vix,dd){
   if(vix==null)return{...TIERS[0],msg:'VXN数据不可用，仅保留基础定投'};
-  if(vix<24)return{...TIERS[0],msg:'VXN<24：市场过热/泡沫区，禁止额外加仓'};
+  if(vix<24)return{...TIERS[0],msg:'VXN<24：市场低波动，禁止额外加仓'};
   for(let i=5;i>=1;i--){
     const t=TIERS[i];
     if(vix>=t.vixTh&&dd>=t.ddTh)return{...t,msg:t.label+'触发, VXN≥'+t.vixTh+', 回撤≥'+t.ddTh+'%'};
@@ -769,14 +770,15 @@ function render(d){
   // ---- 判断详情 ----
   const dl=document.getElementById('detailLines');
   let html='';
-  const vxnTag=d.vxn_real?'VXN':(d.vxn_manual?'VXN':'VXN≈');
-  const vxnSrc=d.vxn_real?'':(d.vxn_manual?'手动输入':'平滑分段估算');
-  html+='<div class="detail-line">'+vxnTag+'='+(d.vix!=null?d.vix.toFixed(1):'N/A')+(vxnSrc?'（'+vxnSrc+'）':'')+'，回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
+  const vxnTag='VXN';
+  const vxnSrc=d.vxn_real?'(FRED)':'';
+  html+='<div class="detail-line">'+vxnTag+'='+(d.vix!=null?d.vix.toFixed(1):'N/A')+(vxnSrc?' '+vxnSrc:'')+'，回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
 
   html+='<div class="detail-line"><span class="tag '+(d.tierObj.tier>0?'green':'gray')+'">T'+d.tierObj.tier+'</span>'+d.tierObj.msg+'</div>';
 
   if(d.tierObj.tier>0){
-    html+='<div class="detail-line">条件：VXN≥'+d.tierObj.vixTh+' + 回撤≥'+d.tierObj.ddTh+'%</div>';
+    const condVXN=d.tierObj.vixTh>0?'VXN≥'+d.tierObj.vixTh+' + ':'';
+    html+='<div class="detail-line">条件：'+condVXN+'回撤≥'+d.tierObj.ddTh+'%</div>';
     html+='<div class="detail-line">基础¥'+base.toLocaleString()+' × '+d.tierObj.mult+' = +¥'+Math.round(base*d.tierObj.mult).toLocaleString()+'</div>';
   }
 
