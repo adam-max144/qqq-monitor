@@ -454,8 +454,8 @@ function applyCap(extraBuy){
 let _loading=false;
 
 // ========== 止盈冷却期（避免重复执行） ==========
-const TPL='qqq_tp_light',TPM='qqq_tp_mid',TPH='qqq_tp_heavy',TPHD='qqq_tp_hard',TPR2='qqq_tp_r2';
-const COOLDOWN={light:90,mid:180,heavy:365,hard:365,r2:180};
+const TPL='qqq_tp_light',TPM='qqq_tp_mid',TPH='qqq_tp_heavy',TPHD='qqq_tp_hard',TPR2='qqq_tp_r2',TPR3='qqq_tp_r3';
+const COOLDOWN={light:90,mid:180,heavy:365,hard:365,r2:180,r3:90};
 
 function markTpDone(key){
   const now=Date.now().toString();
@@ -465,6 +465,7 @@ function markTpDone(key){
   if(key===TPH||key===TPHD)localStorage.setItem(TPH,now);
   if(key===TPHD)localStorage.setItem(TPHD,now);
   if(key===TPR2)localStorage.setItem(TPR2,now); // R2只锁自己
+  if(key===TPR3)localStorage.setItem(TPR3,now); // R3只锁自己
 }
 function tpCooldownMs(key,days){
   const last=parseInt(localStorage.getItem(key))||0;
@@ -605,6 +606,8 @@ function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
   else if(profit>=rHardA&&vLow){tpState(TPHD,COOLDOWN.hard,'硬止盈','🔒',10);}
   // R2: 回撤≥25%止损（独立于利润，不等VXN崩盘）
   else if(dd>=25){tpState(TPR2,COOLDOWN.r2,'R2止损','🛑',10);}
+  // R3: 极端崩盘保护（VXN>40 + 回撤≥40%）
+  else if(vix!=null&&vix>40&&dd>=40){tpState(TPR3,COOLDOWN.r3,'R3保护','🛡️',10);}
   else if(tier.tier>=5){actionIcon='🚀';actionText='全力加仓';actionColor='#c62828';
   }else if(tier.tier>=4){actionIcon='🔥';actionText='三倍定投';actionColor='#f85149';
   }else if(tier.tier>=3){actionIcon='⚡';actionText='双倍定投+';actionColor='#f57c00';
@@ -886,10 +889,13 @@ function render(d){
     tpHtml+='<div class="tp-line">→ 中等回撤主动减仓，降低下行风险</div>';
   }
 
-  // R3: 保护性减仓（极端行情的应急措施）
-  if(d.vix!=null&&d.vix>40&&d.drawdown>=40){
-    tpHtml+='<div class="tp-line"><span class="tag sell">🛡️ 减仓10%</span>极端趋势走熊保护（VXN>40 + 回撤≥40%）</div>';
-    tpHtml+='<div class="tp-line">→ 系统性风险触发，降低仓位保护本金</div>';
+  // R3: 保护性减仓（极端行情的应急措施，90天冷却）
+  const r3Active=act.tpInfo&&act.tpInfo.key===TPR3;
+  if(r3Active&&act.tpInfo.cooldown){
+    tpHtml+='<div class="tp-line"><span class="tag hold">✅ R3已执行</span>冷却中，下次可用 '+act.tpInfo.nextDate+'</div>';
+  }else if(d.vix!=null&&d.vix>40&&d.drawdown>=40){
+    tpHtml+='<div class="tp-line"><span class="tag sell">🛡️ R3保护 · 卖出10%</span>极端趋势走熊（VXN>40 + 回撤≥40%）</div>';
+    tpHtml+='<div class="tp-line">→ 系统性风险触发，90天内不重复</div>';
   }else if(d.vix!=null&&d.vix>40){
     tpHtml+='<div class="tp-line"><span class="tag warn">👀 监控</span>VXN>40但回撤'+d.drawdown+'%不足40%</div>';
   }else{
