@@ -363,29 +363,9 @@ function savePrevDd(v){localStorage.setItem('qqq_prev_dd',v.toString())}
 
 // ========== 仓位上限检查（QQQ不超过总资产70%，基数取峰值避免越跌越限） ==========
 
-// 仓位上限检查（QQQ不超过总资产70%，基数取峰值避免越跌越限）
+// 仓位上限检查（已简化，移除Qp依赖）
 function applyCap(extraBuy){
-  let assets=loadTotalAssets();
-  let position=loadQqqPosition();
-  const peak=loadPeakAssets();
-  // 如果用户没填持仓数据，用DCA历史自动推算
-  if(assets<=0||position<=0){
-    const est=estimatePositionFromHistory();
-    if(est){if(assets<=0)assets=est.assets;if(position<=0)position=est.position;}
-  }
-  if(assets<=0||position<=0) return {extra:extraBuy,capped:false};
-  // 用峰值资产做基数，防止越跌仓位占比被动升高而限购
-  const base=Math.max(assets, peak);
-  const curRatio=position/base;
-  // 加仓后是否超过70%
-  const newPos=position+extraBuy;
-  if(newPos/base>0.7){
-    const maxPos=Math.floor(base*0.7);
-    const maxExtra=Math.max(0, maxPos-position);
-    const newRatio=maxPos/base;
-    return {extra:maxExtra,capped:true,curRatio:Math.round(curRatio*100)+'%',newRatio:Math.round(newRatio*100)+'%',limit:'70%（峰值基数）'};
-  }
-  return {extra:extraBuy,capped:false,curRatio:Math.round(curRatio*100)+'%',newRatio:Math.round((newPos/base)*100)+'%'};
+  return {extra:extraBuy,capped:false};
 }
 
 let _loading=false;
