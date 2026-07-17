@@ -387,10 +387,21 @@ function loadDcaHistory(){return JSON.parse(localStorage.getItem('qqq_dca_histor
 function saveDcaHistory(hist){localStorage.setItem('qqq_dca_history',JSON.stringify(hist))}
 function logDcaEntry(date,price,dd,vxn,tier,base,extra,total){
   const hist=loadDcaHistory();
-  if(hist.length>0 && hist[hist.length-1].date===date)return; // 已记录今天
+  if(hist.length>0 && hist[hist.length-1].date===date)return;
   hist.push({date,price,dd,vxn,tier,base,extra,total});
   if(hist.length>500)hist.splice(0,hist.length-500);
   saveDcaHistory(hist);
+}
+
+// ========== 时间权重（持有越长止盈门槛越高） ==========
+function calcTimeWeight(){
+  const hist=loadDcaHistory();
+  if(hist.length<2)return 1.0;
+  const first=new Date(hist[0].date);
+  const now=new Date();
+  const months=(now-first.getTime())/(30*86400000);
+  // 持有0月→0.8×, 6月→1.0×, 12月→1.2×, 24月→1.5×
+  return Math.min(1.5, Math.max(0.8, 0.8+months/30));
 }
 
 function profitModeLabel(){return loadProfitMode()==='annual'?'当年收益率':'累计收益率'}
@@ -554,10 +565,11 @@ function getAction(tier,price,trend,vix,dd,profit){
 
   // 推荐操作（互斥档位，取最高档）
   const isAnnualA=loadProfitMode()==='annual';
-  const rLightA=isAnnualA?20:50;
-  const rMidA=isAnnualA?35:80;
-  const rHeavyA=isAnnualA?50:100;
-  const rHardA=isAnnualA?50:100;
+  const tw=calcTimeWeight();
+  const rLightA=Math.round((isAnnualA?20:50)*tw);
+  const rMidA=Math.round((isAnnualA?35:80)*tw);
+  const rHeavyA=Math.round((isAnnualA?50:100)*tw);
+  const rHardA=Math.round((isAnnualA?50:100)*tw);
   const vLow=vix!=null&&vix<21;
   // 冷却期检查辅助
   function tpState(key,days,label,icon,pct){
@@ -792,9 +804,10 @@ function render(d){
   const profit=d.profit;
   const pModeLabel=profitModeLabel();
   const isAnnual=loadProfitMode()==='annual';
-  const rLight=isAnnual?20:50;
-  const rMid=isAnnual?35:80;
-  const rHeavy=isAnnual?50:100;
+  const tw=calcTimeWeight();
+  const rLight=Math.round((isAnnual?20:50)*tw);
+  const rMid=Math.round((isAnnual?35:80)*tw);
+  const rHeavy=Math.round((isAnnual?50:100)*tw);
   const tpEl=document.getElementById('tpBox');
   const tpLines=document.getElementById('tpLines');
   let tpHtml='';
@@ -828,7 +841,7 @@ function render(d){
   }
 
   // R0: 硬止盈（利润极高时的兜底，不受VXN影响）
-  const rHard=isAnnual?50:100;
+  const rHard=Math.round((isAnnual?50:100)*tw);
   if(profit>=rHard && d.vix!=null && d.vix<21){
     tpHtml+='<div class="tp-line"><span class="tag sell">🔒 硬止盈 · 卖出10%</span>'+pModeLabel+' '+profit+'%≥'+rHard+'%，低波市场兜底落袋</div>';
     tpHtml+='<div class="tp-line">→ 强制落袋10%，防止牛市过度持仓</div>';
