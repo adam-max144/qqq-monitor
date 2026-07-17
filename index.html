@@ -598,10 +598,10 @@ function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
       actionIcon='✅';actionText=label+'(已执行)';actionColor='#8b949e';mult=0;
     }
   }
-  // 止盈（利润达标即触发）
+  // 止盈：年度模式多档，累计模式仅重止盈（里程碑式）
   if(profit>=rHeavyA){tpState(TPH,COOLDOWN.heavy,'重止盈','💰',30);}
-  else if(profit>=rMidA){tpState(TPM,COOLDOWN.mid,'中止盈','💵',20);}
-  else if(profit>=rLightA){tpState(TPL,COOLDOWN.light,'轻止盈','💧',10);}
+  else if(isAnnualA&&profit>=rMidA){tpState(TPM,COOLDOWN.mid,'中止盈','💵',20);}
+  else if(isAnnualA&&profit>=rLightA){tpState(TPL,COOLDOWN.light,'轻止盈','💧',10);}
   else if(profit>=rHardA&&vLow){tpState(TPHD,COOLDOWN.hard,'硬止盈','🔒',10);}
   // R2: 回撤≥25%止损（独立于利润，不等VXN崩盘）
   else if(dd>=25){tpState(TPR2,COOLDOWN.r2,'R2止损','🛑',10);}
@@ -846,21 +846,22 @@ function render(d){
   // VXN卖出量修正：高波市场卖更多，利用恐慌流动性锁定利润
   const vxnMult=(d.vix!=null&&d.vix>=21)?1.2:1.0;
 
-  // 主标签：利润达标即触发，不再依赖VXN门控（互斥档位，取最高档）
+  // 主标签：年度多档，累计仅重止盈（里程碑式）
   if(profit>=rHeavy){
     const pct=Math.round(30*vxnMult);
     tpHtml+='<div class="tp-line"><span class="tag sell">💰 重止盈 · 卖出'+pct+'%</span>'+pModeLabel+' '+profit+'%≥'+rHeavy+'%'+(vxnMult>1?'（VXN≥21，高波修正'+pct+'%）':'')+'</div>';
     tpHtml+='<div class="tp-line">→ 高盈利强制落袋，锁定利润</div>';
-  }else if(profit>=rMid){
+  }else if(isAnnual&&profit>=rMid){
     const pct=Math.round(20*vxnMult);
     tpHtml+='<div class="tp-line"><span class="tag sell">💵 中止盈 · 卖出'+pct+'%</span>'+pModeLabel+' '+profit+'%≥'+rMid+'%'+(vxnMult>1?'（VXN≥21，高波修正'+pct+'%）':'')+'</div>';
     tpHtml+='<div class="tp-line">→ 盈利可观，适度减仓</div>';
-  }else if(profit>=rLight){
+  }else if(isAnnual&&profit>=rLight){
     const pct=Math.round(10*vxnMult);
     tpHtml+='<div class="tp-line"><span class="tag sell">💧 轻止盈 · 卖出'+pct+'%</span>'+pModeLabel+' '+profit+'%≥'+rLight+'%'+(vxnMult>1?'（VXN≥21，高波修正'+pct+'%）':'')+'</div>';
     tpHtml+='<div class="tp-line">→ 小幅盈利，轻仓锁定</div>';
   }else{
-    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 持有</span>'+pModeLabel+' '+profit+'%，未达止盈线'+rLight+'%（差'+(rLight-profit)+'%）</div>';
+    const nextTp=isAnnual?rLight:rHeavy;
+    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 持有</span>'+pModeLabel+' '+profit+'%，未达止盈线'+nextTp+'%（差'+(nextTp-profit)+'%）</div>';
   }
 
   // 冷却期状态（从act获取止盈信息）
