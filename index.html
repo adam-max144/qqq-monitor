@@ -193,6 +193,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
           <div class="lbl"><span id="vxnLabel">VXN</span></div>
           <div class="val" id="vxn">--</div>
           <div class="sub" id="vxnDesc">--</div>
+          <div id="vxnFallbackWarn" style="display:none;font-size:7px;color:#d29922;margin-top:1px">⚠️ 回退估算</div>
         </div>
         <div class="data-block">
           <div class="lbl">52周位</div>
@@ -370,8 +371,17 @@ function calcTimeWeight(){
   const first=new Date(hist[0].date);
   const now=new Date();
   const months=(now-first.getTime())/(30*86400000);
-  // 持有0月→0.8×, 6月→1.0×, 12月→1.2×, 24月→1.5×
   return Math.min(1.5, Math.max(0.8, 0.8+months/30));
+}
+
+// ========== VXN回退估算（vxn.json不可用时） ==========
+function loadLastVxn(){return parseFloat(localStorage.getItem('qqq_last_vxn'))||null}
+function saveLastVxn(v){localStorage.setItem('qqq_last_vxn',v.toString())}
+function estimateVxnFromDd(dd){
+  if(dd>=28)return 45; if(dd>=23)return 40; if(dd>=18)return 34;
+  if(dd>=12)return 29; if(dd>=8)return 27; if(dd>=5)return 24;
+  return 20;
+}
 }
 
 function profitModeLabel(){return loadProfitMode()==='annual'?'当年收益率':'累计收益率'}
@@ -417,17 +427,17 @@ function applyCap(extraBuy){
 let _loading=false;
 
 // ========== 止盈冷却期（避免重复执行） ==========
-const TPL='qqq_tp_light',TPM='qqq_tp_mid',TPH='qqq_tp_heavy',TPHD='qqq_tp_hard';
-const COOLDOWN={light:90,mid:180,heavy:365,hard:365}; // 天
+const TPL='qqq_tp_light',TPM='qqq_tp_mid',TPH='qqq_tp_heavy',TPHD='qqq_tp_hard',TPR2='qqq_tp_r2';
+const COOLDOWN={light:90,mid:180,heavy:365,hard:365,r2:180};
 
 function markTpDone(key){
   const now=Date.now().toString();
-  // 分级冷却：低级止盈不锁高级止盈
-  // 轻(TPL) → 只锁自己; 中(TPM) → 锁轻+中; 重(TPH) → 锁轻+中+重; 硬(TPHD) → 锁全部
+  // 轻→只锁自己; 中→锁轻+中; 重→锁轻+中+重; 硬→全部; R2与中同级
   localStorage.setItem(TPL,now);
   if(key===TPM||key===TPH||key===TPHD)localStorage.setItem(TPM,now);
   if(key===TPH||key===TPHD)localStorage.setItem(TPH,now);
   if(key===TPHD)localStorage.setItem(TPHD,now);
+  if(key===TPR2)localStorage.setItem(TPR2,now); // R2只锁自己
 }
 function tpCooldownMs(key,days){
   const last=parseInt(localStorage.getItem(key))||0;
@@ -551,11 +561,13 @@ function getAction(tier,price,trend,vix,dd,profit){
       actionIcon='✅';actionText=label+'(已执行)';actionColor='#8b949e';mult=0;
     }
   }
-  // 止盈（利润达标即触发，不再依赖VXN门控）
+  // 止盈（利润达标即触发）
   if(profit>=rHeavyA){tpState(TPH,COOLDOWN.heavy,'重止盈','💰',30);}
   else if(profit>=rMidA){tpState(TPM,COOLDOWN.mid,'中止盈','💵',20);}
   else if(profit>=rLightA){tpState(TPL,COOLDOWN.light,'轻止盈','💧',10);}
   else if(profit>=rHardA&&vLow){tpState(TPHD,COOLDOWN.hard,'硬止盈','🔒',10);}
+  // R2: 回撤≥25%止损（独立于利润，不等VXN崩盘）
+  else if(dd>=25){tpState(TPR2,COOLDOWN.r2,'R2止损','🛑',10);}
   else if(tier.tier>=5){actionIcon='🚀';actionText='全力加仓';actionColor='#c62828';
   }else if(tier.tier>=4){actionIcon='🔥';actionText='三倍定投';actionColor='#f85149';
   }else if(tier.tier>=3){actionIcon='⚡';actionText='双倍定投+';actionColor='#f57c00';
@@ -566,7 +578,9 @@ function getAction(tier,price,trend,vix,dd,profit){
 
   if(trendCap)actionText='🔹'+actionText;
 
-  return{mult,actionText,actionIcon,actionColor,notes,isBull,trendCap,tpInfo};
+  const tpActive=mult===0&&tpInfo!=null;
+
+  return{mult,actionText,actionIcon,actionColor,notes,isBull,trendCap,tpInfo,tpActive};
 }
 
 // ========== 渲染 ==========
@@ -615,6 +629,7 @@ function render(d){
   document.getElementById('vxnLabel').textContent=d.vxn_real?'VXN':'VXN不可用';
   const vixDescEl=document.getElementById('vxnDesc');
   vixDescEl.textContent=d.vix_desc;
+  renderVxnFallback(d.vxn_fallback);
 
   // 52周位
   const rpEl=document.getElementById('rangePos');
@@ -661,9 +676,9 @@ function render(d){
   const effExtraRaw=Math.round(base*act.mult);
   const cap=applyCap(effExtraRaw);
   const effExtra=cap.extra;
-  const effTotal=base+effExtra;
-  document.getElementById('actionAmount').textContent='¥'+effTotal.toLocaleString();
-  document.getElementById('actionAmount').style.color=act.actionColor;
+  const effTotal=act.tpActive?0:(base+effExtra); // 止盈周暂停定投
+  document.getElementById('actionAmount').textContent=act.tpActive?'🛑 暂停':('¥'+effTotal.toLocaleString());
+  document.getElementById('actionAmount').style.color=act.tpActive?'#f85149':act.actionColor;
 
   // Action meta
   const metaEl=document.getElementById('actionMeta');
@@ -817,6 +832,12 @@ function render(d){
     tpHtml+='<div class="tp-line">→ 强制落袋10%，防止牛市过度持仓</div>';
   }
 
+  // R2: 回撤止损
+  if(d.drawdown>=25){
+    tpHtml+='<div class="tp-line"><span class="tag sell">🛑 R2止损 · 卖出10%</span>回撤'+d.drawdown+'%≥25%，独立保护性减仓</div>';
+    tpHtml+='<div class="tp-line">→ 中等回撤主动减仓，降低下行风险</div>';
+  }
+
   // R3: 保护性减仓（极端行情的应急措施）
   if(d.vix!=null&&d.vix>40&&d.drawdown>=40){
     tpHtml+='<div class="tp-line"><span class="tag sell">🛡️ 减仓10%</span>极端趋势走熊保护（VXN>40 + 回撤≥40%）</div>';
@@ -889,19 +910,25 @@ async function loadData(){
     const qqq=parseQQQ(qt);
     if(!qqq){showError('QQQ数据解析失败');return;}
 
-    // VXN = 从 vxn.json 读取（GitHub Actions 每30分钟抓取 FRED 数据）
-    let vxnReal=null,vxnFromJson=false,vxnDate='';
+    // VXN = 优先vxn.json，失败则回退估算
+    let vxnReal=null,vxnFromJson=false,vxnDate='',vxnFallback=false;
     try{
       const vxnResp=await fetch('vxn.json?t='+Date.now(),{signal:ctrl.signal});
       if(vxnResp.ok){
         const j=await vxnResp.json();
         if(j.vxn!=null){
-          vxnReal=j.vxn;
-          vxnFromJson=true;
-          vxnDate=j.date||'';
+          vxnReal=j.vxn; vxnFromJson=true; vxnDate=j.date||'';
+          saveLastVxn(j.vxn);
         }
       }
     }catch(e){}
+    if(!vxnFromJson){
+      const lastVxn=loadLastVxn();
+      // 回撤到位时会推算出合理VXN
+      const ddEst=((Math.max((qqq.high52-qqq.price)/qqq.high52*100,loadAlltimeHigh()>0?((loadAlltimeHigh()-qqq.price)/loadAlltimeHigh()*100):0)));
+      if(lastVxn!=null&&lastVxn>0){vxnReal=lastVxn;vxnDate='回退';vxnFallback=true;}
+      else{vxnReal=estimateVxnFromDd(ddEst);vxnDate='估算';vxnFallback=true;}
+    }
 
     // 计算趋势（基于52周区间位置）
     const trend=calcTrend(qqq.price, qqq.high52, qqq.low52);
@@ -936,9 +963,9 @@ async function loadData(){
     }
 
     let vixDesc='';
-    if(vxnFromJson){
-      vixDesc=vxnDate?vxnDate.slice(5):'昨收';
-    }else vixDesc='无';
+    if(vxnFromJson){vixDesc=vxnDate?vxnDate.slice(5):'昨收';}
+    else if(vxnFallback){vixDesc=vxnDate;}
+    else vixDesc='无';
     if(v!=null){
       if(v<19)vixDesc+='·自满';else if(v<24)vixDesc+='·正常';else if(v<29)vixDesc+='·关注';
       else if(v<34)vixDesc+='·恐慌';else if(v<45)vixDesc+='·极度恐慌';else vixDesc+='·极端恐慌';
@@ -953,7 +980,7 @@ async function loadData(){
       vix:v,vix_desc:vixDesc,
       dd_desc:ddDesc,
       tierObj,trend,profit,
-      vxn_real:vxnFromJson
+      vxn_real:vxnFromJson,vxn_fallback:vxnFallback
     });
   }catch(e){
     clearTimeout(to);_loading=false;
@@ -973,6 +1000,13 @@ function showError(m){
   hideRefreshProgress();
 }
 
+// ========== VXN回退提示 ==========
+function renderVxnFallback(fallback){
+  const el=document.getElementById('vxnFallbackWarn');
+  if(!el)return;
+  el.style.display=fallback?'block':'none';
+}
+
 // ========== 定投历史显示 ==========
 function toggleHistory(){
   const c=document.getElementById('historyContent');
@@ -980,6 +1014,11 @@ function toggleHistory(){
   const show=c.style.display!=='block';
   c.style.display=show?'block':'none';
   t.textContent=show?'▼':'▶';
+}
+function clearHistory(){
+  if(!confirm('确认清空所有定投历史？'))return;
+  localStorage.removeItem('qqq_dca_history');
+  renderHistory(400);
 }
 function renderHistory(base){
   const hist=loadDcaHistory();
@@ -989,21 +1028,37 @@ function renderHistory(base){
   box.style.display='block';
   
   // 统计
-  let totalBase=0,totalExtra=0,totalCount=hist.length;
+  let totalBase=0,totalExtra=0;
   let tiers={0:0,1:0,2:0,3:0,4:0,5:0};
+  let totalShares=0;
+  const currentPrice=parseFloat(document.getElementById('price')?.textContent)||0;
   hist.forEach(h=>{
     totalBase+=h.base||0;
     totalExtra+=h.extra||0;
     tiers[h.tier||0]=(tiers[h.tier||0]||0)+1;
+    // 估算份额: 每周投入÷当时价格
+    if(h.price>0)totalShares+=((h.base||0)+(h.extra||0))/h.price;
   });
   const tierLabels={0:'平静',1:'T1',2:'T2',3:'T3',4:'T4',5:'T5'};
   const tierStr=Object.entries(tiers).filter(([k,v])=>v>0).map(([k,v])=>tierLabels[k]+'='+v).join(' ');
+  const estValue=currentPrice>0?Math.round(totalShares*currentPrice):0;
+  const totalCost=totalBase+totalExtra;
+  const estReturn=estValue>0&&totalCost>0?Math.round((estValue-totalCost)/totalCost*100):null;
   
   let html='<div style="font-size:10px;color:#8b949e;margin-bottom:4px">';
-  html+=`共${totalCount}周 | 基础¥${totalBase.toLocaleString()} + 加仓¥${totalExtra.toLocaleString()} = ¥${(totalBase+totalExtra).toLocaleString()}`;
+  html+=`共${hist.length}周 | 基础¥${totalBase.toLocaleString()} + 加仓¥${totalExtra.toLocaleString()} = ¥${totalCost.toLocaleString()}`;
+  if(estValue>0){
+    html+=` | 📊 估值¥${estValue.toLocaleString()}`;
+    if(estReturn!=null)html+=` (${estReturn>=0?'+':''}${estReturn}%)`;
+  }
   html+=` | ${tierStr}</div>`;
   
-  // 最近20条
+  // 自动计算持仓市值 + 清除按钮
+  html+=`<div style="font-size:9px;color:#8b949e;margin-bottom:4px;display:flex;justify-content:space-between">
+    <span>${currentPrice>0?'当前价 $'+currentPrice.toFixed(2)+' → 估值¥'+estValue.toLocaleString():''}</span>
+    <span onclick="clearHistory()" style="cursor:pointer;color:#f85149">🗑️ 清空</span>
+  </div>`;
+  
   const recent=hist.slice(-20).reverse();
   html+='<table style="width:100%;font-size:9px;border-collapse:collapse">';
   html+='<tr style="color:#8b949e"><th style="text-align:left;padding:2px 4px">日期</th><th style="text-align:right;padding:2px 4px">价</th><th style="text-align:right;padding:2px 4px">DD</th><th style="text-align:right;padding:2px 4px">VXN</th><th style="text-align:center;padding:2px 4px">档</th><th style="text-align:right;padding:2px 4px">金额</th></tr>';
