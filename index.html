@@ -586,8 +586,8 @@ function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
   const tw=calcTimeWeight();
   const rLightA=Math.round((isAnnualA?20:50)*tw);
   const rMidA=Math.round((isAnnualA?35:80)*tw);
-  const rHeavyA=Math.round((isAnnualA?50:100)*tw);
-  const rHardA=Math.round((isAnnualA?50:100)*tw);
+  const rHeavyA=Math.round((isAnnualA?50:150)*tw);
+  const rHardA=Math.round((isAnnualA?50:150)*tw);
   const vLow=vix!=null&&vix<21;
   // 冷却期检查辅助
   function tpState(key,days,label,icon,pct){
@@ -600,7 +600,7 @@ function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
     }
   }
   // 止盈：年度模式多档，累计模式仅重止盈（里程碑式）
-  if(profit>=rHeavyA){tpState(TPH,COOLDOWN.heavy,'重止盈','💰',30);}
+  if(profit>=rHeavyA){tpState(TPH,COOLDOWN.heavy,'重止盈','💰',15);}
   else if(isAnnualA&&profit>=rMidA){tpState(TPM,COOLDOWN.mid,'中止盈','💵',20);}
   else if(isAnnualA&&profit>=rLightA){tpState(TPL,COOLDOWN.light,'轻止盈','💧',10);}
   else if(profit>=rHardA&&vLow){tpState(TPHD,COOLDOWN.hard,'硬止盈','🔒',10);}
@@ -842,7 +842,7 @@ function render(d){
   const tw=calcTimeWeight();
   const rLight=Math.round((isAnnual?20:50)*tw);
   const rMid=Math.round((isAnnual?35:80)*tw);
-  const rHeavy=Math.round((isAnnual?50:100)*tw);
+  const rHeavy=Math.round((isAnnual?50:150)*tw);
   const tpEl=document.getElementById('tpBox');
   const tpLines=document.getElementById('tpLines');
   let tpHtml='';
@@ -851,7 +851,7 @@ function render(d){
 
   // 主标签：年度多档，累计仅重止盈（里程碑式）
   if(profit>=rHeavy){
-    const pct=Math.round(30*vxnMult);
+    const pct=Math.round(15*vxnMult);
     tpHtml+='<div class="tp-line"><span class="tag sell">💰 重止盈 · 卖出'+pct+'%</span>'+pModeLabel+' '+profit+'%≥'+rHeavy+'%'+(vxnMult>1?'（VXN≥21，高波修正'+pct+'%）':'')+'</div>';
     tpHtml+='<div class="tp-line">→ 高盈利强制落袋，锁定利润</div>';
   }else if(isAnnual&&profit>=rMid){
@@ -877,7 +877,7 @@ function render(d){
   }
 
   // R0: 硬止盈（利润极高时的兜底，不受VXN影响）
-  const rHard=Math.round((isAnnual?50:100)*tw);
+  const rHard=Math.round((isAnnual?50:150)*tw);
   if(profit>=rHard && d.vix!=null && d.vix<21){
     tpHtml+='<div class="tp-line"><span class="tag sell">🔒 硬止盈 · 卖出10%</span>'+pModeLabel+' '+profit+'%≥'+rHard+'%，低波市场兜底落袋</div>';
     tpHtml+='<div class="tp-line">→ 强制落袋10%，防止牛市过度持仓</div>';
