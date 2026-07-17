@@ -1028,8 +1028,9 @@ async function loadData(){
     let base=calcBase();
     if(dd<3){base=Math.max(100,Math.round(base/3));}
     else if(dd<5){base=Math.max(150,Math.round(base/2));}
-    // 深度暴跌时加倍投入（T4/T5级）
-    if(dd>=23){base=Math.round(base*2);}
+    // 深度暴跌时逐级加仓：DD≥23%加50%, DD≥28%翻三倍
+    if(dd>=28){base=Math.round(base*3);}
+    else if(dd>=23){base=Math.round(base*1.5);}
     const effExtraRaw=Math.round(base*tierObj.mult);
     const cap=applyCap(effExtraRaw);
     const effExtra=cap.extra;
