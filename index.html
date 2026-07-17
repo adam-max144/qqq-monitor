@@ -513,7 +513,7 @@ function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
   // R3: 极端崩盘保护（VXN>40 + 回撤≥40%）
   else if(vix!=null&&vix>40&&dd>=40){tpState(TPR3,COOLDOWN.r3,'R3保护','🛡️',10);}
   // 高位T1/T2抑制：只投基础，不额外加仓
-  if(suppressExtra){actionIcon='☀️';actionText='正常定投(高位禁加仓)';actionColor='#d29922';
+  else if(suppressExtra){actionIcon='☀️';actionText='正常定投(高位禁加仓)';actionColor='#d29922';
   }else if(tier.tier>=5){actionIcon='🚀';actionText='全力加仓';actionColor='#c62828';
   }else if(tier.tier>=4){actionIcon='🔥';actionText='三倍定投';actionColor='#f85149';
   }else if(tier.tier>=3){actionIcon='⚡';actionText='双倍定投+';actionColor='#f57c00';
