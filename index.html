@@ -416,7 +416,7 @@ function estimatePositionFromHistory(){
     if(h.price>0)totalShares+=amount/h.price;
   });
   if(totalCost<=0)return null;
-  const currentPrice=parseFloat(document.getElementById('price')?.textContent)||0;
+  const currentPrice=parseFloat((document.getElementById('price')||{}).textContent)||0;
   const estPosition=currentPrice>0?Math.round(totalShares*currentPrice):totalCost;
   return {assets:Math.round(totalCost*1.3),position:estPosition};
 }
@@ -1036,7 +1036,7 @@ async function loadData(){
     });
   }catch(e){
     clearTimeout(to);_loading=false;
-    var errType=typeof e, errMsg=e?.message||e?.name||String(e), errStack=(e?.stack||'').split('\n').slice(0,3).join(' | ');
+    var errType=typeof e, errMsg=(e&&e.message)||(e&&e.name)||String(e), errStack=(e&&e.stack||'').split('\n').slice(0,3).join(' | ');
     showError('请求失败 ['+errType+']: '+errMsg+' | '+errStack);
   }finally{
     btn.disabled=false;
@@ -1083,7 +1083,7 @@ function renderHistory(base){
   let totalBase=0,totalExtra=0;
   let tiers={0:0,1:0,2:0,3:0,4:0,5:0};
   let totalShares=0;
-  const currentPrice=parseFloat(document.getElementById('price')?.textContent)||0;
+  const currentPrice=parseFloat((document.getElementById('price')||{}).textContent)||0;
   hist.forEach(h=>{
     totalBase+=h.base||0;
     totalExtra+=h.extra||0;
@@ -1118,7 +1118,7 @@ function renderHistory(base){
     const ddColor=h.dd>=10?'#f85149':(h.dd>=5?'#d29922':'#8b949e');
     const tierColor=['#8b949e','#58a6ff','#d29922','#f57c00','#f85149','#c62828'][h.tier]||'#8b949e';
     html+=`<tr><td style="padding:1px 4px">${h.date.slice(5)}</td>`;
-    html+=`<td style="text-align:right;padding:1px 4px">$${h.price?.toFixed(0)}</td>`;
+    html+=`<td style="text-align:right;padding:1px 4px">$${h.price?h.price.toFixed(0):'N/A'}</td>`;
     html+=`<td style="text-align:right;padding:1px 4px;color:${ddColor}">${h.dd}%</td>`;
     html+=`<td style="text-align:right;padding:1px 4px">${h.vxn!=null?h.vxn.toFixed(1):'N/A'}</td>`;
     html+=`<td style="text-align:center;padding:1px 4px;color:${tierColor};font-weight:600">${tierLabels[h.tier]||'T'+h.tier}</td>`;
