@@ -353,6 +353,8 @@ function loadPeakAssets(){return parseInt(localStorage.getItem('qqq_peak_assets'
 function savePeakAssets(v){localStorage.setItem('qqq_peak_assets',v.toString())}
 function loadCostBasis(){return parseInt(localStorage.getItem('qqq_cost_basis'))||0}
 function saveCostBasis(v){localStorage.setItem('qqq_cost_basis',v.toString())}
+function loadYearBasis(){return JSON.parse(localStorage.getItem('qqq_year_basis')||'{"year":0,"cost":0}')}
+function saveYearBasis(year,cost){localStorage.setItem('qqq_year_basis',JSON.stringify({year,cost}))}
 
 // ========== DCA历史记录 ==========
 function loadDcaHistory(){return JSON.parse(localStorage.getItem('qqq_dca_history')||'[]')}
@@ -992,12 +994,24 @@ async function loadData(){
     const fastDrop=ddSpeed>3;
     const v=vxnReal;
     const tierObj=getTier(v,dd);
-    // 自动计算收益率：先看手动输入，没有则用持仓市值/总投入算
+    // 自动计算收益率：先看手动输入，没有则自动算
     let profit=loadProfit();
     if(profit<=0){
+      const isAnnual=loadProfitMode()==='annual';
       const costBasis=loadCostBasis();
       const position=loadQqqPosition();
-      if(costBasis>0&&position>0)profit=Math.round((position-costBasis)/costBasis*100);
+      if(costBasis>0&&position>0){
+        if(isAnnual){
+          // 当年收益率：用年初成本基数算
+          const yb=loadYearBasis();
+          const thisYear=new Date().getFullYear();
+          if(yb.year!==thisYear){saveYearBasis(thisYear,costBasis);yb.year=thisYear;yb.cost=costBasis;}
+          profit=Math.round((position-(yb.cost||costBasis))/(yb.cost||costBasis)*100);
+        }else{
+          // 累计收益率：总(市值-成本)/成本
+          profit=Math.round((position-costBasis)/costBasis*100);
+        }
+      }
     }
     
     // DCA历史记录（定投日自动记录）
