@@ -491,10 +491,10 @@ function tpNextDate(key,days){
 const TIERS=[
   {tier:0,label:'平静区',mult:0,vixTh:0,ddTh:0},
   {tier:1,label:'小幅回调',mult:1.0,vixTh:0,ddTh:5},
-  {tier:2,label:'中度回调',mult:2.0,vixTh:27,ddTh:10},
-  {tier:3,label:'恐慌性回调',mult:4.0,vixTh:34,ddTh:18},
-  {tier:4,label:'深度熊市',mult:6.0,vixTh:40,ddTh:23},
-  {tier:5,label:'史诗级崩盘',mult:10.0,vixTh:45,ddTh:28}
+  {tier:2,label:'中度回调',mult:2.0,vixTh:27,ddTh:15},
+  {tier:3,label:'恐慌性回调',mult:4.0,vixTh:34,ddTh:22},
+  {tier:4,label:'深度熊市',mult:6.0,vixTh:40,ddTh:28},
+  {tier:5,label:'史诗级崩盘',mult:10.0,vixTh:45,ddTh:35}
 ];
 function getTier(vix,dd){
   if(vix==null)return{...TIERS[0],msg:'VXN数据不可用，仅保留基础定投'};
@@ -1028,9 +1028,9 @@ async function loadData(){
     let base=calcBase();
     if(dd<3){base=Math.max(100,Math.round(base/3));}
     else if(dd<5){base=Math.max(150,Math.round(base/2));}
-    // 深度暴跌时逐级加仓：DD≥23%加50%, DD≥28%翻三倍
-    if(dd>=28){base=Math.round(base*3);}
-    else if(dd>=23){base=Math.round(base*1.5);}
+    // 深度暴跌时逐级加仓：DD≥28%加50%, DD≥35%翻三倍
+    if(dd>=35){base=Math.round(base*3);}
+    else if(dd>=28){base=Math.round(base*1.5);}
     // 趋势裁剪：52周高位区(>75%)少投30%，避免追高
     if(trend&&trend.pos>75){base=Math.round(base*0.7);}
     const effExtraRaw=Math.round(base*tierObj.mult);
