@@ -463,17 +463,20 @@ function tpNextDate(key,days){
 const TIERS=[
   {tier:0,label:'平静区',mult:0,vixTh:0,ddTh:0},
   {tier:1,label:'小幅回调',mult:0.5,vixTh:0,ddTh:5},
-  {tier:2,label:'中度回调',mult:1.0,vixTh:27,ddTh:10},
-  {tier:3,label:'恐慌性回调',mult:1.5,vixTh:34,ddTh:18},
-  {tier:4,label:'深度熊市',mult:2.0,vixTh:40,ddTh:23},
-  {tier:5,label:'史诗级崩盘',mult:2.5,vixTh:45,ddTh:28}
+  {tier:2,label:'中度回调',mult:1.0,vixTh:0,ddTh:10},
+  {tier:3,label:'恐慌性回调',mult:1.5,vixTh:0,ddTh:18},
+  {tier:4,label:'深度熊市',mult:2.0,vixTh:0,ddTh:23},
+  {tier:5,label:'史诗级崩盘',mult:2.5,vixTh:0,ddTh:28}
 ];
 function getTier(vix,dd){
   if(vix==null)return{...TIERS[0],msg:'VXN数据不可用，仅保留基础定投'};
   if(vix<24)return{...TIERS[0],msg:'VXN<24：市场低波动，禁止额外加仓'};
   for(let i=5;i>=1;i--){
     const t=TIERS[i];
-    if(vix>=t.vixTh&&dd>=t.ddTh)return{...t,msg:t.label+'触发, VXN≥'+t.vixTh+', 回撤≥'+t.ddTh+'%'};
+    if(vix>=t.vixTh&&dd>=t.ddTh){
+      const vxnMsg=t.vixTh>0?', VXN≥'+t.vixTh:'';
+      return{...t,msg:t.label+'触发'+vxnMsg+', 回撤≥'+t.ddTh+'%'};
+    }
   }
   return{...TIERS[0],msg:'未触发任何加仓档位'};
 }
@@ -783,6 +786,9 @@ function render(d){
   if(d.trend){
     html+='<div class="detail-line"><span class="tag '+(d.trend.status==='bull'?'green':(d.trend.status==='bear'?'red':'yellow'))+'">'+d.trend.icon+' '+d.trend.label+'</span>价格在52周区间 '+d.trend.pos.toFixed(0)+'% 位置'+(d.trend.status==='bull'?'（上限2×）':'')+'</div>';
   }
+  // R2触发时隐藏下方档位信号
+  const r2Active=act.tpInfo&&act.tpInfo.key===TPR2;
+  if(r2Active)html+='<div class="detail-line"><span class="tag red">🛑 R2优先</span>止损信号高于加仓，T4/T5已暂停</div>';
   dl.innerHTML=html;
 
   // ---- 止盈（利润触发，VXN修正卖出量） ----
