@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>QQQ 今日加仓建议</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans-serif;
+     background:#0d1117;color:#e6edf3;min-height:100vh;padding:0 0 40px}
+.status-bar{height:44px;background:inherit}
+.container{max-width:480px;margin:0 auto;padding:0 16px}
+
+/* 头部 */
+.header{text-align:center;padding:24px 0 8px}
+.header h1{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.header .ticker{font-size:13px;color:#8b949e;margin-top:4px}
+.header .ticker span{color:#58a6ff}
+
+/* 主信号卡 */
+.signal-card{border-radius:16px;padding:28px 24px;margin:16px 0;text-align:center;
+             background:linear-gradient(135deg,#1a1f2e,#161b22);border:1px solid #30363d}
+.signal-card .signal-icon{font-size:48px;margin-bottom:8px}
+.signal-card .signal-label{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.signal-card .signal-detail{font-size:14px;color:#8b949e;margin-top:6px}
+
+/* 数据网格 */
+.data-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.data-item{border-radius:12px;padding:16px;background:#161b22;border:1px solid #21262d}
+.data-item .label{font-size:12px;color:#8b949e;margin-bottom:4px}
+.data-item .value{font-size:22px;font-weight:600}
+.data-item .sub{font-size:12px;color:#8b949e;margin-top:2px}
+
+/* 分数条 */
+.score-section{margin:20px 0}
+.score-section .section-title{font-size:14px;color:#8b949e;margin-bottom:12px}
+.score-bar{display:flex;align-items:center;margin-bottom:10px}
+.score-bar .name{width:72px;font-size:13px;color:#c9d1d9;flex-shrink:0}
+.score-bar .track{flex:1;height:8px;background:#21262d;border-radius:4px;overflow:hidden;position:relative}
+.score-bar .fill{height:100%;border-radius:4px;transition:width .6s ease}
+.score-bar .fill.green{background:#2ea043}
+.score-bar .fill.orange{background:#d29922}
+.score-bar .fill.red{background:#da3633}
+.score-bar .pts{width:28px;text-align:right;font-size:13px;font-weight:600;margin-left:8px;flex-shrink:0}
+.score-bar .pts.positive{color:#3fb950}
+.score-bar .pts.neutral{color:#8b949e}
+.score-bar .pts.negative{color:#f85149}
+
+/* 总分行 */
+.total-row{display:flex;justify-content:space-between;align-items:center;
+           padding:14px 16px;border-radius:10px;margin-top:14px;
+           background:#1c2128;border:1px solid #30363d}
+.total-row .label{font-size:14px;color:#8b949e}
+.total-row .value{font-size:24px;font-weight:700;letter-spacing:-.5px}
+
+/* 加仓金额 */
+.amount-box{text-align:center;padding:20px;margin:16px 0;
+            border-radius:12px;background:#1c2128;border:1px solid #30363d}
+.amount-box .label{font-size:13px;color:#8b949e}
+.amount-box .value{font-size:36px;font-weight:800;margin:6px 0;letter-spacing:-1px}
+.amount-box .sub{font-size:12px;color:#8b949e}
+
+/* 按钮 */
+.btn-refresh{display:block;width:100%;padding:14px;border-radius:10px;border:none;
+             font-size:16px;font-weight:600;cursor:pointer;margin:16px 0;
+             background:#238636;color:#fff;transition:opacity .2s}
+.btn-refresh:active{opacity:.7}
+.btn-refresh.loading{opacity:.5;pointer-events:none}
+
+/* 更新时间 */
+.footer-info{text-align:center;font-size:12px;color:#484f58;margin-top:20px;line-height:1.8}
+
+/* 陈旧数据标注 */
+.stale-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;
+             background:#3d3200;color:#d29922;margin-top:4px}
+
+/* 盘后提示 */
+.offhour-note{font-size:12px;color:#8b949e;text-align:center;padding:12px;
+              border-radius:8px;background:#1c2128;margin:12px 0}
+
+/* 加载状态 */
+.loading-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:#0d1117;
+                display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100}
+.loading-screen .spinner{width:36px;height:36px;border:3px solid #30363d;border-top-color:#58a6ff;
+                          border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-screen p{color:#8b949e;font-size:14px;margin-top:12px}
+</style>
+</head>
+<body>
+
+<div class="status-bar"></div>
+
+<div id="loadingScreen" class="loading-screen">
+  <div class="spinner"></div>
+  <p>正在获取实时数据...</p>
+</div>
+
+<div class="container" id="mainContent" style="display:none">
+
+  <div class="header">
+    <h1>QQQ 加仓建议</h1>
+    <div class="ticker">纳斯达克100 ETF · <span id="updateTime">--</span></div>
+  </div>
+
+  <!-- 主信号 -->
+  <div class="signal-card" id="signalCard">
+    <div class="signal-icon" id="signalIcon">📊</div>
+    <div class="signal-label" id="signalLabel">--</div>
+    <div class="signal-detail" id="signalDetail">--</div>
+  </div>
+
+  <!-- 数据网格 -->
+  <div class="data-grid">
+    <div class="data-item">
+      <div class="label">当前价</div>
+      <div class="value" id="price">--</div>
+      <div class="sub">USD</div>
+    </div>
+    <div class="data-item">
+      <div class="label">高点回撤</div>
+      <div class="value" id="drawdown">--</div>
+      <div class="sub" id="ddDesc">--</div>
+    </div>
+    <div class="data-item">
+      <div class="label">VIX 恐慌指数</div>
+      <div class="value" id="vix">--</div>
+      <div class="sub" id="vixDesc">--</div>
+    </div>
+    <div class="data-item">
+      <div class="label">52周高点</div>
+      <div class="value" id="high52">--</div>
+      <div class="sub">USD</div>
+    </div>
+  </div>
+
+  <!-- VIX陈旧提示 -->
+  <div id="vixStaleNote" class="offhour-note" style="display:none">
+    ⚠️ VIX数据为非交易时段数据，开盘后刷新更准
+  </div>
+
+  <!-- 分数 -->
+  <div class="score-section">
+    <div class="section-title">评分详情</div>
+    <div class="score-bar">
+      <div class="name">VIX</div>
+      <div class="track"><div class="fill orange" id="vixBar" style="width:0%"></div></div>
+      <div class="pts" id="vixPts">0</div>
+    </div>
+    <div class="score-bar">
+      <div class="name">回撤</div>
+      <div class="track"><div class="fill green" id="ddBar" style="width:0%"></div></div>
+      <div class="pts" id="ddPts">0</div>
+    </div>
+    <div class="total-row">
+      <div class="label">综合评分</div>
+      <div class="value" id="totalScore">0/10</div>
+    </div>
+  </div>
+
+  <!-- 建议加仓 -->
+  <div class="amount-box">
+    <div class="label">建议加仓金额</div>
+    <div class="value" id="amount">¥0</div>
+    <div class="sub">基准 ¥<span id="baseUnit">2000</span>/期</div>
+  </div>
+
+  <!-- 刷新按钮 -->
+  <button class="btn-refresh" id="refreshBtn" onclick="refresh()">🔄 刷新数据</button>
+
+  <div class="footer-info">
+    数据源：腾讯API · 国内裸网可用<br>
+    策略：VIX + 回撤双因子<br>
+    每隔30秒再刷新 · 仅供参考
+  </div>
+</div>
+
+<script>
+const COLORS = {
+  green: '#2ea043', orange: '#d29922', red: '#da3633'
+};
+
+function refresh() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('loading');
+  btn.textContent = '⏳ 获取中...';
+  
+  fetch('/refresh')
+    .then(r => r.json())
+    .then(d => {
+      if (d.error) { alert('数据获取失败: ' + d.error); return; }
+      updatePage(d);
+    })
+    .catch(e => { alert('网络错误: ' + e.message); })
+    .finally(() => {
+      btn.classList.remove('loading');
+      btn.textContent = '🔄 刷新数据';
+    });
+}
+
+function updatePage(d) {
+  // 隐藏加载
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  
+  // 信号
+  const iconMap = {
+    '🚀': '🚀', '✅': '✅', '📈': '📈', '📊': '📊', '🔍': '🔍', '⛔': '⛔'
+  };
+  document.getElementById('signalIcon').textContent = d.signal.match(/^./)?.[0] || '📊';
+  document.getElementById('signalLabel').textContent = d.signal.replace(/^[^\s]+\s*/, '');
+  document.getElementById('signalLabel').style.color = d.color;
+  document.getElementById('signalCard').style.borderColor = d.color;
+  document.getElementById('signalDetail').textContent = d.detail;
+  
+  // 数据
+  document.getElementById('price').textContent = d.price?.toFixed(2) || '--';
+  document.getElementById('drawdown').textContent = (d.drawdown != null) ? d.drawdown + '%' : '--';
+  document.getElementById('high52').textContent = d.high52?.toFixed(2) || '--';
+  document.getElementById('ddDesc').textContent = d.dd_desc || '';
+  document.getElementById('vix').textContent = (d.vix != null) ? d.vix.toFixed(1) : 'N/A';
+  document.getElementById('vixDesc').textContent = d.vix_desc || '';
+  document.getElementById('updateTime').textContent = d.check_time || '--';
+  
+  // VIX 陈旧
+  const vixNote = document.getElementById('vixStaleNote');
+  vixNote.style.display = d.vix_stale ? 'block' : 'none';
+  
+  // 分数条
+  const vixPct = d.vix_score != null ? ((d.vix_score + 1) / 5 * 100) : 0;
+  const ddPct = d.dd_score != null ? (d.dd_score / 4 * 100) : 0;
+  
+  document.getElementById('vixBar').style.width = Math.min(vixPct, 100) + '%';
+  document.getElementById('ddBar').style.width = Math.min(ddPct, 100) + '%';
+  
+  document.getElementById('vixPts').textContent = (d.vix_score >= 0 ? '+' : '') + d.vix_score;
+  document.getElementById('vixPts').className = 'pts ' + (d.vix_score > 0 ? 'positive' : d.vix_score < 0 ? 'negative' : 'neutral');
+  document.getElementById('ddPts').textContent = '+' + d.dd_score;
+  document.getElementById('ddPts').className = 'pts positive';
+  
+  // 总分
+  document.getElementById('totalScore').textContent = d.total_score + '/' + d.max_score;
+  document.getElementById('totalScore').style.color = 
+    d.total_score >= 5 ? COLORS.green : d.total_score >= 1 ? COLORS.orange : COLORS.red;
+  
+  // 金额
+  document.getElementById('amount').textContent = '¥' + (d.amount || 0);
+  document.getElementById('baseUnit').textContent = d.base_unit || 2000;
+}
+
+// 初始加载 - 数据在服务端已渲染
+(function() {
+  const data = {{ data_json|safe }};
+  if (data) updatePage(data);
+})();
+</script>
+</body>
+</html>

@@ -205,7 +205,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
       <div class="trend-bar" id="trendBar" style="margin-bottom:0">
         <div class="trend-left"><span class="trend-icon" id="trendIcon">📊</span><span id="trendText">--</span></div>
         <span class="trend-note" id="trendNote">--</span>
-        <span class="trend-cap-badge" id="trendBadge" style="display:none">上限2×</span>
+        <span class="trend-cap-badge" id="trendBadge" style="display:none">禁T1/T2加仓</span>
       </div>
       <div id="ddSpeed" style="font-size:9px;color:#d29922;text-align:center;padding:2px 0;margin:0"></div>
 
@@ -258,7 +258,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
       </div>
 
       <div class="footer">
-        五档+52周趋势 · 牛市上限2× · 每周末投前刷新
+        五档+52周趋势 · 牛市禁T1/T2加仓 · 每周末投前刷新
       </div>
     </div>
     <button class="btn-primary" id="refreshBtn" onclick="loadData()">🔄 刷新数据</button>
@@ -472,13 +472,19 @@ function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
   let tpInfo=null;
 
   // 趋势过滤（基于52周区间位置）
-  let isBull=null,trendCap=false;
+  let isBull=null,trendCap=false,suppressExtra=false;
   if(trend!=null){
     isBull=trend.status==='bull';
     if(isBull&&tier.tier>=3){
       mult=2.0;
       trendCap=true;
       notes.push('52周高位区，加仓上限2×');
+    }
+    // 方案C: 高位区T1/T2不触发额外加仓
+    if(isBull && tier.tier>=1 && tier.tier<=2){
+      mult=0;
+      suppressExtra=true;
+      notes.push('📈高位区，T1/T2不触发额外加仓，仅基础定投');
     }
     if(trend.status==='bear'){
       notes.push('52周低位区，允许全部档位');
@@ -506,7 +512,9 @@ function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
   if(dd>=25){tpState(TPR2,COOLDOWN.r2,'R2止损','🛑',10);}
   // R3: 极端崩盘保护（VXN>40 + 回撤≥40%）
   else if(vix!=null&&vix>40&&dd>=40){tpState(TPR3,COOLDOWN.r3,'R3保护','🛡️',10);}
-  else if(tier.tier>=5){actionIcon='🚀';actionText='全力加仓';actionColor='#c62828';
+  // 高位T1/T2抑制：只投基础，不额外加仓
+  if(suppressExtra){actionIcon='☀️';actionText='正常定投(高位禁加仓)';actionColor='#d29922';
+  }else if(tier.tier>=5){actionIcon='🚀';actionText='全力加仓';actionColor='#c62828';
   }else if(tier.tier>=4){actionIcon='🔥';actionText='三倍定投';actionColor='#f85149';
   }else if(tier.tier>=3){actionIcon='⚡';actionText='双倍定投+';actionColor='#f57c00';
   }else if(tier.tier>=2){actionIcon='🌊';actionText='双倍定投';actionColor='#d29922';
@@ -518,7 +526,7 @@ function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
 
   const tpActive=mult===0&&tpInfo!=null;
 
-  return{mult,actionText,actionIcon,actionColor,notes,isBull,trendCap,tpInfo,tpActive};
+  return{mult,actionText,actionIcon,actionColor,notes,isBull,trendCap,suppressExtra,tpInfo,tpActive};
 }
 
 // ========== 渲染 ==========
@@ -598,7 +606,7 @@ function render(d){
     trendIcon.textContent=t.icon;
     trendText.textContent='52周区间位 '+t.pos.toFixed(0)+'% = '+t.label+' | 区间 $'+d.price.toFixed(0);
     trendText.style.color=t.color;
-    trendNote.textContent=t.msg+(isBull?' | 牛市上限2×，不追高':'');
+    trendNote.textContent=t.msg+(isBull?' | 牛市禁T1/T2加仓，不追高':'');
     trendBadge.style.display=isBull?'inline':'none';
     trendBadge.className='trend-cap-badge'+(isBull?' bull':' bear');
     trendBar.style.borderColor=isBull?'#002d1a':'#3d0000';
@@ -721,8 +729,9 @@ function render(d){
   }
 
   if(act.trendCap)html+='<div class="detail-line"><span class="tag yellow">🔒 趋势过滤</span>52周高位上限2×，倍率从'+d.tierObj.mult+'×调整为'+act.mult+'×</div>';
+  if(act.suppressExtra)html+='<div class="detail-line"><span class="tag yellow">📈 高位禁加仓</span>T'+d.tierObj.tier+'不触发额外加仓，仅投基础¥'+base.toLocaleString()+'</div>';
   if(d.trend){
-    html+='<div class="detail-line"><span class="tag '+(d.trend.status==='bull'?'green':(d.trend.status==='bear'?'red':'yellow'))+'">'+d.trend.icon+' '+d.trend.label+'</span>价格在52周区间 '+d.trend.pos.toFixed(0)+'% 位置'+(d.trend.status==='bull'?'（上限2×）':'')+'</div>';
+    html+='<div class="detail-line"><span class="tag '+(d.trend.status==='bull'?'green':(d.trend.status==='bear'?'red':'yellow'))+'">'+d.trend.icon+' '+d.trend.label+'</span>价格在52周区间 '+d.trend.pos.toFixed(0)+'% 位置'+(d.trend.status==='bull'? (act.suppressExtra?'（高位禁T1/T2加仓）':'（上限2×）'):'')+'</div>';
   }
   // R2触发时隐藏下方档位信号
   const r2Active=act.tpInfo&&act.tpInfo.key===TPR2;
