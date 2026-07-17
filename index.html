@@ -322,11 +322,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
     <input type="number" id="qqqPosInput" placeholder="0" step="1000" inputmode="numeric">
     <div class="form-hint">当前QQQ持仓总市值，用于计算仓位占比</div>
   </div>
-  <div style="display:flex;gap:8px;margin-top:12px">
-    <button class="btn-primary" onclick="saveSettings()" style="flex:1">保存</button>
-    <button class="btn-secondary" onclick="exportSettings()" style="flex:1">📤 导出</button>
-    <button class="btn-secondary" onclick="importSettings()" style="flex:1">📥 导入</button>
-  </div>
+  <button class="btn-primary" onclick="saveSettings()">保存</button>
 </div>
 
 <script>
@@ -355,32 +351,6 @@ function loadPeakAssets(){return parseInt(localStorage.getItem('qqq_peak_assets'
 function savePeakAssets(v){localStorage.setItem('qqq_peak_assets',v.toString())}
 function loadCostBasis(){return parseInt(localStorage.getItem('qqq_cost_basis'))||0}
 function saveCostBasis(v){localStorage.setItem('qqq_cost_basis',v.toString())}
-
-// ========== 设置导出/导入 ==========
-function exportSettings(){
-  const keys=['qqq_base','qqq_profit','qqq_profit_mode','qqq_dca_day','qqq_dca_mode',
-              'qqq_total_assets','qqq_position','qqq_cost_basis',
-              'qqq_tp_light','qqq_tp_mid','qqq_tp_heavy','qqq_tp_hard',
-              'qqq_ath','qqq_peak_assets','qqq_dca_history'];
-  const data={};
-  keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)data[k]=v;});
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='qqq_settings_'+new Date().toISOString().slice(0,10)+'.json';a.click();
-}
-function importSettings(){
-  const input=document.createElement('input');input.type='file';input.accept='.json';
-  input.onchange=async function(e){
-    try{
-      const text=await e.target.files[0].text();
-      const data=JSON.parse(text);
-      Object.keys(data).forEach(k=>localStorage.setItem(k,data[k]));
-      alert('✅ 设置已导入');
-      hideSettings();loadData();
-    }catch(err){alert('❌ 导入失败: '+err.message);}
-  };
-  input.click();
-}
 
 // ========== DCA历史记录 ==========
 function loadDcaHistory(){return JSON.parse(localStorage.getItem('qqq_dca_history')||'[]')}
