@@ -44,7 +44,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 .data-block .lbl{font-size:8px;color:#8b949e;margin-bottom:1px;white-space:nowrap}
 .data-block .val{font-size:14px;font-weight:700}
 .data-block .sub{font-size:8px;color:#8b949e;margin-top:1px;white-space:nowrap}
-.stale-dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:#d29922;margin-left:2px;vertical-align:middle}
 
 /* 涨跌色 */
 .val-up{color:#3fb950}
@@ -60,8 +59,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 .trend-cap-badge.bull{background:#002d1a;color:#3fb950}
 .trend-cap-badge.bear{background:#3d0000;color:#f85149}
 
-/* VXN过期横幅 */
-.vxn-banner{background:#3d3200;color:#d29922;font-size:9px;padding:3px 8px;border-radius:6px;margin:2px 0;text-align:center;display:none}
+/* VXN数据标签 */
 
 /* 档位 */
 .tier-bar{display:flex;gap:3px;margin:4px 0}
@@ -110,6 +108,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 .btn-primary{width:100%;padding:10px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;margin:3px 0;background:#238636;color:#fff;transition:opacity .2s;flex-shrink:0}
 .btn-primary:active{opacity:.7}
 .btn-primary:disabled{opacity:.4;pointer-events:none}
+.btn-secondary{width:100%;padding:10px;border-radius:10px;border:1px solid #30363d;font-size:12px;font-weight:600;cursor:pointer;margin:3px 0;background:#21262d;color:#c9d1d9;transition:opacity .2s}
+.btn-secondary:active{opacity:.7}
 
 /* 首次加载/错误 */
 .state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1}
@@ -190,7 +190,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
           <div class="sub" id="ddDesc">--</div>
         </div>
         <div class="data-block">
-          <div class="lbl"><span id="vxnLabel">VXN≈</span><span id="vxnStaleDot"></span></div>
+          <div class="lbl"><span id="vxnLabel">VXN</span></div>
           <div class="val" id="vxn">--</div>
           <div class="sub" id="vxnDesc">--</div>
         </div>
@@ -207,9 +207,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
         <span class="trend-note" id="trendNote">--</span>
         <span class="trend-cap-badge" id="trendBadge" style="display:none">上限2×</span>
       </div>
-
-      <!-- VXN 过期警告 -->
-      <div class="vxn-banner" id="vxnBanner">⚠️ VXN 数据非交易时段，可能已过时</div>
 
       <!-- 档位 -->
       <div class="tier-bar" id="tierBar">
@@ -253,6 +250,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
         <div id="tpLines"></div>
       </div>
 
+      <!-- 定投历史 -->
+      <div class="detail-box" id="historyBox" style="display:none">
+        <div class="title" style="cursor:pointer" onclick="toggleHistory()">📋 定投历史 <span id="historyToggle">▶</span></div>
+        <div id="historyContent" style="display:none;max-height:300px;overflow-y:auto"></div>
+      </div>
+
       <div class="footer">
         五档+52周趋势 · 牛市上限2× · 每周末投前刷新
       </div>
@@ -274,7 +277,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
   <div class="form-group">
     <label>账户盈利 %</label>
     <input type="number" id="profitInput" placeholder="0" step="5" inputmode="decimal">
-    <div class="form-hint" id="profitHint">用于触发止盈信号</div>
+    <div class="form-hint" id="profitHint">填了总投入成本后自动计算，手动输入会覆盖</div>
   </div>
   <div class="form-group">
     <label>盈利模式</label>
@@ -305,6 +308,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
   </div>
 
   <div class="form-group">
+    <label>总投入成本（元）</label>
+    <input type="number" id="costBasisInput" placeholder="0" step="1000" inputmode="numeric">
+    <div class="form-hint">定投总投入金额，用于自动计算收益率</div>
+  </div>
+  <div class="form-group">
     <label>总资产（元）</label>
     <input type="number" id="totalAssetsInput" placeholder="0" step="10000" inputmode="numeric">
     <div class="form-hint">含现金+其他投资+QQQ，用于仓位上限计算</div>
@@ -314,7 +322,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
     <input type="number" id="qqqPosInput" placeholder="0" step="1000" inputmode="numeric">
     <div class="form-hint">当前QQQ持仓总市值，用于计算仓位占比</div>
   </div>
-  <button class="btn-primary" onclick="saveSettings()">保存</button>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn-primary" onclick="saveSettings()" style="flex:1">保存</button>
+    <button class="btn-secondary" onclick="exportSettings()" style="flex:1">📤 导出</button>
+    <button class="btn-secondary" onclick="importSettings()" style="flex:1">📥 导入</button>
+  </div>
 </div>
 
 <script>
@@ -341,6 +353,45 @@ function loadAlltimeHigh(){return parseFloat(localStorage.getItem('qqq_ath'))||0
 function saveAlltimeHigh(v){localStorage.setItem('qqq_ath',v.toString())}
 function loadPeakAssets(){return parseInt(localStorage.getItem('qqq_peak_assets'))||0}
 function savePeakAssets(v){localStorage.setItem('qqq_peak_assets',v.toString())}
+function loadCostBasis(){return parseInt(localStorage.getItem('qqq_cost_basis'))||0}
+function saveCostBasis(v){localStorage.setItem('qqq_cost_basis',v.toString())}
+
+// ========== 设置导出/导入 ==========
+function exportSettings(){
+  const keys=['qqq_base','qqq_profit','qqq_profit_mode','qqq_dca_day','qqq_dca_mode',
+              'qqq_total_assets','qqq_position','qqq_cost_basis',
+              'qqq_tp_light','qqq_tp_mid','qqq_tp_heavy','qqq_tp_hard',
+              'qqq_ath','qqq_peak_assets','qqq_dca_history'];
+  const data={};
+  keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)data[k]=v;});
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='qqq_settings_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
+function importSettings(){
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.onchange=async function(e){
+    try{
+      const text=await e.target.files[0].text();
+      const data=JSON.parse(text);
+      Object.keys(data).forEach(k=>localStorage.setItem(k,data[k]));
+      alert('✅ 设置已导入');
+      hideSettings();loadData();
+    }catch(err){alert('❌ 导入失败: '+err.message);}
+  };
+  input.click();
+}
+
+// ========== DCA历史记录 ==========
+function loadDcaHistory(){return JSON.parse(localStorage.getItem('qqq_dca_history')||'[]')}
+function saveDcaHistory(hist){localStorage.setItem('qqq_dca_history',JSON.stringify(hist))}
+function logDcaEntry(date,price,dd,vxn,tier,base,extra,total){
+  const hist=loadDcaHistory();
+  if(hist.length>0 && hist[hist.length-1].date===date)return; // 已记录今天
+  hist.push({date,price,dd,vxn,tier,base,extra,total});
+  if(hist.length>500)hist.splice(0,hist.length-500);
+  saveDcaHistory(hist);
+}
 
 function profitModeLabel(){return loadProfitMode()==='annual'?'当年收益率':'累计收益率'}
 function updateProfitHint(){
@@ -578,19 +629,9 @@ function render(d){
 
   // VXN
   document.getElementById('vxn').textContent=d.vix!=null?d.vix.toFixed(1):'N/A';
-  document.getElementById('vxnLabel').textContent=d.vxn_real?'VXN':'VXN≈';
+  document.getElementById('vxnLabel').textContent=d.vxn_real?'VXN':'VXN不可用';
   const vixDescEl=document.getElementById('vxnDesc');
-  let vixLabel=d.vix_desc;
-  if(d.vix_period)vixLabel+=' · '+d.vix_period;
-  if(d.vix_stale&&d.vix!=null)vixLabel+=' ⚠️';
-  vixDescEl.textContent=vixLabel;
-  document.getElementById('vxnStaleDot').className=(d.vix_stale&&d.vix!=null)?'stale-dot':'';
-  const vixBanner=document.getElementById('vxnBanner');
-  if(d.vix_stale&&d.vix!=null){
-    const isOpen=d.vix_period==='盘中';
-    vixBanner.textContent=isOpen?'⚠️ VXN 数据超过15分钟未更新，API可能延迟':'⚠️ 非交易时段 VXN 为上一收盘数据';
-    vixBanner.style.display='block';
-  }else{vixBanner.style.display='none';}
+  vixDescEl.textContent=d.vix_desc;
 
   // 52周位
   const rpEl=document.getElementById('rangePos');
@@ -804,6 +845,9 @@ function render(d){
   tpEl.style.display='block';
   tpLines.innerHTML=tpHtml;
 
+  // ---- 定投历史 ----
+  renderHistory(base);
+
   startTimer(60);
   }catch(e){
     showError('渲染错误: '+e.message);
@@ -885,7 +929,26 @@ async function loadData(){
     const dd=Math.max(dd52, ddAth);
     const v=vxnReal;
     const tierObj=getTier(v,dd);
-    const profit=loadProfit();
+    // 自动计算收益率：先看手动输入，没有则用持仓市值/总投入算
+    let profit=loadProfit();
+    if(profit<=0){
+      const costBasis=loadCostBasis();
+      const position=loadQqqPosition();
+      if(costBasis>0&&position>0)profit=Math.round((position-costBasis)/costBasis*100);
+    }
+    
+    // DCA历史记录（定投日自动记录）
+    const dcaDay=loadDcaDay();
+    const daysLeft=daysUntilNextDCA(dcaDay);
+    const base=calcBase();
+    const effExtraRaw=Math.round(base*tierObj.mult);
+    const cap=applyCap(effExtraRaw);
+    const effExtra=cap.extra;
+    const effTotal=base+effExtra;
+    if(daysLeft===0||daysLeft===7){
+      const todayStr=new Date().toISOString().slice(0,10);
+      logDcaEntry(todayStr, qqq.price, Math.round(dd*10)/10, v, tierObj.tier, base, effExtra, effTotal);
+    }
 
     let vixDesc='';
     if(vxnFromJson){
@@ -902,7 +965,7 @@ async function loadData(){
     render({
       price:qqq.price,prevClose:qqq.prevClose,
       drawdown:Math.round(dd*10)/10,time:qqq.time,
-      vix:v,vix_desc:vixDesc,vix_stale:false,vix_period:'',
+      vix:v,vix_desc:vixDesc,
       dd_desc:ddDesc,
       tierObj,trend,profit,
       vxn_real:vxnFromJson
@@ -925,6 +988,54 @@ function showError(m){
   hideRefreshProgress();
 }
 
+// ========== 定投历史显示 ==========
+function toggleHistory(){
+  const c=document.getElementById('historyContent');
+  const t=document.getElementById('historyToggle');
+  const show=c.style.display!=='block';
+  c.style.display=show?'block':'none';
+  t.textContent=show?'▼':'▶';
+}
+function renderHistory(base){
+  const hist=loadDcaHistory();
+  const box=document.getElementById('historyBox');
+  const content=document.getElementById('historyContent');
+  if(hist.length===0){box.style.display='none';return;}
+  box.style.display='block';
+  
+  // 统计
+  let totalBase=0,totalExtra=0,totalCount=hist.length;
+  let tiers={0:0,1:0,2:0,3:0,4:0,5:0};
+  hist.forEach(h=>{
+    totalBase+=h.base||0;
+    totalExtra+=h.extra||0;
+    tiers[h.tier||0]=(tiers[h.tier||0]||0)+1;
+  });
+  const tierLabels={0:'平静',1:'T1',2:'T2',3:'T3',4:'T4',5:'T5'};
+  const tierStr=Object.entries(tiers).filter(([k,v])=>v>0).map(([k,v])=>tierLabels[k]+'='+v).join(' ');
+  
+  let html='<div style="font-size:10px;color:#8b949e;margin-bottom:4px">';
+  html+=`共${totalCount}周 | 基础¥${totalBase.toLocaleString()} + 加仓¥${totalExtra.toLocaleString()} = ¥${(totalBase+totalExtra).toLocaleString()}`;
+  html+=` | ${tierStr}</div>`;
+  
+  // 最近20条
+  const recent=hist.slice(-20).reverse();
+  html+='<table style="width:100%;font-size:9px;border-collapse:collapse">';
+  html+='<tr style="color:#8b949e"><th style="text-align:left;padding:2px 4px">日期</th><th style="text-align:right;padding:2px 4px">价</th><th style="text-align:right;padding:2px 4px">DD</th><th style="text-align:right;padding:2px 4px">VXN</th><th style="text-align:center;padding:2px 4px">档</th><th style="text-align:right;padding:2px 4px">金额</th></tr>';
+  recent.forEach(h=>{
+    const ddColor=h.dd>=10?'#f85149':(h.dd>=5?'#d29922':'#8b949e');
+    const tierColor=['#8b949e','#58a6ff','#d29922','#f57c00','#f85149','#c62828'][h.tier]||'#8b949e';
+    html+=`<tr><td style="padding:1px 4px">${h.date.slice(5)}</td>`;
+    html+=`<td style="text-align:right;padding:1px 4px">$${h.price?.toFixed(0)}</td>`;
+    html+=`<td style="text-align:right;padding:1px 4px;color:${ddColor}">${h.dd}%</td>`;
+    html+=`<td style="text-align:right;padding:1px 4px">${h.vxn!=null?h.vxn.toFixed(1):'N/A'}</td>`;
+    html+=`<td style="text-align:center;padding:1px 4px;color:${tierColor};font-weight:600">${tierLabels[h.tier]||'T'+h.tier}</td>`;
+    html+=`<td style="text-align:right;padding:1px 4px">¥${(h.base+(h.extra||0)).toLocaleString()}</td></tr>`;
+  });
+  html+='</table>';
+  content.innerHTML=html;
+}
+
 // ========== 止盈标记执行 ==========
 function markTpExec(){
   const btn=document.getElementById('btnMarkTp');
@@ -940,6 +1051,7 @@ function showSettings(){
   document.getElementById('profitInput').value=loadProfit();
   document.getElementById('profitModeInput').value=loadProfitMode();
   document.getElementById('dcaDayInput').value=loadDcaDay();
+  document.getElementById('costBasisInput').value=loadCostBasis()||'';
   document.getElementById('totalAssetsInput').value=loadTotalAssets();
   document.getElementById('qqqPosInput').value=loadQqqPosition();
   document.getElementById('dcaModeInput').value=loadDcaMode();
@@ -957,10 +1069,11 @@ function saveSettings(){
   const p=parseInt(document.getElementById('profitInput').value)||0;
   const m=document.getElementById('profitModeInput').value;
   const d=parseInt(document.getElementById('dcaDayInput').value)||2;
+  const cb=parseInt(document.getElementById('costBasisInput').value)||0;
   const ta=parseInt(document.getElementById('totalAssetsInput').value)||0;
   const qp=parseInt(document.getElementById('qqqPosInput').value)||0;
   const dm=document.getElementById('dcaModeInput').value;
-  saveBase(v);saveProfit(p);saveProfitMode(m);saveDcaDay(d);
+  saveBase(v);saveProfit(p);saveProfitMode(m);saveDcaDay(d);saveCostBasis(cb);
   saveTotalAssets(ta);saveQqqPosition(qp);saveDcaMode(dm);
   // 更新峰值资产（取较高值）
   const peak=loadPeakAssets();
