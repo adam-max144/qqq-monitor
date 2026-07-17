@@ -169,7 +169,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
           <span class="action-amount" id="actionAmount">--</span>
         </div>
         <div class="action-meta" id="actionMeta"></div>
-        <button class="btn-mark" id="btnMarkTp" style="display:none;margin-top:6px;padding:4px 10px;border-radius:6px;border:1px solid #30363d;background:#1c2128;color:#d29922;font-size:10px;cursor:pointer;width:100%" onclick="markTpExec()">✅ 标记止盈已执行</button>
       </div>
 
       <!-- 五数据 -->
@@ -277,19 +276,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
     <div class="form-hint">基准金额，各档位在此基础上加仓</div>
   </div>
   <div class="form-group">
-    <label>账户盈利 %</label>
-    <input type="number" id="profitInput" placeholder="0" step="5" inputmode="decimal">
-    <div class="form-hint" id="profitHint">填了总投入成本后自动计算，手动输入会覆盖</div>
-  </div>
-  <div class="form-group">
-    <label>盈利模式</label>
-    <select id="profitModeInput" onchange="updateProfitHint()">
-      <option value="annual">当年收益率（推荐）</option>
-      <option value="cumulative">累计收益率</option>
-    </select>
-    <div class="form-hint">当年 = 今年涨幅；累计 = 全部持仓总收益</div>
-  </div>
-  <div class="form-group">
     <label>定投日（每周）</label>
     <select id="dcaDayInput">
       <option value="1">周一</option>
@@ -310,19 +296,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
   </div>
 
   <div class="form-group">
-    <label>总投入成本（元）</label>
-    <input type="number" id="costBasisInput" placeholder="0" step="1000" inputmode="numeric">
-    <div class="form-hint">定投总投入金额，用于自动计算收益率</div>
-  </div>
-  <div class="form-group">
     <label>总资产（元）</label>
     <input type="number" id="totalAssetsInput" placeholder="0" step="10000" inputmode="numeric">
     <div class="form-hint">含现金+其他投资+QQQ，用于仓位上限计算</div>
-  </div>
-  <div class="form-group">
-    <label>QQQ持仓市值（元）</label>
-    <input type="number" id="qqqPosInput" placeholder="0" step="1000" inputmode="numeric">
-    <div class="form-hint">当前QQQ持仓总市值，用于计算仓位占比</div>
   </div>
   <button class="btn-primary" onclick="saveSettings()">保存</button>
 </div>
@@ -331,30 +307,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 // ========== 全局错误捕获 ==========
 window.onerror=function(msg,url,line){showError('JS错误 L'+line+': '+msg);};
 // ========== 存储 ==========
-const SK='qqq_base',SP='qqq_profit',SD='qqq_dca_day',SM='qqq_profit_mode',
+const SK='qqq_base',SD='qqq_dca_day',
       TA='qqq_total_assets',QP='qqq_position',DM='qqq_dca_mode';
 function loadBase(){return parseInt(localStorage.getItem(SK))||675}
 function saveBase(v){localStorage.setItem(SK,v.toString())}
-function loadProfit(){return parseInt(localStorage.getItem(SP))||0}
-function saveProfit(v){localStorage.setItem(SP,v.toString())}
 function loadDcaDay(){return parseInt(localStorage.getItem(SD))||2}
 function saveDcaDay(v){localStorage.setItem(SD,v.toString())}
-function loadProfitMode(){return localStorage.getItem(SM)||'annual'}
-function saveProfitMode(v){localStorage.setItem(SM,v)}
 function loadTotalAssets(){return parseInt(localStorage.getItem(TA))||0}
 function saveTotalAssets(v){localStorage.setItem(TA,v.toString())}
-function loadQqqPosition(){return parseInt(localStorage.getItem(QP))||0}
-function saveQqqPosition(v){localStorage.setItem(QP,v.toString())}
 function loadDcaMode(){return localStorage.getItem(DM)||'fixed'}
 function saveDcaMode(v){localStorage.setItem(DM,v)}
 function loadAlltimeHigh(){return parseFloat(localStorage.getItem('qqq_ath'))||0}
 function saveAlltimeHigh(v){localStorage.setItem('qqq_ath',v.toString())}
 function loadPeakAssets(){return parseInt(localStorage.getItem('qqq_peak_assets'))||0}
 function savePeakAssets(v){localStorage.setItem('qqq_peak_assets',v.toString())}
-function loadCostBasis(){return parseInt(localStorage.getItem('qqq_cost_basis'))||0}
-function saveCostBasis(v){localStorage.setItem('qqq_cost_basis',v.toString())}
-function loadYearBasis(){return JSON.parse(localStorage.getItem('qqq_year_basis')||'{"year":0,"cost":0}')}
-function saveYearBasis(year,cost){localStorage.setItem('qqq_year_basis',JSON.stringify({year,cost}))}
 
 // ========== DCA历史记录 ==========
 function loadDcaHistory(){return JSON.parse(localStorage.getItem('qqq_dca_history')||'[]')}
@@ -367,16 +333,6 @@ function logDcaEntry(date,price,dd,vxn,tier,base,extra,total){
   saveDcaHistory(hist);
 }
 
-// ========== 时间权重（持有越长止盈门槛越高） ==========
-function calcTimeWeight(){
-  const hist=loadDcaHistory();
-  if(hist.length<2)return 1.0;
-  const first=new Date(hist[0].date);
-  const now=new Date();
-  const months=(now-first.getTime())/(30*86400000);
-  return Math.min(1.5, Math.max(0.8, 0.8+months/30));
-}
-
 // ========== VXN回退估算（vxn.json不可用时） ==========
 function loadLastVxn(){return parseFloat(localStorage.getItem('qqq_last_vxn'))||null}
 function saveLastVxn(v){localStorage.setItem('qqq_last_vxn',v.toString())}
@@ -386,11 +342,6 @@ function estimateVxnFromDd(dd){
   return 20;
 }
 
-function profitModeLabel(){return loadProfitMode()==='annual'?'当年收益率':'累计收益率'}
-function updateProfitHint(){
-  const el=document.getElementById('profitHint');
-  if(el)el.textContent=loadProfitMode()==='annual'?'填入今年至今的收益率 %':'填入全部持仓累计总收益率 %';
-}
 function updateDcaHint(){
   const el=document.getElementById('dcaModeHint');
   if(el)el.textContent=loadDcaMode()==='pct'?'总资产×0.1%自动计算（建议持仓超10万后使用）':'固定 = 手动填入上方金额';
@@ -406,25 +357,11 @@ function calcBase(){
   return loadBase();
 }
 
-// DCA历史推算持仓数据（用户没手动填时使用）
-function estimatePositionFromHistory(){
-  const hist=loadDcaHistory();
-  if(hist.length<2)return null;
-  let totalCost=0,totalShares=0;
-  hist.forEach(h=>{
-    const amount=(h.base||0)+(h.extra||0);
-    totalCost+=amount;
-    if(h.price>0)totalShares+=amount/h.price;
-  });
-  if(totalCost<=0)return null;
-  const currentPrice=parseFloat((document.getElementById('price')||{}).textContent)||0;
-  const estPosition=currentPrice>0?Math.round(totalShares*currentPrice):totalCost;
-  return {assets:Math.round(totalCost*1.3),position:estPosition};
-}
-
 // ========== 下跌速度因子 ==========
 function loadPrevDd(){return parseFloat(localStorage.getItem('qqq_prev_dd'))||null}
 function savePrevDd(v){localStorage.setItem('qqq_prev_dd',v.toString())}
+
+// ========== 仓位上限检查（QQQ不超过总资产70%，基数取峰值避免越跌越限） ==========
 
 // 仓位上限检查（QQQ不超过总资产70%，基数取峰值避免越跌越限）
 function applyCap(extraBuy){
@@ -454,18 +391,12 @@ function applyCap(extraBuy){
 let _loading=false;
 
 // ========== 止盈冷却期（避免重复执行） ==========
-const TPL='qqq_tp_light',TPM='qqq_tp_mid',TPH='qqq_tp_heavy',TPHD='qqq_tp_hard',TPR2='qqq_tp_r2',TPR3='qqq_tp_r3';
-const COOLDOWN={light:90,mid:180,heavy:365,hard:365,r2:180,r3:90};
+const TPR2='qqq_tp_r2',TPR3='qqq_tp_r3';
+const COOLDOWN={r2:180,r3:90};
 
 function markTpDone(key){
   const now=Date.now().toString();
-  // 轻→只锁自己; 中→锁轻+中; 重→锁轻+中+重; 硬→全部; R2与中同级
-  localStorage.setItem(TPL,now);
-  if(key===TPM||key===TPH||key===TPHD)localStorage.setItem(TPM,now);
-  if(key===TPH||key===TPHD)localStorage.setItem(TPH,now);
-  if(key===TPHD)localStorage.setItem(TPHD,now);
-  if(key===TPR2)localStorage.setItem(TPR2,now); // R2只锁自己
-  if(key===TPR3)localStorage.setItem(TPR3,now); // R3只锁自己
+  localStorage.setItem(key,now); // 每个信号只锁自己
 }
 function tpCooldownMs(key,days){
   const last=parseInt(localStorage.getItem(key))||0;
@@ -581,15 +512,7 @@ function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
     mult=Math.round(mult*0.8*10)/10;
   }
 
-  // 推荐操作（互斥档位，取最高档）
-  const isAnnualA=loadProfitMode()==='annual';
-  const tw=calcTimeWeight();
-  const rLightA=Math.round((isAnnualA?20:50)*tw);
-  const rMidA=Math.round((isAnnualA?35:80)*tw);
-  const rHeavyA=Math.round((isAnnualA?50:300)*tw);
-  const rHardA=Math.round((isAnnualA?50:300)*tw);
-  const vLow=vix!=null&&vix<21;
-  // 冷却期检查辅助
+  // 冷却期检查辅助（仅R2/R3用）
   function tpState(key,days,label,icon,pct){
     const cd=isTpCooldown(key,days);
     tpInfo={label,pct,key,days,cooldown:cd,nextDate:tpNextDate(key,days)};
@@ -599,13 +522,8 @@ function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
       actionIcon='✅';actionText=label+'(已执行)';actionColor='#8b949e';mult=0;
     }
   }
-  // 止盈：年度模式多档，累计模式仅重止盈（里程碑式）
-  if(profit>=rHeavyA){tpState(TPH,COOLDOWN.heavy,'重止盈','💰',5);}
-  else if(isAnnualA&&profit>=rMidA){tpState(TPM,COOLDOWN.mid,'中止盈','💵',20);}
-  else if(isAnnualA&&profit>=rLightA){tpState(TPL,COOLDOWN.light,'轻止盈','💧',10);}
-  else if(profit>=rHardA&&vLow){tpState(TPHD,COOLDOWN.hard,'硬止盈','🔒',10);}
-  // R2: 回撤≥25%止损（独立于利润，不等VXN崩盘）
-  else if(dd>=25){tpState(TPR2,COOLDOWN.r2,'R2止损','🛑',10);}
+  // R2: 回撤≥25%止损（独立保护，防止深度亏损）
+  if(dd>=25){tpState(TPR2,COOLDOWN.r2,'R2止损','🛑',10);}
   // R3: 极端崩盘保护（VXN>40 + 回撤≥40%）
   else if(vix!=null&&vix>40&&dd>=40){tpState(TPR3,COOLDOWN.r3,'R3保护','🛡️',10);}
   else if(tier.tier>=5){actionIcon='🚀';actionText='全力加仓';actionColor='#c62828';
@@ -760,10 +678,6 @@ function render(d){
       metaHtml+='<span>⏳ '+act.tpInfo.label+' 待执行（冷却'+act.tpInfo.days+'天）</span>';
     }
   }
-  // Show/hide mark button
-  const btnMark=document.getElementById('btnMarkTp');
-  if(act.tpInfo&&!act.tpInfo.cooldown){btnMark.style.display='block';btnMark.dataset.key=act.tpInfo.key;}
-  else{btnMark.style.display='none';}
   // Trend info
   if(d.trend!=null&&act.isBull!==null){
     metaHtml+='<span>'+d.trend.icon+' '+d.trend.label+' ('+d.trend.pos.toFixed(0)+'%)</span>';
@@ -835,53 +749,10 @@ function render(d){
   if(r2Active)html+='<div class="detail-line"><span class="tag red">🛑 R2优先</span>止损信号高于加仓，T4/T5已暂停</div>';
   dl.innerHTML=html;
 
-  // ---- 止盈（利润触发，VXN修正卖出量） ----
-  const profit=d.profit;
-  const pModeLabel=profitModeLabel();
-  const isAnnual=loadProfitMode()==='annual';
-  const tw=calcTimeWeight();
-  const rLight=Math.round((isAnnual?20:50)*tw);
-  const rMid=Math.round((isAnnual?35:80)*tw);
-  const rHeavy=Math.round((isAnnual?50:300)*tw);
+  // ---- 止盈/止损区（仅R2止损 + R3保护） ----
   const tpEl=document.getElementById('tpBox');
   const tpLines=document.getElementById('tpLines');
   let tpHtml='';
-  // VXN卖出量修正：高波市场卖更多，利用恐慌流动性锁定利润
-  const vxnMult=(d.vix!=null&&d.vix>=21)?1.2:1.0;
-
-  // 主标签：年度多档，累计仅重止盈（里程碑式）
-  if(profit>=rHeavy){
-    const pct=Math.round(5*vxnMult);
-    tpHtml+='<div class="tp-line"><span class="tag sell">💰 重止盈 · 卖出'+pct+'%</span>'+pModeLabel+' '+profit+'%≥'+rHeavy+'%'+(vxnMult>1?'（VXN≥21，高波修正'+pct+'%）':'')+'</div>';
-    tpHtml+='<div class="tp-line">→ 高盈利强制落袋，锁定利润</div>';
-  }else if(isAnnual&&profit>=rMid){
-    const pct=Math.round(20*vxnMult);
-    tpHtml+='<div class="tp-line"><span class="tag sell">💵 中止盈 · 卖出'+pct+'%</span>'+pModeLabel+' '+profit+'%≥'+rMid+'%'+(vxnMult>1?'（VXN≥21，高波修正'+pct+'%）':'')+'</div>';
-    tpHtml+='<div class="tp-line">→ 盈利可观，适度减仓</div>';
-  }else if(isAnnual&&profit>=rLight){
-    const pct=Math.round(10*vxnMult);
-    tpHtml+='<div class="tp-line"><span class="tag sell">💧 轻止盈 · 卖出'+pct+'%</span>'+pModeLabel+' '+profit+'%≥'+rLight+'%'+(vxnMult>1?'（VXN≥21，高波修正'+pct+'%）':'')+'</div>';
-    tpHtml+='<div class="tp-line">→ 小幅盈利，轻仓锁定</div>';
-  }else{
-    const nextTp=isAnnual?rLight:rHeavy;
-    tpHtml+='<div class="tp-line"><span class="tag hold">✅ 持有</span>'+pModeLabel+' '+profit+'%，未达止盈线'+nextTp+'%（差'+(nextTp-profit)+'%）</div>';
-  }
-
-  // 冷却期状态（从act获取止盈信息）
-  if(act.tpInfo){
-    if(act.tpInfo.cooldown){
-      tpHtml+='<div class="tp-line" style="color:#8b949e;font-size:10px">✅ '+act.tpInfo.label+' 冷却中，下次可用 '+act.tpInfo.nextDate+'</div>';
-    }else{
-      tpHtml+='<div class="tp-line" style="color:#d29922;font-size:10px">⏳ '+act.tpInfo.label+' 待执行，冷却期 '+act.tpInfo.days+' 天</div>';
-    }
-  }
-
-  // R0: 硬止盈（利润极高时的兜底，不受VXN影响）
-  const rHard=Math.round((isAnnual?50:300)*tw);
-  if(profit>=rHard && d.vix!=null && d.vix<21){
-    tpHtml+='<div class="tp-line"><span class="tag sell">🔒 硬止盈 · 卖出10%</span>'+pModeLabel+' '+profit+'%≥'+rHard+'%，低波市场兜底落袋</div>';
-    tpHtml+='<div class="tp-line">→ 强制落袋10%，防止牛市过度持仓</div>';
-  }
 
   // R2: 回撤止损
   if(d.drawdown>=25){
@@ -1001,25 +872,8 @@ async function loadData(){
     const fastDrop=ddSpeed>3;
     const v=vxnReal;
     const tierObj=getTier(v,dd);
-    // 自动计算收益率：先看手动输入，没有则自动算
-    let profit=loadProfit();
-    if(profit<=0){
-      const isAnnual=loadProfitMode()==='annual';
-      const costBasis=loadCostBasis();
-      const position=loadQqqPosition();
-      if(costBasis>0&&position>0){
-        if(isAnnual){
-          // 当年收益率：用年初成本基数算
-          const yb=loadYearBasis();
-          const thisYear=new Date().getFullYear();
-          if(yb.year!==thisYear){saveYearBasis(thisYear,costBasis);yb.year=thisYear;yb.cost=costBasis;}
-          profit=Math.round((position-(yb.cost||costBasis))/(yb.cost||costBasis)*100);
-        }else{
-          // 累计收益率：总(市值-成本)/成本
-          profit=Math.round((position-costBasis)/costBasis*100);
-        }
-      }
-    }
+    // 自动计算仓位占比（不再计算收益率，已移除止盈）
+    let profit=0;
     
     // DCA历史记录（定投日自动记录）
     const dcaDay=loadDcaDay();
@@ -1157,25 +1011,12 @@ function renderHistory(base){
 }
 
 // ========== 止盈标记执行 ==========
-function markTpExec(){
-  const btn=document.getElementById('btnMarkTp');
-  const key=btn.dataset.key;
-  if(!key)return;
-  markTpDone(key);
-  loadData();
-}
-
 // ========== 设置 ==========
 function showSettings(){
   document.getElementById('baseInput').value=loadBase();
-  document.getElementById('profitInput').value=loadProfit();
-  document.getElementById('profitModeInput').value=loadProfitMode();
   document.getElementById('dcaDayInput').value=loadDcaDay();
-  document.getElementById('costBasisInput').value=loadCostBasis()||'';
   document.getElementById('totalAssetsInput').value=loadTotalAssets();
-  document.getElementById('qqqPosInput').value=loadQqqPosition();
   document.getElementById('dcaModeInput').value=loadDcaMode();
-  updateProfitHint();
   updateDcaHint();
   document.getElementById('overlay').classList.add('show');
   document.getElementById('sheet').classList.add('show');
@@ -1186,15 +1027,11 @@ function hideSettings(){
 }
 function saveSettings(){
   const v=parseInt(document.getElementById('baseInput').value)||675;
-  const p=parseInt(document.getElementById('profitInput').value)||0;
-  const m=document.getElementById('profitModeInput').value;
   const d=parseInt(document.getElementById('dcaDayInput').value)||2;
-  const cb=parseInt(document.getElementById('costBasisInput').value)||0;
   const ta=parseInt(document.getElementById('totalAssetsInput').value)||0;
-  const qp=parseInt(document.getElementById('qqqPosInput').value)||0;
   const dm=document.getElementById('dcaModeInput').value;
-  saveBase(v);saveProfit(p);saveProfitMode(m);saveDcaDay(d);saveCostBasis(cb);
-  saveTotalAssets(ta);saveQqqPosition(qp);saveDcaMode(dm);
+  saveBase(v);saveDcaDay(d);
+  saveTotalAssets(ta);saveDcaMode(dm);
   // 更新峰值资产（取较高值）
   const peak=loadPeakAssets();
   if(ta>peak)savePeakAssets(ta);
