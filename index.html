@@ -203,11 +203,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
       </div>
 
       <!-- 趋势条 -->
-      <div class="trend-bar" id="trendBar">
+      <div class="trend-bar" id="trendBar" style="margin-bottom:0">
         <div class="trend-left"><span class="trend-icon" id="trendIcon">📊</span><span id="trendText">--</span></div>
         <span class="trend-note" id="trendNote">--</span>
         <span class="trend-cap-badge" id="trendBadge" style="display:none">上限2×</span>
       </div>
+      <div id="ddSpeed" style="font-size:9px;color:#d29922;text-align:center;padding:2px 0;margin:0"></div>
 
       <!-- 档位 -->
       <div class="tier-bar" id="tierBar">
@@ -404,11 +405,36 @@ function calcBase(){
   return loadBase();
 }
 
+// DCA历史推算持仓数据（用户没手动填时使用）
+function estimatePositionFromHistory(){
+  const hist=loadDcaHistory();
+  if(hist.length<2)return null;
+  let totalCost=0,totalShares=0;
+  hist.forEach(h=>{
+    const amount=(h.base||0)+(h.extra||0);
+    totalCost+=amount;
+    if(h.price>0)totalShares+=amount/h.price;
+  });
+  if(totalCost<=0)return null;
+  const currentPrice=parseFloat(document.getElementById('price')?.textContent)||0;
+  const estPosition=currentPrice>0?Math.round(totalShares*currentPrice):totalCost;
+  return {assets:Math.round(totalCost*1.3),position:estPosition};
+}
+
+// ========== 下跌速度因子 ==========
+function loadPrevDd(){return parseFloat(localStorage.getItem('qqq_prev_dd'))||null}
+function savePrevDd(v){localStorage.setItem('qqq_prev_dd',v.toString())}
+
 // 仓位上限检查（QQQ不超过总资产70%，基数取峰值避免越跌越限）
 function applyCap(extraBuy){
-  const assets=loadTotalAssets();
-  const position=loadQqqPosition();
+  let assets=loadTotalAssets();
+  let position=loadQqqPosition();
   const peak=loadPeakAssets();
+  // 如果用户没填持仓数据，用DCA历史自动推算
+  if(assets<=0||position<=0){
+    const est=estimatePositionFromHistory();
+    if(est){if(assets<=0)assets=est.assets;if(position<=0)position=est.position;}
+  }
   if(assets<=0||position<=0) return {extra:extraBuy,capped:false};
   // 用峰值资产做基数，防止越跌仓位占比被动升高而限购
   const base=Math.max(assets, peak);
@@ -526,11 +552,11 @@ function daysUntilNextDCA(dcaDay){
 }
 
 // ========== 推荐操作 ==========
-function getAction(tier,price,trend,vix,dd,profit){
+function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
   let mult=tier.mult;
   let actionText='',actionIcon='',actionColor='#8b949e';
   let notes=[];
-  let tpInfo=null; // 止盈状态
+  let tpInfo=null;
 
   // 趋势过滤（基于52周区间位置）
   let isBull=null,trendCap=false;
@@ -544,6 +570,13 @@ function getAction(tier,price,trend,vix,dd,profit){
     if(trend.status==='bear'){
       notes.push('52周低位区，允许全部档位');
     }
+  }
+
+  // 下跌速度因子：快速下跌时加仓打8折
+  const fastDrop=ddSpeed>3;
+  if(fastDrop&&tier.tier>0){
+    notes.push('⚡️快速下跌，加仓倍率×0.8');
+    mult=Math.round(mult*0.8*10)/10;
   }
 
   // 推荐操作（互斥档位，取最高档）
@@ -625,7 +658,14 @@ function render(d){
 
   // 回撤
   document.getElementById('drawdown').textContent=d.drawdown+'%';
-  document.getElementById('ddDesc').textContent=d.dd_desc;
+  document.getElementById('ddDesc').textContent=d.dd_desc+(d.dd_speed>3?' ⚡️快速下跌':'');
+  // 下跌速度提示
+  const speedEl=document.getElementById('ddSpeed');
+  if(speedEl){
+    if(d.dd_speed>3)speedEl.textContent='⚡️ 一日内回撤扩大'+d.dd_speed+'%，速度过快';
+    else if(d.dd_speed<-3)speedEl.textContent='↗️ 一日内回撤收窄'+Math.abs(d.dd_speed)+'%，快速反弹';
+    else speedEl.textContent='';
+  }
 
   // VXN
   document.getElementById('vxn').textContent=d.vix!=null?d.vix.toFixed(1):'N/A';
@@ -669,7 +709,7 @@ function render(d){
   }
 
   // ---- 操作推荐卡 ----
-  const act=getAction(d.tierObj,d.price,d.trend,d.vix,d.drawdown,d.profit);
+  const act=getAction(d.tierObj,d.price,d.trend,d.vix,d.drawdown,d.profit,d.dd_speed);
   document.getElementById('actionIcon').textContent=act.actionIcon;
   document.getElementById('actionText').textContent=act.actionText;
   document.getElementById('actionText').style.color=act.actionColor;
@@ -945,6 +985,12 @@ async function loadData(){
     if(qqq.price>ath)saveAlltimeHigh(qqq.price);
     const ddAth=ath>0?((ath-qqq.price)/ath)*100:0;
     const dd=Math.max(dd52, ddAth);
+    // 下跌速度（与上次访问对比）
+    const prevDd=loadPrevDd();
+    const ddSpeed=prevDd!=null?Math.round((dd-prevDd)*10)/10:0;
+    savePrevDd(dd);
+    // 快速下跌: 一日内DD扩大>3%视为速度过快
+    const fastDrop=ddSpeed>3;
     const v=vxnReal;
     const tierObj=getTier(v,dd);
     // 自动计算收益率：先看手动输入，没有则用持仓市值/总投入算
@@ -984,7 +1030,7 @@ async function loadData(){
       price:qqq.price,prevClose:qqq.prevClose,
       drawdown:Math.round(dd*10)/10,time:qqq.time,
       vix:v,vix_desc:vixDesc,
-      dd_desc:ddDesc,
+      dd_desc:ddDesc,dd_speed:ddSpeed,
       tierObj,trend,profit,
       vxn_real:vxnFromJson,vxn_fallback:vxnFallback
     });
