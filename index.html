@@ -610,8 +610,8 @@ function getAction(tier,price,trend,vix,dd,profit,ddSpeed){
   }else if(tier.tier>=1){actionIcon='💧';actionText='小额加仓';actionColor='#58a6ff';
   }else{if(trend&&trend.status==='bull'){actionIcon='☀️';actionText='正常定投';actionColor='#3fb950'}
        else{actionIcon='📊';actionText='正常定投';actionColor='#8b949e'}
+  }
 
-  if(trendCap)actionText='🔹'+actionText;
 
   const tpActive=mult===0&&tpInfo!=null;
 
