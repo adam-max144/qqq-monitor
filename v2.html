@@ -886,7 +886,18 @@ async function loadData(){
     if(dd>30&&rsi14!==null&&rsi14<30){
       base=Math.round(base*0.5);
     }
-    const effExtraRaw=Math.round(base*tierObj.mult);
+    // 计算有效倍率（应用所有过滤条件）
+    let effMult=tierObj.mult;
+    const isBull=trend&&trend.status==='bull';
+    if(isBull){
+      if(tierObj.tier>=3){effMult=Math.min(effMult,3.0);}
+      else if(tierObj.tier==1){effMult=Math.min(effMult,0.5);}
+      else if(tierObj.tier==2){effMult=Math.min(effMult,1.0);}
+    }
+    if(ddSpeed>3&&tierObj.tier>0){effMult=Math.round(effMult*0.8*10)/10;}
+    if(dd>=25){effMult=Math.round(effMult*0.5*10)/10;}
+    if(v!=null&&v>40&&dd>=40){effMult=Math.round(effMult*0.25*10)/10;}
+    const effExtraRaw=Math.round(base*effMult);
     const cap=applyCap(effExtraRaw);
     const effExtra=cap.extra;
     const effTotal=base+effExtra;
