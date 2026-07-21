@@ -1,0 +1,21 @@
+name: DCA定投日邮件提醒
+
+on:
+  schedule:
+    # 每周二北京时间 8:00 = UTC 0:00
+    - cron: '0 0 * * 2'
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  dca-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: 执行DCA检查并发送邮件
+        run: python3 scripts/dcacheck.py
