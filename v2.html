@@ -964,17 +964,18 @@ function renderHistory(base){
   let totalBase=0,totalExtra=0;
   let tiers={0:0,1:0,2:0,3:0,4:0,5:0};
   let totalShares=0;
+  const FX=7.25;
   const currentPrice=parseFloat((document.getElementById('price')||{}).textContent)||0;
   hist.forEach(h=>{
     totalBase+=h.base||0;
     totalExtra+=h.extra||0;
     tiers[h.tier||0]=(tiers[h.tier||0]||0)+1;
-    // 估算份额: 每周投入÷当时价格
-    if(h.price>0)totalShares+=((h.base||0)+(h.extra||0))/h.price;
+    // 估算份额: 每周投入÷汇率÷当时价格
+    if(h.price>0)totalShares+=((h.base||0)+(h.extra||0))/FX/h.price;
   });
   const tierLabels={0:'平静',1:'T1',2:'T2',3:'T3',4:'T4',5:'T5'};
   const tierStr=Object.entries(tiers).filter(([k,v])=>v>0).map(([k,v])=>tierLabels[k]+'='+v).join(' ');
-  const estValue=currentPrice>0?Math.round(totalShares*currentPrice):0;
+  const estValue=currentPrice>0?Math.round(totalShares*currentPrice*FX):0;
   const totalCost=totalBase+totalExtra;
   const estReturn=estValue>0&&totalCost>0?Math.round((estValue-totalCost)/totalCost*100):null;
   
