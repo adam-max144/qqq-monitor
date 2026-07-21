@@ -332,6 +332,17 @@ function logDcaEntry(date,price,dd,vxn,tier,base,extra,total){
   if(hist.length>500)hist.splice(0,hist.length-500);
   saveDcaHistory(hist);
 }
+// 修正历史记录中的价格为最新可用价（用于QDII基金NAV与实际价格的匹配）
+function updateDcaPrice(price,priceDate){
+  const hist=loadDcaHistory();
+  if(hist.length===0)return;
+  const last=hist[hist.length-1];
+  // 如果最新记录的价格日期和当前数据日期不同，更新价格
+  if(last.priceDate&&last.priceDate===priceDate)return;
+  last.price=price;
+  last.priceDate=priceDate;
+  saveDcaHistory(hist);
+}
 
 // ========== VXN回退估算（vxn.json不可用时） ==========
 function loadLastVxn(){return parseFloat(localStorage.getItem('qqq_last_vxn'))||null}
@@ -903,8 +914,17 @@ async function loadData(){
     const effTotal=base+effExtra;
     if(daysLeft===0||daysLeft===7){
       const todayStr=new Date().toISOString().slice(0,10);
+      // 从QQQ数据获取价格日期（US美股收盘日期）
+      const priceDate=qqq.time?qqq.time.slice(0,10):todayStr;
       logDcaEntry(todayStr, qqq.price, Math.round(dd*10)/10, v, tierObj.tier, base, effExtra, effTotal);
+      // 同时保存价格日期，用于后续校正
+      const dce=loadDcaHistory();
+      if(dce.length>0){dce[dce.length-1].priceDate=priceDate;saveDcaHistory(dce);}
     }
+    
+    // 每次加载页面时，更新最新DCA记录的价格（确保和NAV一致）
+    const qqqPriceTime=qqq.time?qqq.time.slice(0,10):'';
+    if(qqqPriceTime)updateDcaPrice(qqq.price,qqqPriceTime);
 
     let vixDesc='';
     if(vxnFromJson){vixDesc=vxnDate?vxnDate.slice(5):'昨收';}
@@ -996,7 +1016,13 @@ function renderHistory(base){
     html+=` | 📊 估值¥${estValue.toLocaleString()}`;
     if(estReturn!=null)html+=` (${estReturn>=0?'+':''}${estReturn}%)`;
   }
-  html+=` | ${tierStr}</div>`;
+  html+=` | ${tierStr}`;
+  // 显示最新记录的价格日期
+  const lastPriceDate=hist[hist.length-1].priceDate||'';
+  if(lastPriceDate&&hist[hist.length-1].price>0){
+    html+=`<br><span style="font-size:8px;color:#636e7b">最近定投价算: $${hist[hist.length-1].price} (${lastPriceDate})</span>`;
+  }
+  html+=`</div>`;
   
   // 自动计算持仓市值 + 清除按钮
   html+=`<div style="font-size:9px;color:#8b949e;margin-bottom:4px;display:flex;justify-content:space-between">
