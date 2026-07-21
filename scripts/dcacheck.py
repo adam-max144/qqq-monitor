@@ -85,7 +85,7 @@ elif dd >= 28:
     base = round(base * 1.5)
 
 # 趋势裁剪 + 方案C: 高位禁T1/T2
-is_bull = pos > 75
+is_bull = pos > 66
 trend_cut_applied = False
 suppress_extra = False
 if is_bull:
@@ -133,7 +133,7 @@ if dd >= 28:
     crash_note = f"DD≥35%→×3" if dd >= 35 else f"DD≥28%→×1.5"
     detail_lines.append(f"   ├ 暴跌扩倍{crash_note}: ¥→¥{base}")
 if trend_cut_applied:
-    detail_lines.append(f"   ├ 趋势裁剪(52周位{pos:.0f}%>75%): ¥→¥{base}")
+    detail_lines.append(f"   ├ 趋势裁剪(52周位{pos:.0f}%>66%): ¥→¥{base}")
 if suppress_extra:
     detail_lines.append(f"   └ 高位禁T1/T2加仓: 不加额外")
 elif tier > 0:

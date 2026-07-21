@@ -425,7 +425,7 @@ function getTier(vix,dd){
 function calcTrend(price, high52, low52) {
   if (price == null || high52 == null || low52 == null || high52 <= low52) return null;
   const pos = (price - low52) / (high52 - low52) * 100;
-  const isBull = pos > 71;
+  const isBull = pos > 66;
   const isBear = pos < 33;
   return {
     pos: Math.round(pos * 10) / 10,
@@ -874,8 +874,8 @@ async function loadData(){
     // 深度暴跌时逐级加仓：DD≥28%加50%, DD≥35%翻三倍
     if(dd>=35){base=Math.round(base*3);}
     else if(dd>=28){base=Math.round(base*1.5);}
-    // 趋势裁剪：52周高位区(>75%)少投30%，避免追高
-    if(trend&&trend.pos>75){base=Math.round(base*0.7);}
+    // 趋势裁剪：52周高位区(>66%)少投30%，避免追高
+    if(trend&&trend.pos>66){base=Math.round(base*0.7);}
     const effExtraRaw=Math.round(base*tierObj.mult);
     const cap=applyCap(effExtraRaw);
     const effExtra=cap.extra;
