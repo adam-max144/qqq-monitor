@@ -13,8 +13,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 
 /* 头部 */
 .header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 4px;flex-shrink:0}
-.header-left h1{font-size:19px;font-weight:700;letter-spacing:-.3px}
-.header-left .sub{font-size:12px;color:#8b949e;margin-top:1px}
+.header-left h1{font-size:17px;font-weight:700;letter-spacing:-.3px}
+.header-left .sub{font-size:10px;color:#8b949e;margin-top:1px}
 .settings-btn{width:34px;height:34px;border-radius:10px;border:1px solid #30363d;background:#161b22;color:#8b949e;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .settings-btn:active{background:#1c2128}
 
@@ -29,21 +29,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 .scroll{flex:1;overflow-y:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
 
 /* 操作推荐卡 */
-.action-card{border-radius:12px;padding:14px 16px;margin:4px 0;background:linear-gradient(135deg,#1a1f2e,#161b22);border:1px solid #30363d}
+.action-card{border-radius:12px;padding:12px 14px;margin:4px 0;background:linear-gradient(135deg,#1a1f2e,#161b22);border:1px solid #30363d}
 .action-row{display:flex;align-items:center;justify-content:space-between}
 .action-left{display:flex;align-items:center;gap:8px}
-.action-icon{font-size:28px;line-height:1}
-.action-text{font-size:17px;font-weight:700;letter-spacing:-.2px}
-.action-amount{font-size:24px;font-weight:800;letter-spacing:-.5px}
-.action-meta{display:flex;gap:10px;margin-top:6px;font-size:12px;color:#8b949e;flex-wrap:wrap}
+.action-icon{font-size:24px;line-height:1}
+.action-text{font-size:15px;font-weight:700;letter-spacing:-.2px}
+.action-amount{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.action-meta{display:flex;gap:10px;margin-top:6px;font-size:10px;color:#8b949e;flex-wrap:wrap}
 .action-meta span{display:inline-flex;align-items:center;gap:3px}
 
 /* 五数据条 */
 .data-strip{display:flex;gap:4px;margin:4px 0}
-.data-block{flex:1;border-radius:8px;padding:8px 4px;text-align:center;background:#161b22;border:1px solid #21262d;min-width:0}
-.data-block .lbl{font-size:11px;color:#8b949e;margin-bottom:2px;white-space:nowrap}
-.data-block .val{font-size:16px;font-weight:700}
-.data-block .sub{font-size:10px;color:#8b949e;margin-top:2px;white-space:nowrap}
+.data-block{flex:1;border-radius:8px;padding:6px 3px;text-align:center;background:#161b22;border:1px solid #21262d;min-width:0}
+.data-block .lbl{font-size:8px;color:#8b949e;margin-bottom:1px;white-space:nowrap}
+.data-block .val{font-size:14px;font-weight:700}
+.data-block .sub{font-size:8px;color:#8b949e;margin-top:1px;white-space:nowrap}
 
 /* 涨跌色 */
 .val-up{color:#3fb950}
@@ -51,41 +51,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 .val-flat{color:#8b949e}
 
 /* 趋势条 */
-.trend-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border-radius:8px;margin:4px 0;font-size:12px;border:1px solid #21262d;background:#161b22}
+.trend-bar{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:8px;margin:3px 0;font-size:10px;border:1px solid #21262d;background:#161b22}
 .trend-bar .trend-left{display:flex;align-items:center;gap:5px}
-.trend-bar .trend-icon{font-size:14px}
-.trend-bar .trend-note{color:#8b949e;font-size:11px}
-.trend-cap-badge{padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600}
+.trend-bar .trend-icon{font-size:12px}
+.trend-bar .trend-note{color:#8b949e;font-size:9px}
+.trend-cap-badge{padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600}
 .trend-cap-badge.bull{background:#002d1a;color:#3fb950}
 .trend-cap-badge.bear{background:#3d0000;color:#f85149}
 
 /* VXN数据标签 */
 
 /* 档位 */
-.tier-bar{display:flex;gap:4px;margin:6px 0}
-.tier{padding:7px 2px;border-radius:6px;flex:1;text-align:center;font-size:10px;border:1px solid #21262d;background:#161b22;color:#484f58;transition:.3s}
-.tier .tnum{font-size:13px;font-weight:700;display:block}
+.tier-bar{display:flex;gap:3px;margin:4px 0}
+.tier{padding:5px 2px;border-radius:6px;flex:1;text-align:center;font-size:7.5px;border:1px solid #21262d;background:#161b22;color:#484f58;transition:.3s}
+.tier .tnum{font-size:11px;font-weight:700;display:block}
 .tier.active{border-color:var(--tc);background:var(--tb);color:#fff}
 .tier.active .tnum{color:var(--tc)}
 .tier.capped{opacity:.4}
 
 /* 结果 */
-.result-box{border-radius:10px;margin:4px 0;padding:12px 14px;background:#1c2128;border:1px solid #30363d}
-.result-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0}
-.result-row+.result-row{border-top:1px solid #21262d;margin-top:4px;padding-top:8px}
-.result-row .label{font-size:13px;color:#8b949e}
-.result-row .value{font-size:15px;font-weight:600}
-.result-row .value.big{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.result-box{border-radius:10px;margin:4px 0;padding:10px 12px;background:#1c2128;border:1px solid #30363d}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0}
+.result-row+.result-row{border-top:1px solid #21262d;margin-top:3px;padding-top:6px}
+.result-row .label{font-size:11px;color:#8b949e}
+.result-row .value{font-size:13px;font-weight:600}
+.result-row .value.big{font-size:20px;font-weight:800;letter-spacing:-.5px}
 .result-row .val-pos{color:#3fb950}
 .result-row .val-neg{color:#f85149}
 .result-row .val-neutral{color:#8b949e}
 .result-row .val-warn{color:#d29922}
 
 /* 判断详情 */
-.detail-box{margin:4px 0;padding:10px 12px;border-radius:8px;background:#161b22;border:1px solid #21262d}
-.detail-box .title{font-size:12px;color:#8b949e;margin-bottom:4px}
-.detail-line{font-size:13px;padding:3px 0;color:#c9d1d9}
-.detail-line .tag{display:inline-block;padding:2px 6px;border-radius:3px;font-size:11px;margin-right:4px}
+.detail-box{margin:4px 0;padding:8px 10px;border-radius:8px;background:#161b22;border:1px solid #21262d}
+.detail-box .title{font-size:10px;color:#8b949e;margin-bottom:4px}
+.detail-line{font-size:11px;padding:2px 0;color:#c9d1d9}
+.detail-line .tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;margin-right:3px}
 .detail-line .tag.green{background:#002d1a;color:#3fb950}
 .detail-line .tag.yellow{background:#3d3200;color:#d29922}
 .detail-line .tag.red{background:#3d0000;color:#f85149}
@@ -93,10 +93,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans
 .detail-line .tag.blue{background:#001a3d;color:#58a6ff}
 
 /* 止盈/止损 */
-.tp-box{margin:4px 0;padding:10px 12px;border-radius:8px;background:#161b22;border:1px solid #21262d;display:none}
-.tp-box .tp-title{font-size:12px;color:#8b949e;margin-bottom:4px}
-.tp-line{font-size:13px;padding:3px 0;color:#c9d1d9}
-.tp-line .tag{display:inline-block;padding:2px 6px;border-radius:3px;font-size:11px;margin-right:4px}
+.tp-box{margin:4px 0;padding:8px 10px;border-radius:8px;background:#161b22;border:1px solid #21262d;display:none}
+.tp-box .tp-title{font-size:10px;color:#8b949e;margin-bottom:4px}
+.tp-line{font-size:11px;padding:2px 0;color:#c9d1d9}
+.tp-line .tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;margin-right:3px}
 .tp-line .tag.sell{background:#3d0000;color:#f85149}
 .tp-line .tag.hold{background:#002d1a;color:#3fb950}
 .tp-line .tag.warn{background:#3d3200;color:#d29922}
