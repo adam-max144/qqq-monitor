@@ -2,142 +2,36 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>美股科技基金限购监控</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>美股科技基金 · 自动筛选</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans-serif;background:#0d1117;color:#e6edf3;padding:16px 12px;max-width:500px;margin:0 auto}
+body{font-family:-apple-system,sans-serif;background:#0d1117;color:#e6edf3;padding:16px;max-width:500px;margin:0 auto}
 h1{font-size:20px;font-weight:700;margin-bottom:2px}
 .sub{font-size:11px;color:#8b949e;margin-bottom:14px}
 .fund{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px;margin-bottom:10px}
-.fund-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.fund-name{font-size:15px;font-weight:700}
-.fund-code{font-size:10px;color:#8b949e;background:#21262d;padding:2px 6px;border-radius:4px}
-.row{display:flex;gap:6px;margin-bottom:6px}
-.box{flex:1;padding:6px 4px;border-radius:6px;text-align:center;font-size:11px;background:#0d1117;border:1px solid #21262d}
-.box .lbl{color:#8b949e;font-size:9px}
-.box .val{font-weight:700;font-size:14px;margin-top:2px}
-.ok{color:#3fb950}
-.warn{color:#d29922}
-.info{font-size:11px;color:#8b949e;padding:2px 0}
-.info .tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;margin-right:3px}
-.tag.a{background:#002d1a;color:#3fb950}
-.tag.c{background:#3d3200;color:#d29922}
-.bar{height:2px;background:#21262d;border-radius:1px;margin-bottom:14px;overflow:hidden}
-.bar .fill{height:100%;width:0%;background:linear-gradient(90deg,#58a6ff,#3fb950);transition:width .3s}
-#list{min-height:200px}
-.note{margin-top:14px;padding:10px 12px;background:#1c2128;border-radius:8px;font-size:10px;color:#8b949e;line-height:1.6;border:1px solid #21262d}
-.note strong{color:#e6edf3}
-em{color:#8b949e;font-size:12px;display:block;text-align:center;padding:20px}
+.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.hdr b{font-size:14px}
+.cd{font-size:10px;color:#8b949e;background:#21262d;padding:2px 6px;border-radius:4px}
+.rw{display:flex;gap:6px;margin-bottom:4px}
+.bx{flex:1;padding:6px 4px;border-radius:6px;text-align:center;font-size:11px;background:#0d1117;border:1px solid #21262d}
+.bx .lb{color:#8b949e;font-size:9px}
+.bx .vl{font-weight:700;font-size:13px;margin-top:2px}
+.ok{color:#3fb950} .warn{color:#d29922}
+.inf{font-size:10px;color:#8b949e;margin-top:4px}
+em{color:#8b949e;display:block;text-align:center;padding:20px;font-size:13px}
+.note{margin-top:14px;padding:10px;background:#1c2128;border-radius:8px;font-size:10px;color:#8b949e;line-height:1.6;border:1px solid #21262d}
 </style>
 </head>
 <body>
-
 <h1>📡 美股科技基金监控</h1>
-<p class="sub">
-  <span id="dateLabel">加载中...</span> · 
-  仅显示限购&gt;¥1,000 · 
-  <span id="countLabel">0只</span>
-</p>
-
-<div class="bar"><div class="fill" id="fill"></div></div>
-<div id="list"></div>
-
+<p class="sub">2026-07-26 16:55 · 共0只符合条件 · 自动每日更新</p>
+<div id="list"><em>暂无符合条件的基金</em></div>
 <div class="note">
-  <strong>⏱ 自动更新说明</strong><br>
-  • 每天自动检查一次基金限购额度<br>
-  • 数据更新时间: <span id="updateTime">—</span><br>
-  • 额度以支付宝实际显示为准<br>
-  • <strong>首选:</strong> 005698 华夏全球科技先锋A（¥2,000/天）
+<strong>⏱ 自动筛选说明</strong><br>
+• 每天9:00自动扫描全部QDII基金 → 筛选美股科技+限购&gt;¥1,000<br>
+• 数据来源: 天天基金 · 更新时间: 2026-07-26 16:55<br>
+• 限购额以支付宝实际显示为准
 </div>
-
-<script>
-const FUNDS=[
-  {c:"005698",n:"华夏全球科技先锋A",t:"A",f:"0.12%",m:"1.50%",p:"~80%",l:2000},
-  {c:"024239",n:"华夏全球科技先锋C",t:"C",f:"0%",m:"1.50%",p:"~80%",l:2000},
-  {c:"000041",n:"华夏全球股票",t:"A",f:"0.12%",m:"1.50%",p:"~40%",l:10000},
-  {c:"486001",n:"工银全球股票",t:"A",f:"0.16%",m:"1.50%",p:"~35%",l:99999},
-  {c:"100055",n:"富国全球科技互联网A",t:"A",f:"0.12%",m:"1.50%",p:"~60%",l:1000},
-  {c:"006309",n:"汇添富全球消费C",t:"C",f:"0%",m:"1.50%",p:"~30%",l:1000},
-];
-
-function q(s){return document.querySelector(s)}
-const LIMIT_MIN=1000;
-
-function lt(l){
-  if(l>=99999)return"无限";
-  if(l===0)return"暂停";
-  return "¥"+l.toLocaleString()+"/天";
-}
-function lc(l){
-  if(l>=2000)return"ok";
-  if(l>=LIMIT_MIN)return"warn";
-  return"bad";
-}
-
-async function fetchNav(code){
-  try{
-    const r=await fetch("https://fundgz.1234567.com.cn/js/"+code+".js");
-    const t=await r.text();
-    const m=t.match(/"(?:dwjz|gsz)":"([^"]+)"/);
-    if(m)return parseFloat(m[1]);
-  }catch(e){}
-  return null;
-}
-
-async function refresh(){
-  const bar=q("#fill");bar.style.width="20%";
-  
-  // Filter funds with limit >= 1000
-  const ok=FUNDS.filter(f=>f.l>=LIMIT_MIN);
-  q("#countLabel").textContent=ok.length+"只";
-  q("#dateLabel").textContent=new Date().toISOString().slice(0,10);
-  
-  bar.style.width="40%";
-  
-  // Fetch NAVs
-  const navs={};
-  for(const f of ok){
-    const n=await fetchNav(f.c);
-    if(n)navs[f.c]=n;
-    bar.style.width=40+(ok.indexOf(f)+1)/ok.length*50;
-  }
-  
-  // Render
-  let html="";
-  ok.forEach(f=>{
-    const nav=navs[f.c];
-    html+=`<div class="fund">`;
-    html+=`<div class="fund-header"><span class="fund-name">${f.n}</span><span class="fund-code">${f.c}</span></div>`;
-    html+=`<div class="row">`;
-    html+=`<div class="box"><div class="lbl">限购</div><div class="val ${lc(f.l)}">${lt(f.l)}</div></div>`;
-    html+=`<div class="box"><div class="lbl">净值</div><div class="val">${nav?nav.toFixed(4):'—'}</div></div>`;
-    html+=`<div class="box"><div class="lbl">申购费</div><div class="val">${f.f}</div></div>`;
-    html+=`<div class="box"><div class="lbl">科技纯度</div><div class="val">${f.p}</div></div>`;
-    html+=`</div>`;
-    html+=`<div class="info">${f.t==='A'?'<span class="tag a">A类</span>':'<span class="tag c">C类</span>'} 管理费${f.m}/年</div>`;
-    html+=`</div>`;
-  });
-  
-  if(ok.length===0)html="<em>没有符合条件的基金</em>";
-  q("#list").innerHTML=html;
-  
-  q("#updateTime").textContent=new Date().toLocaleString("zh-CN");
-  bar.style.width="100%";
-  setTimeout(()=>{bar.style.width="0%"},500);
-}
-
-// Auto load
-document.addEventListener("DOMContentLoaded",()=>{
-  refresh();
-  // Auto refresh every 5 minutes
-  setInterval(refresh,300000);
-});
-
-// Tap to manual refresh
-document.addEventListener("click",function(e){
-  if(!e.target.closest('.fund'))refresh();
-});
-</script>
 </body>
 </html>
