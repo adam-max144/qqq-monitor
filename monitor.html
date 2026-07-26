@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>美股科技基金 · 限购监控</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans-serif;background:#0d1117;color:#e6edf3;padding:16px 12px;max-width:500px;margin:0 auto}
+h1{font-size:20px;font-weight:700;margin-bottom:4px}
+.sub{font-size:12px;color:#8b949e;margin-bottom:16px}
+.fund{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px;margin-bottom:10px}
+.fund-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.fund-name{font-size:15px;font-weight:700}
+.fund-code{font-size:11px;color:#8b949e;background:#21262d;padding:2px 6px;border-radius:4px}
+.limit-row{display:flex;gap:8px;margin-bottom:6px}
+.limit-box{flex:1;padding:6px 8px;border-radius:6px;text-align:center;font-size:12px;background:#0d1117;border:1px solid #21262d}
+.limit-box .lbl{color:#8b949e;font-size:10px}
+.limit-box .val{font-weight:700;font-size:14px;margin-top:2px}
+.ok{color:#3fb950}
+.warn{color:#d29922}
+.bad{color:#f85149}
+.info-row{display:flex;justify-content:space-between;font-size:12px;color:#8b949e;padding:3px 0}
+.info-row .val{color:#c9d1d9}
+.fee-tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;margin-right:3px}
+.fee-tag.a{background:#002d1a;color:#3fb950}
+.fee-tag.c{background:#3d3200;color:#d29922}
+.refresh-bar{height:2px;background:#21262d;border-radius:1px;margin-bottom:16px;overflow:hidden}
+.refresh-bar .fill{height:100%;width:0%;background:linear-gradient(90deg,#58a6ff,#3fb950);transition:width .3s}
+.total-row{display:flex;gap:8px;margin-bottom:14px}
+.total-box{flex:1;background:#1c2128;padding:10px;border-radius:8px;text-align:center;border:1px solid #30363d}
+.total-box .lbl{font-size:10px;color:#8b949e}
+.total-box .val{font-size:18px;font-weight:800;margin-top:2px}
+.note{margin-top:14px;padding:10px 12px;background:#1c2128;border-radius:8px;border:1px solid #21262d;font-size:11px;color:#8b949e;line-height:1.6}
+.note strong{color:#e6edf3}
+.loading{text-align:center;padding:20px;color:#8b949e;font-size:13px}
+.loading span{animation:dot 1.4s infinite;display:inline-block}
+.loading span:nth-child(2){animation-delay:.2s}
+.loading span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,60%,100%{opacity:0}20%{opacity:1}}
+</style>
+</head>
+<body>
+
+<h1>📡 美股科技基金监控</h1>
+<p class="sub">实时净值 · 购买限额 · 费率对比 · 手机专用</p>
+
+<div class="refresh-bar"><div class="fill" id="fill"></div></div>
+
+<div class="total-row">
+  <div class="total-box">
+    <div class="lbl">额度充足（≥¥2,000）</div>
+    <div class="val ok" id="okCount">—</div>
+  </div>
+  <div class="total-box">
+    <div class="lbl">额度紧张</div>
+    <div class="val warn" id="warnCount">—</div>
+  </div>
+  <div class="total-box">
+    <div class="lbl">禁止申购</div>
+    <div class="val bad" id="badCount">—</div>
+  </div>
+</div>
+
+<div id="list"><div class="loading">加载中<span>.</span><span>.</span><span>.</span></div></div>
+
+<div class="note">
+  <strong>⚠️ 购买提示</strong><br>
+  • 周二15:00前买入 → 按当晚美股收盘NAV成交<br>
+  • 限购额以支付宝实际显示为准，这里仅供参考<br>
+  • 每天15:00更新一次数据，手动下拉刷新<br>
+  • <strong>首选：</strong>005698（额度¥2,000，纯度最高）
+</div>
+
+<script>
+// 基金列表（基于之前验证的所有QDII美股科技基金）
+const FUNDS=[
+  {code:"005698",name:"华夏全球科技先锋A",type:"A",fee:"0.12%",mgmt:"1.50%",tech:"~80%",pure:"纯科技",limit:2000,limitSrc:"天天基金"},
+  {code:"024239",name:"华夏全球科技先锋C",type:"C",fee:"0%",mgmt:"1.50%",tech:"~80%",pure:"纯科技",limit:2000,limitSrc:"天天基金",note:"年销售服务费0.8%，短期持有选"},
+  {code:"000041",name:"华夏全球股票",type:"A",fee:"0.12%",mgmt:"1.50%",tech:"~40%",pure:"全球均衡",limit:10000,limitSrc:"天天基金"},
+  {code:"486001",name:"工银全球股票",type:"A",fee:"0.16%",mgmt:"1.50%",tech:"~35%",pure:"全球均衡",limit:99999,limitSrc:"天天基金",note:"无限购"},
+  {code:"100055",name:"富国全球科技互联网A",type:"A",fee:"0.12%",mgmt:"1.50%",tech:"~60%",pure:"含中概",limit:1000,limitSrc:"天天基金",note:"含中概股~20-30%"},
+  {code:"006309",name:"汇添富全球消费C",type:"C",fee:"0%",mgmt:"1.50%",tech:"~30%",pure:"消费为主",limit:1000,limitSrc:"天天基金",note:"含消费股，非纯科技"},
+
+  // 以下为参考（限额≤¥100或不满足条件，但列出来做对比）
+  {code:"040046",name:"华安纳斯达克100A",type:"A",fee:"0.12%",mgmt:"0.80%",tech:"~95%",pure:"纯纳指",limit:10,limitSrc:"天天基金"},
+  {code:"006479",name:"广发纳斯达克100C",type:"C",fee:"0%",mgmt:"0.80%",tech:"~95%",pure:"纯纳指",limit:10,limitSrc:"天天基金"},
+  {code:"000834",name:"大成纳斯达克100A",type:"A",fee:"0.12%",mgmt:"0.80%",tech:"~95%",pure:"纯纳指",limit:10,limitSrc:"天天基金"},
+  {code:"012870",name:"易方达纳斯达克100C",type:"C",fee:"0%",mgmt:"0.80%",tech:"~95%",pure:"纯纳指",limit:10,limitSrc:"天天基金"},
+  {code:"017091",name:"景顺纳斯达克科技A",type:"A",fee:"0.12%",mgmt:"0.80%",tech:"~95%",pure:"纯科技",limit:100,limitSrc:"天天基金"},
+  {code:"539001",name:"建信纳斯达克100A",type:"A",fee:"0.12%",mgmt:"0.80%",tech:"~95%",pure:"纯纳指",limit:100,limitSrc:"天天基金"},
+  {code:"050025",name:"博时标普500A",type:"A",fee:"0.12%",mgmt:"0.80%",tech:"~60%",pure:"标普500",limit:100,limitSrc:"天天基金"},
+  {code:"161128",name:"易方达标普信息科技A",type:"A",fee:"0.12%",mgmt:"0.80%",tech:"~90%",pure:"纯科技",limit:10,limitSrc:"天天基金"},
+  {code:"160213",name:"国泰纳斯达克100",type:"A",fee:"0.12%",mgmt:"0.80%",tech:"~95%",pure:"纯纳指",limit:0,limitSrc:"天天基金",note:"暂停申购"},
+  {code:"015299",name:"华夏纳斯达克100A",type:"A",fee:"0.12%",mgmt:"0.80%",tech:"~95%",pure:"纯纳指",limit:0,limitSrc:"天天基金",note:"暂停申购"},
+];
+
+const LIMIT_OK=2000; // 满足条件的限额阈值
+
+function qs(s){return document.querySelector(s)}
+function qsa(s){return document.querySelectorAll(s)}
+
+function limitClass(l){
+  if(l>=LIMIT_OK)return"ok";
+  if(l>0)return"warn";
+  return"bad";
+}
+function limitText(l){
+  if(l>=99999)return"无限购";
+  if(l===0)return"暂停";
+  return"¥"+l.toLocaleString()+"/天";
+}
+
+function countStats(){
+  let ok=0,warn=0,bad=0;
+  FUNDS.forEach(f=>{
+    if(f.limit>=LIMIT_OK)ok++;
+    else if(f.limit>0)warn++;
+    else bad++;
+  });
+  return{ok,warn,bad};
+}
+
+async function fetchNav(code){
+  try{
+    const r=await fetch("https://fundgz.1234567.com.cn/js/"+code+".js");
+    const t=await r.text();
+    const m=t.match(/"(?:dwjz|gsz)":"([^"]+)"/);
+    if(m)return parseFloat(m[1]);
+  }catch(e){}
+  return null;
+}
+
+async function refresh(){
+  const fill=qs("#fill");
+  fill.style.width="30%";
+  
+  // Update limits from a simple check (静态数据，已在代码中)
+  const stats=countStats();
+  qs("#okCount").textContent=stats.ok;
+  qs("#warnCount").textContent=stats.warn;
+  qs("#badCount").textContent=stats.bad;
+  
+  fill.style.width="50%";
+  
+  // Fetch real-time NAV
+  const navs={};
+  let done=0;
+  for(const f of FUNDS){
+    const n=await fetchNav(f.code);
+    if(n)navs[f.code]=n;
+    done++;
+    fill.style.width=50+(done/FUNDS.length*40);
+  }
+  
+  fill.style.width="95%";
+  
+  // Render
+  let html="";
+  let hasOk=false;
+  FUNDS.forEach(f=>{
+    const lc=limitClass(f.limit);
+    if(lc==="ok"&&!hasOk){html+=`<div style="font-size:11px;color:#3fb950;margin:8px 0 4px">✅ 额度充足（≥¥2,000）</div>`;hasOk=true;}
+    if(lc==="warn"&&hasOk&&!document.getElementById('_warn')){html+=`<div id="_warn" style="font-size:11px;color:#d29922;margin:8px 0 4px">⚠️ 额度不足</div>`;}
+    if(lc==="bad"&&(hasOk||document.getElementById('_warn'))){/* skip 暂停的不显示 */}
+    if(lc==="bad")return;
+    
+    html+=`<div class="fund">`;
+    html+=`<div class="fund-header"><span class="fund-name">${f.name}</span><span class="fund-code">${f.code}</span></div>`;
+    html+=`<div class="limit-row">`;
+    html+=`<div class="limit-box"><div class="lbl">每日限购</div><div class="val ${lc}">${limitText(f.limit)}</div></div>`;
+    const nav=navs[f.code];
+    html+=`<div class="limit-box"><div class="lbl">最新净值</div><div class="val">${nav?nav.toFixed(4):'—'}</div></div>`;
+    html+=`<div class="limit-box"><div class="lbl">申购费</div><div class="val">${f.fee}</div></div>`;
+    html+=`<div class="limit-box"><div class="lbl">科技纯度</div><div class="val">${f.tech}</div></div>`;
+    html+=`</div>`;
+    html+=`<div class="info-row"><span>类型: <span class="fee-tag ${f.type==='A'?'a':'c'}">${f.type}类</span> 管理费${f.mgmt}/年</span><span class="val">${f.pure}</span></div>`;
+    if(f.note)html+=`<div class="info-row"><span style="color:#d29922">📌 ${f.note}</span></div>`;
+    html+=`</div>`;
+  });
+  
+  qs("#list").innerHTML=html;
+  
+  setTimeout(()=>{fill.style.width="100%";setTimeout(()=>{fill.style.width="0%"},300)},300);
+}
+
+// Auto refresh on load
+refresh();
+
+// Manual refresh on tap
+document.addEventListener('click',function(e){
+  const t=e.target;
+  if(t.tagName!=='A'&&t.tagName!=='BUTTON'&&!t.closest('.fund')){refresh()}
+});
+</script>
+</body>
+</html>
