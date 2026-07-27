@@ -739,7 +739,7 @@ function render(d){
   const dl=document.getElementById('detailLines');
   let html='';
   const vxnTag='VXN';
-  const vxnSrc=d.vxn_real?(vxnDate&&vxnDate==='实时'?'(实时)':'(FRED)'):'';
+  const vxnSrc=d.vxn_real?'(FRED)':'';
   html+='<div class="detail-line">'+vxnTag+'='+(d.vix!=null?d.vix.toFixed(1):'N/A')+(vxnSrc?' '+vxnSrc:'')+'，回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
 
   html+='<div class="detail-line"><span class="tag '+(d.tierObj.tier>0?'green':'gray')+'">T'+d.tierObj.tier+'</span>'+d.tierObj.msg+'</div>';
@@ -839,9 +839,9 @@ async function loadData(){
     const qqq=parseQQQ(qt);
     if(!qqq){showError('QQQ数据解析失败');return;}
 
-    // VXN = 优先vxn.json，失败则从腾讯API拿VIX实时数据（VIX×1.55≈VXN）
+    // VXN = 优先vxn.json，失败则DD估算回退
     let vxnReal=null,vxnFromJson=false,vxnDate='',vxnFallback=false;
-    // 优先加载vxn.json
+    // 加载vxn.json（每天由GitHub Actions自动更新）
     try{
       const vxnResp=await fetch('vxn.json?t='+Date.now(),{signal:ctrl.signal});
       if(vxnResp.ok){
@@ -852,23 +852,7 @@ async function loadData(){
         }
       }
     }catch(e){}
-    // vxn.json拿不到，从腾讯API拿VIX实时数据
-    if(!vxnFromJson){
-      try{
-        const vixResp=await fetch('https://qt.gtimg.cn/q=usVIX',{signal:ctrl.signal});
-        if(vixResp.ok){
-          const vixText=bytesToStr(await vixResp.arrayBuffer());
-          const vixMatch=vixText.match(/[~](\d+\.\d+)[~]/);
-          if(vixMatch){
-            const vixVal=parseFloat(vixMatch[1]);
-            if(vixVal>0){
-              vxnReal=Math.round(vixVal*1.55*10)/10;
-              vxnDate='实时'; vxnFromJson=true;
-            }
-          }
-        }
-      }catch(e){}
-    }
+    // 腾讯API的VIX数据过期不可用，跳过
     if(!vxnFromJson){
       const lastVxn=loadLastVxn();
       // 回撤到位时会推算出合理VXN
@@ -945,7 +929,7 @@ async function loadData(){
     if(qqqPriceTime)updateDcaPrice(qqq.price,qqqPriceTime);
 
     let vixDesc='';
-    if(vxnFromJson){vixDesc=vxnDate==='实时'?'实时':(vxnDate?vxnDate.slice(5):'昨收');}
+    if(vxnFromJson){vixDesc=vxnDate?vxnDate.slice(5):'昨收';}
     else if(vxnFallback){vixDesc=vxnDate;}
     else vixDesc='无';
     if(v!=null){
