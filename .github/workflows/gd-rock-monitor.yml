@@ -1,0 +1,21 @@
+name: 🎸 广东摇滚演出监控
+
+on:
+  schedule:
+    # 每天早上8:00 (北京时间) = UTC 0:00
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # 手动触发
+
+jobs:
+  check-shows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: 搜索广东摇滚演出
+        run: python3 scripts/gd_rock_monitor.py
