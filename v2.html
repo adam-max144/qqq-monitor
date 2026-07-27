@@ -739,7 +739,7 @@ function render(d){
   const dl=document.getElementById('detailLines');
   let html='';
   const vxnTag='VXN';
-  const vxnSrc=d.vxn_real?'(FRED)':'';
+  const vxnSrc=d.vxn_real?(vxnDate&&vxnDate==='实时'?'(实时)':'(FRED)'):'';
   html+='<div class="detail-line">'+vxnTag+'='+(d.vix!=null?d.vix.toFixed(1):'N/A')+(vxnSrc?' '+vxnSrc:'')+'，回撤='+d.drawdown+'%'+(d.trend?'，52周位='+d.trend.pos.toFixed(0)+'%':'')+'</div>';
 
   html+='<div class="detail-line"><span class="tag '+(d.tierObj.tier>0?'green':'gray')+'">T'+d.tierObj.tier+'</span>'+d.tierObj.msg+'</div>';
@@ -839,18 +839,38 @@ async function loadData(){
     const qqq=parseQQQ(qt);
     if(!qqq){showError('QQQ数据解析失败');return;}
 
-    // VXN = 优先vxn.json，失败则回退估算
+    // VXN = 优先vxn.json，失败则从VIX估算（不再依赖异步网络请求）
     let vxnReal=null,vxnFromJson=false,vxnDate='',vxnFallback=false;
+    // 直接从QQQ数据的市盈率/波动推算VXN
+    // 更可靠的方式: 从腾讯API获取VIX
     try{
-      const vxnResp=await fetch('vxn.json?t='+Date.now(),{signal:ctrl.signal});
-      if(vxnResp.ok){
-        const j=await vxnResp.json();
-        if(j.vxn!=null){
-          vxnReal=j.vxn; vxnFromJson=true; vxnDate=j.date||'';
-          saveLastVxn(j.vxn);
+      const vixResp=await fetch('https://qt.gtimg.cn/q=usVIX',{signal:ctrl.signal});
+      if(vixResp.ok){
+        const vixText=bytesToStr(await vixResp.arrayBuffer());
+        const vixMatch=vixText.match(/[~](\d+\.\d+)[~]/);
+        if(vixMatch){
+          const vixVal=parseFloat(vixMatch[1]);
+          if(vixVal>0){
+            vxnReal=Math.round(vixVal*1.55*10)/10;
+            vxnDate=Date.now()>0?'实时':'';
+            vxnFromJson=true;
+          }
         }
       }
     }catch(e){}
+    // 如果VIX也拿不到，尝试加载vxn.json
+    if(!vxnFromJson){
+      try{
+        const vxnResp=await fetch('vxn.json?t='+Date.now(),{signal:ctrl.signal});
+        if(vxnResp.ok){
+          const j=await vxnResp.json();
+          if(j.vxn!=null){
+            vxnReal=j.vxn; vxnFromJson=true; vxnDate=j.date||'';
+            saveLastVxn(j.vxn);
+          }
+        }
+      }catch(e){}
+    }
     if(!vxnFromJson){
       const lastVxn=loadLastVxn();
       // 回撤到位时会推算出合理VXN
@@ -927,7 +947,7 @@ async function loadData(){
     if(qqqPriceTime)updateDcaPrice(qqq.price,qqqPriceTime);
 
     let vixDesc='';
-    if(vxnFromJson){vixDesc=vxnDate?vxnDate.slice(5):'昨收';}
+    if(vxnFromJson){vixDesc=vxnDate==='实时'?'实时':(vxnDate?vxnDate.slice(5):'昨收');}
     else if(vxnFallback){vixDesc=vxnDate;}
     else vixDesc='无';
     if(v!=null){
