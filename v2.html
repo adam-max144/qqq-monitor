@@ -839,34 +839,32 @@ async function loadData(){
     const qqq=parseQQQ(qt);
     if(!qqq){showError('QQQ数据解析失败');return;}
 
-    // VXN = 优先vxn.json，失败则从VIX估算（不再依赖异步网络请求）
+    // VXN = 优先vxn.json，失败则从腾讯API拿VIX实时数据（VIX×1.55≈VXN）
     let vxnReal=null,vxnFromJson=false,vxnDate='',vxnFallback=false;
-    // 直接从QQQ数据的市盈率/波动推算VXN
-    // 更可靠的方式: 从腾讯API获取VIX
+    // 优先加载vxn.json
     try{
-      const vixResp=await fetch('https://qt.gtimg.cn/q=usVIX',{signal:ctrl.signal});
-      if(vixResp.ok){
-        const vixText=bytesToStr(await vixResp.arrayBuffer());
-        const vixMatch=vixText.match(/[~](\d+\.\d+)[~]/);
-        if(vixMatch){
-          const vixVal=parseFloat(vixMatch[1]);
-          if(vixVal>0){
-            vxnReal=Math.round(vixVal*1.55*10)/10;
-            vxnDate=Date.now()>0?'实时':'';
-            vxnFromJson=true;
-          }
+      const vxnResp=await fetch('vxn.json?t='+Date.now(),{signal:ctrl.signal});
+      if(vxnResp.ok){
+        const j=await vxnResp.json();
+        if(j.vxn!=null){
+          vxnReal=j.vxn; vxnFromJson=true; vxnDate=j.date||'';
+          saveLastVxn(j.vxn);
         }
       }
     }catch(e){}
-    // 如果VIX也拿不到，尝试加载vxn.json
+    // vxn.json拿不到，从腾讯API拿VIX实时数据
     if(!vxnFromJson){
       try{
-        const vxnResp=await fetch('vxn.json?t='+Date.now(),{signal:ctrl.signal});
-        if(vxnResp.ok){
-          const j=await vxnResp.json();
-          if(j.vxn!=null){
-            vxnReal=j.vxn; vxnFromJson=true; vxnDate=j.date||'';
-            saveLastVxn(j.vxn);
+        const vixResp=await fetch('https://qt.gtimg.cn/q=usVIX',{signal:ctrl.signal});
+        if(vixResp.ok){
+          const vixText=bytesToStr(await vixResp.arrayBuffer());
+          const vixMatch=vixText.match(/[~](\d+\.\d+)[~]/);
+          if(vixMatch){
+            const vixVal=parseFloat(vixMatch[1]);
+            if(vixVal>0){
+              vxnReal=Math.round(vixVal*1.55*10)/10;
+              vxnDate='实时'; vxnFromJson=true;
+            }
           }
         }
       }catch(e){}
