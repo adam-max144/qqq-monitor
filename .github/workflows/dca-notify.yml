@@ -2,8 +2,8 @@ name: DCA定投日邮件提醒
 
 on:
   schedule:
-    # 每周二北京时间 8:00 = UTC 0:00
-    - cron: '0 0 * * 2'
+    # 每周二北京时间 2:00 = UTC 周一 18:00
+    - cron: '0 18 * * 1'
   workflow_dispatch:  # 支持手动触发
 
 jobs:
