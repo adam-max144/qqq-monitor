@@ -9,12 +9,11 @@
 import urllib.request, json, re, time
 from datetime import datetime
 
-# 监控标的（场内QDII ETF，全部纯美股指数、无A股）
+# 监控标的（场内QDII ETF，全部纯美股指数、无A股；仅保留纳斯达克100）
 # code: [市场 sh/sz, 指数类别, 管理费%, 托管费%, 是否核心推荐, 备注]
 FUNDS = {
     "159632": ["sz", "纳指100", 0.60, 0.20, True,  "⭐主力·当前溢价最低的大规模纳指"],
     "513300": ["sh", "纳指100", 0.60, 0.20, True,  "⭐主力·规模/流动性/品牌最佳"],
-    "513500": ["sh", "标普500", 0.60, 0.20, True,  "⭐分散·低溢价，非纯科技"],
     "513100": ["sh", "纳指100", 0.60, 0.20, False, "老牌最大·溢价全场最贵"],
     "159941": ["sz", "纳指100", 0.80, 0.20, False, "规模最大·溢价最贵"],
     "513110": ["sh", "纳指100", 0.80, 0.20, False, "溢价低·费率偏高"],
@@ -23,9 +22,8 @@ FUNDS = {
     "159696": ["sz", "纳指100", 0.50, 0.10, False, "费率最低档"],
     "159501": ["sz", "纳指100", 0.50, 0.10, False, ""],
     "513870": ["sh", "纳指100", 0.50, 0.10, False, ""],
-    "159655": ["sz", "标普500", 0.60, 0.15, False, "溢价全场最低·规模偏小"],
 }
-INDEX_US = {"纳指100": "QQQ", "标普500": "SPY"}  # 真实溢价校正用
+INDEX_US = {"纳指100": "QQQ"}  # 真实溢价校正用
 
 def fetch(url, ref, tries=3, enc="utf-8"):
     last = None
@@ -258,7 +256,7 @@ h1{{font-size:20px;font-weight:700}}
 <p class="sub">{now} · 共{ok_n}/{len(FUNDS)}只 · 腾讯行情+官方净值 · GitHub Actions自动更新</p>
 <div class="hdr2">⭐ 核心推荐</div>
 <div id="list">{''.join(card(r) for r in cores if r.get('ok'))}</div>
-<div class="hdr2">📋 全部场内纳指/标普ETF（按真实溢价升序）</div>
+<div class="hdr2">📋 全部场内纳斯达克100 ETF（按真实溢价升序）</div>
 {''.join(card(r) for r in results_sorted)}
 <div class="note">
 <strong>📐 口径说明</strong><br>
