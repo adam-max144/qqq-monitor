@@ -3,181 +3,317 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>美股科技基金 · 自动筛选</title>
+<title>场内纳指基金监控</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,sans-serif;background:#0d1117;color:#e6edf3;padding:16px;max-width:500px;margin:0 auto}
 h1{font-size:20px;font-weight:700}
 .sub{font-size:11px;color:#8b949e;margin:4px 0 14px}
 .fund{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px;margin-bottom:10px}
-.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.hdr b{font-size:14px}
+.fund.core{border-color:#238636;background:linear-gradient(135deg,#12221a,#161b22)}
+.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:6px}
+.hdr b{font-size:13px;line-height:1.4}
+.hdr span{display:flex;align-items:center;gap:4px;flex-shrink:0}
 .cd{font-size:10px;color:#8b949e;background:#21262d;padding:2px 6px;border-radius:4px}
-.rw{display:flex;gap:6px}
-.bx{flex:1;padding:6px 4px;border-radius:6px;text-align:center;background:#0d1117;border:1px solid #21262d}
+.tag{font-size:9px;padding:2px 5px;border-radius:4px;font-weight:700}
+.tag.idx{background:#001a3d;color:#58a6ff}
+.tag.core{background:#002d1a;color:#3fb950}
+.rw{display:flex;gap:6px;margin-top:6px}
+.bx{flex:1;padding:6px 4px;border-radius:6px;text-align:center;background:#0d1117;border:1px solid #21262d;min-width:0}
 .bx .lb{color:#8b949e;font-size:9px}
-.bx .vl{font-weight:700;font-size:13px;margin-top:2px}
-.ok{color:#3fb950} .warn{color:#d29922}
-.inf{font-size:10px;color:#8b949e;margin-top:6px}
-em{color:#8b949e;display:block;text-align:center;padding:20px;font-size:13px}
+.bx .vl{font-weight:700;font-size:12px;margin-top:2px;white-space:nowrap}
+.ok{color:#3fb950} .warn{color:#d29922} .bad{color:#f85149} .flat{color:#8b949e}
+.up{color:#3fb950} .down{color:#f85149}
+.inf{font-size:10px;color:#8b949e;margin-top:6px;line-height:1.5}
+.hdr2{font-size:13px;font-weight:700;margin:14px 0 6px;padding:6px 0;border-bottom:1px solid #21262d}
 .note{margin-top:14px;padding:10px;background:#1c2128;border-radius:8px;font-size:10px;color:#8b949e;line-height:1.6;border:1px solid #21262d}
-.hdr2{font-size:13px;font-weight:700;margin:12px 0 6px;padding:6px 0;border-bottom:1px solid #21262d}
-.rate-S{display:inline-block;background:#002d1a;color:#3fb950;padding:1px 6px;border-radius:4px;font-weight:700;font-size:10px}
-.rate-A{display:inline-block;background:#001a3d;color:#58a6ff;padding:1px 6px;border-radius:4px;font-weight:700;font-size:10px}
-.rate-B{display:inline-block;background:#3d3200;color:#d29922;padding:1px 6px;border-radius:4px;font-weight:700;font-size:10px}
-.rate-C{display:inline-block;background:#1c2128;color:#8b949e;padding:1px 6px;border-radius:4px;font-weight:700;font-size:10px}
-.rate-D{display:inline-block;background:#3d0000;color:#f85149;padding:1px 6px;border-radius:4px;font-weight:700;font-size:10px}
 </style>
 </head>
 <body>
-<h1>📡 美股科技基金监控</h1>
-<p class="sub">2026-07-26 17:19 · 共14只符合条件 · 数据来自天天基金</p>
+<h1>📡 场内纳指基金监控</h1>
+<p class="sub">2026-08-03 15:32 UTC · 共12/12只 · 腾讯行情+官方净值 · GitHub Actions自动更新</p>
+<div class="hdr2">⭐ 核心推荐</div>
 <div id="list">
-    <div class="fund">
-      <div class="hdr"><b>华夏全球科技先锋混合(QDII)A(人民币)</b><span class="cd">005698</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl ok">¥5,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~80%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0.12%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">A类</div></div>
+    <div class="fund core">
+      <div class="hdr"><b>纳斯达克ETF华安</b>
+        <span><span class="cd">159632</span><span class="tag idx">纳指100</span><span class="tag core">核心</span></span>
       </div>
-      <div class="inf"><span class="rate-S">S</span> · A类 · 科技占比~80% · ★ 首选·科技纯度最高 · ✅ 额度充裕</div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">2.352</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.56%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">8.84%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">4.69%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.17%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">115.31亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">2.58亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>7.11%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · ⭐主力·当前溢价最低的大规模纳指</div>
     </div>
-    <div class="fund">
-      <div class="hdr"><b>华夏全球科技先锋混合(QDII)C</b><span class="cd">024239</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl ok">¥5,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~80%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">C类</div></div>
+    <div class="fund core">
+      <div class="hdr"><b>纳斯达克ETF华夏</b>
+        <span><span class="cd">513300</span><span class="tag idx">纳指100</span><span class="tag core">核心</span></span>
       </div>
-      <div class="inf"><span class="rate-S">S</span> · C类 · 科技占比~80% · ★ 首选·科技纯度最高 · ✅ 额度充裕</div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">2.593</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.58%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">9.65%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">5.47%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.08%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">136.25亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">2.99亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>7.77%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · ⭐主力·规模/流动性/品牌最佳</div>
     </div>
-    <div class="fund">
-      <div class="hdr"><b>华宝纳斯达克精选股票发起式(QDII)A</b><span class="cd">017436</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl warn">¥1,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~95%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0.12%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">A类</div></div>
+    <div class="fund core">
+      <div class="hdr"><b>标普500ETF博时</b>
+        <span><span class="cd">513500</span><span class="tag idx">标普500</span><span class="tag core">核心</span></span>
       </div>
-      <div class="inf"><span class="rate-A">A</span> · A类 · 科技占比~95% · 纯纳指·限购¥1,000</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>华宝纳斯达克精选股票发起式(QDII)C</b><span class="cd">017437</span></div>
       <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl warn">¥1,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~95%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">C类</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl">2.533</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.96%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl warn">6.13%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl warn">3.63%</div></div>
       </div>
-      <div class="inf"><span class="rate-A">A</span> · C类 · 科技占比~95% · 纯纳指·限购¥1,000</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>创金合信全球芯片产业股票发起(QDII)A</b><span class="cd">017653</span></div>
       <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl ok">无限购</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~85%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0.12%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">A类</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.52%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">255.9亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">4.03亿</div></div>
       </div>
-      <div class="inf"><span class="rate-A">A</span> · A类 · 科技占比~85% · 全球芯片龙头·无限购 · ✅ 额度充裕</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>嘉实全球产业升级股票发起式(QDII)A</b><span class="cd">017730</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl warn">¥1,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~80%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0.12%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">A类</div></div>
-      </div>
-      <div class="inf"><span class="rate-B">B</span> · A类 · 科技占比~80% · 全球产业升级</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>嘉实全球产业升级股票发起式(QDII)C</b><span class="cd">017731</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl warn">¥1,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~80%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">C类</div></div>
-      </div>
-      <div class="inf"><span class="rate-B">B</span> · C类 · 科技占比~80% · 全球产业升级</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>富国全球科技互联网股票(QDII)A</b><span class="cd">100055</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl warn">¥1,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~60%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0.12%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">A类</div></div>
-      </div>
-      <div class="inf"><span class="rate-B">B</span> · A类 · 科技占比~60% · 含中概股~30%</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>富国全球科技互联网股票(QDII)C</b><span class="cd">022184</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl warn">¥1,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~60%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">C类</div></div>
-      </div>
-      <div class="inf"><span class="rate-B">B</span> · C类 · 科技占比~60% · 含中概股~30%</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>华夏全球股票(QDII)(人民币)</b><span class="cd">000041</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl ok">¥10,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~40%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0.12%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">A类</div></div>
-      </div>
-      <div class="inf"><span class="rate-C">C</span> · A类 · 科技占比~40% · 全球分散·含美股科技40% · ✅ 额度充裕</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>易方达全球优质企业混合(QDII)A(人民币份额)</b><span class="cd">018229</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl warn">¥1,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~40%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0.12%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">A类</div></div>
-      </div>
-      <div class="inf"><span class="rate-C">C</span> · A类 · 科技占比~40% · 全球优质企业</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>易方达全球优质企业混合(QDII)C(人民币份额)</b><span class="cd">018230</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl warn">¥1,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~40%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">C类</div></div>
-      </div>
-      <div class="inf"><span class="rate-C">C</span> · C类 · 科技占比~40% · 全球优质企业</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>汇添富全球消费混合(QDII)人民币A</b><span class="cd">006308</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl warn">¥1,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~30%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0.12%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">A类</div></div>
-      </div>
-      <div class="inf"><span class="rate-D">D</span> · A类 · 科技占比~30% · 含消费股·科技仅30%</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>汇添富全球消费混合(QDII)人民币C</b><span class="cd">006309</span></div>
-      <div class="rw">
-        <div class="bx"><div class="lb">限购</div><div class="vl warn">¥1,000/天</div></div>
-        <div class="bx"><div class="lb">科技占比</div><div class="vl ok">~30%</div></div>
-        <div class="bx"><div class="lb">申购费</div><div class="vl">0%</div></div>
-        <div class="bx"><div class="lb">类型</div><div class="vl">C类</div></div>
-      </div>
-      <div class="inf"><span class="rate-D">D</span> · C类 · 科技占比~30% · 含消费股·科技仅30%</div>
+      <div class="inf">20日均溢价 <b>4.66%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +2.4% · ⭐分散·低溢价，非纯科技</div>
     </div></div>
+<div class="hdr2">📋 全部场内纳指/标普ETF（按真实溢价升序）</div>
+
+    <div class="fund core">
+      <div class="hdr"><b>纳斯达克ETF华安</b>
+        <span><span class="cd">159632</span><span class="tag idx">纳指100</span><span class="tag core">核心</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">2.352</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.56%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">8.84%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">4.69%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.17%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">115.31亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">2.58亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>7.11%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · ⭐主力·当前溢价最低的大规模纳指</div>
+    </div>
+    <div class="fund core">
+      <div class="hdr"><b>纳斯达克ETF华夏</b>
+        <span><span class="cd">513300</span><span class="tag idx">纳指100</span><span class="tag core">核心</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">2.593</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.58%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">9.65%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">5.47%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.08%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">136.25亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">2.99亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>7.77%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · ⭐主力·规模/流动性/品牌最佳</div>
+    </div>
+    <div class="fund core">
+      <div class="hdr"><b>标普500ETF博时</b>
+        <span><span class="cd">513500</span><span class="tag idx">标普500</span><span class="tag core">核心</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">2.533</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.96%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl warn">6.13%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl warn">3.63%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.52%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">255.9亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">4.03亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>4.66%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +2.4% · ⭐分散·低溢价，非纯科技</div>
+    </div>
+    <div class="fund">
+      <div class="hdr"><b>标普500ETF华夏</b>
+        <span><span class="cd">159655</span><span class="tag idx">标普500</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">1.92</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.89%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl warn">5.01%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl warn">2.54%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.47%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.15%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">41.23亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">0.91亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>3.66%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +2.4% · 溢价全场最低·规模偏小</div>
+    </div>
+    <div class="fund">
+      <div class="hdr"><b>纳指ETF华泰柏瑞</b>
+        <span><span class="cd">513110</span><span class="tag idx">纳指100</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">2.375</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.47%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">8.68%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">4.53%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl flat">-0.04%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.80%+0.20%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">51.79亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">1.64亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>7.09%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · 溢价低·费率偏高</div>
+    </div>
+    <div class="fund">
+      <div class="hdr"><b>纳指100ETF博时</b>
+        <span><span class="cd">513390</span><span class="tag idx">纳指100</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">2.326</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.48%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">8.93%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">4.77%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.09%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.15%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">48.23亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">0.92亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>7.13%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · 费率最低</div>
+    </div>
+    <div class="fund">
+      <div class="hdr"><b>纳斯达克100ETF招商</b>
+        <span><span class="cd">159659</span><span class="tag idx">纳指100</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">2.245</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.45%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">9.27%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">5.10%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.27%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.15%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">101.47亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">1.81亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>7.44%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · </div>
+    </div>
+    <div class="fund">
+      <div class="hdr"><b>纳指ETF富国</b>
+        <span><span class="cd">513870</span><span class="tag idx">纳指100</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">1.986</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.46%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">9.63%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">5.44%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.05%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.10%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">26.92亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">0.86亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>7.49%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · </div>
+    </div>
+    <div class="fund">
+      <div class="hdr"><b>纳指ETF易方达</b>
+        <span><span class="cd">159696</span><span class="tag idx">纳指100</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">1.955</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.57%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">10.40%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">6.19%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.36%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.10%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">53.33亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">0.66亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>8.79%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · 费率最低档</div>
+    </div>
+    <div class="fund">
+      <div class="hdr"><b>纳指ETF广发</b>
+        <span><span class="cd">159941</span><span class="tag idx">纳指100</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">1.585</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.70%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">11.22%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">6.98%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.38%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.80%+0.20%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">356.84亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">8.91亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>8.87%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · 规模最大·溢价最贵</div>
+    </div>
+    <div class="fund">
+      <div class="hdr"><b>纳指ETF嘉实</b>
+        <span><span class="cd">159501</span><span class="tag idx">纳指100</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">1.995</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.61%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">11.66%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">7.40%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.61%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.10%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">132.57亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">0.82亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>9.99%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · </div>
+    </div>
+    <div class="fund">
+      <div class="hdr"><b>纳指ETF国泰</b>
+        <span><span class="cd">513100</span><span class="tag idx">纳指100</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl">2.127</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+0.71%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">11.81%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">7.54%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl up">+0.42%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl">201.32亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl">2.17亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>9.50%</b> · 净值日 2026-07-29 · 真实溢价校正 2026-07-29→2026-07-31 +4.0% · 老牌最大·溢价全场最贵</div>
+    </div>
 <div class="note">
-<strong>⏱ 自动筛选</strong><br>
-• 每天扫描全部QDII基金 → 筛选美股科技+限购&gt;¥1,000<br>
-• 更新时间: 2026-07-26 17:19<br>
-• 限购额以支付宝实际显示为准
+<strong>📐 口径说明</strong><br>
+• <b>披露溢价</b> = 现价/最新官方净值 - 1（QDII净值滞后T+2，会偏高）<br>
+• <b>真实溢价</b> = 现价/(净值×(1+美股区间涨幅)) - 1，用QQQ/SPY把净值日→最新交易日的美股涨幅扣除<br>
+• <b>20日均溢价</b> = 近20个交易日 场内价/同日净值 均值，判断当前贵不贵<br>
+• 费用 = 管理费+托管费（静态配置，2026-08-03从天天基金App逐只核实）<br>
+• 场内ETF无申购限额，但溢价是隐性成本：&lt;5%可买，5-8%谨慎，&gt;8%建议等回落或换标的<br>
+• ⚠️ 若QDII额度恢复、限购解除，溢价会快速收敛，高溢价买入部分将直接受损
 </div>
 </body>
 </html>
