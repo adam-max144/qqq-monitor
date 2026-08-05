@@ -237,6 +237,59 @@ for r in results:
     }
 meta_js = json.dumps(meta, ensure_ascii=False)
 
+# ---------- 持仓管理: 017436 主仓(净值/限购/跟踪偏差) + 黄金/纳指/蓄水池管道 ----------
+pos = {"ok": False}
+try:
+    raw = fetch("https://fund.eastmoney.com/pingzhongdata/017436.js", "https://fund.eastmoney.com/")
+    m = re.search(r"Data_netWorthTrend\s*=\s*(\[.*?\]);", raw, re.DOTALL)
+    trend = json.loads(m.group(1))
+    nav_map = {datetime.utcfromtimestamp(p["x"] / 1000).strftime("%Y-%m-%d"): p["y"] for p in trend}
+    ds = sorted(nav_map)
+    def ret_at(anchor):
+        for d in ds:
+            if d >= anchor:
+                return (nav_map[ds[-1]] / nav_map[d] - 1) * 100
+        return None
+    qq = us_closes.get("纳指100", {})
+    qds = sorted(qq)
+    qqq_ytd = None
+    for d in qds:
+        if d >= "2026-01-01":
+            qqq_ytd = (qq[qds[-1]] / qq[d] - 1) * 100
+            break
+    limit = None
+    try:
+        jj = fetch("http://fundf10.eastmoney.com/jjgg_017436_4.html", "https://fundf10.eastmoney.com/")
+        lm = re.search(r"单日累计购买上限[^<]*?(\d+)\s*(元|万|百|千)?", jj)
+        if lm:
+            num, unit = int(lm.group(1)), lm.group(2) or "元"
+            if unit == "万": num *= 10000
+            elif unit == "百": num *= 100
+            elif unit == "千": num *= 1000
+            limit = num
+        elif "暂停" in jj:
+            limit = 0
+    except Exception:
+        pass
+    pos = {"nav": nav_map[ds[-1]], "navDate": ds[-1], "limit": limit,
+           "ytd": ret_at("2026-01-01"), "qqqYtd": qqq_ytd, "ok": True}
+    print(f"017436: 净值 {pos['nav']} ({pos['navDate']}) 限购 {limit} YTD {pos['ytd']:.1f}% vs QQQ {qqq_ytd:.1f}%")
+except Exception as e:
+    print(f"  ⚠️ 017436 持仓数据失败: {e}")
+
+POSITION_META = {
+    "fund": {"code": "017436", "name": "华宝纳指精选A",
+             "nav": pos.get("nav") if pos.get("ok") else None,
+             "navDate": pos.get("navDate") if pos.get("ok") else None,
+             "limit": pos.get("limit") if pos.get("ok") else None,
+             "ytd": pos.get("ytd") if pos.get("ok") else None,
+             "qqqYtd": pos.get("qqqYtd") if pos.get("ok") else None},
+    "gold": {"code": "518880", "name": "黄金ETF华安", "market": "sh"},
+    "ndx": {"code": "159632", "name": "纳斯达克ETF华安", "market": "sz"},
+    "cash": {"code": "511880", "name": "银华日利ETF", "market": "sh"},
+}
+pos_js = json.dumps(POSITION_META, ensure_ascii=False)
+
 RT_JS = r'''
 // ===== 实时行情层 =====
 // 数据源: 腾讯行情 qt.gtimg.cn (Access-Control-Allow-Origin: *, 浏览器可直接fetch)
@@ -244,7 +297,7 @@ RT_JS = r'''
 // 真实溢价: 现价/(快照净值 × (1 + 实时QQQ/净值日QQQ收盘 - 1)) - 1，逻辑与每日快照完全一致，仅把静态值换成实时值
 const META = FUND_META;
 const INTERVAL = 60000;                 // 每60秒刷新一次
-const SYMS = Object.keys(META).map(c => META[c].market + c).join(',') + ',usQQQ';
+const SYMS = Object.keys(META).map(c => META[c].market + c).join(',') + ',usQQQ,sh518880,sh511880';
 const $ = s => document.querySelector(s);
 const usOpen = () => {                   // 美股盘中(美东周一~五 9:30-16:00) → 用腾讯实时价; 否则用昨收(=最新收盘)
   const d = new Date();
@@ -318,6 +371,7 @@ async function refresh() {
       n++;
     }
     const t = new Date();
+    updatePos(rows, qqqLive);
     rt.textContent = '🟢 实时 ' + t.toTimeString().slice(0, 8) + ' · ' + n + '/' + Object.keys(META).length + '只'
       + (qqqLive ? ' · QQQ ' + qqqLive.toFixed(2) : '') + (missing ? ' · ⚠️' + missing + '只无数据' : '') + ' · 60s自动刷新·点击手动';
     rt.className = 'ok';
@@ -325,6 +379,82 @@ async function refresh() {
     rt.textContent = '⚪ 实时获取失败·显示每日快照·点此重试';
     rt.className = 'bad';
   }
+}
+// ===== 持仓管理(方案: 017436主仓 + 518880黄金弹药 + 159632抄底 + 511880蓄水池) =====
+const P = POSITION_META;
+const LS = k => localStorage.getItem(k);
+function setPos(sel, txt, cls) {
+  const el = document.querySelector(sel);
+  if (!el) return;
+  el.textContent = txt;
+  if (cls) el.className = 'vl ' + cls;
+}
+function updatePos(rows, qqqLive) {
+  const f = P.fund;
+  if (f.nav != null) {
+    setPos('.v-pnav', f.nav.toFixed(4));
+    setPos('.v-pnavd', f.navDate);
+    setPos('.v-plimit', f.limit == null ? '--' : f.limit === 0 ? '暂停' : '¥' + (f.limit >= 1000 ? (f.limit / 1000) + 'K' : f.limit) + '/日');
+    const gap = (f.ytd != null && f.qqqYtd != null) ? f.ytd - f.qqqYtd : null;
+    if (gap != null) {
+      setPos('.v-pgap', (gap > 0 ? '+' : '') + gap.toFixed(1) + 'pp', gap < -10 ? 'bad' : gap < -5 ? 'warn' : gap < 0 ? 'flat' : 'ok');
+      const tr = document.getElementById('p-track');
+      if (tr) tr.textContent = 'YTD ' + f.ytd.toFixed(1) + '% vs QQQ ' + f.qqqYtd.toFixed(1) + '% · 主动型, 连续两季跑输>10pp换标的';
+    }
+  }
+  const g = rows['518880'];
+  if (g) {
+    const price = parseFloat(g[3]), chg = parseFloat(g[32]), prem = parseFloat(g[77]);
+    setPos('.v-gprice', price.toFixed(3));
+    setPos('.v-gchg', (chg > 0 ? '+' : '') + chg.toFixed(2) + '%', chg > 0.05 ? 'up' : chg < -0.05 ? 'down' : 'flat');
+    setPos('.v-gprem', isFinite(prem) ? prem.toFixed(2) + '%' : '--', premCls(prem));
+    const cost = parseFloat(LS('posGoldCost')), sh = parseInt(LS('posGoldShares'));
+    const el = document.getElementById('p-gold');
+    if (cost > 0 && sh > 0) {
+      const dd = (1 - price / cost) * 100, mv = price * sh;
+      setPos('.v-gdd', (dd > 0 ? '+' : '') + dd.toFixed(1) + '%', dd >= 25 ? 'bad' : dd >= 15 ? 'warn' : 'ok');
+      el.textContent = '成本 ' + cost.toFixed(3) + ' · 市值 ¥' + Math.round(mv) + ' · ' +
+        (dd >= 25 ? '🔴 DD>25% 清仓→买纳指' : dd >= 15 ? '🟡 DD>15% 卖半仓→买纳指' : '🟢 弹药就位');
+    } else {
+      setPos('.v-gdd', '--');
+      el.textContent = '点 ✏️设置 录入黄金成本价与份额';
+    }
+  }
+  const n = rows['159632'];
+  if (n && qqqLive) {
+    const price = parseFloat(n[3]), f2 = META['159632'];
+    const qr = qqqLive / f2.qqqBase - 1;
+    const premt = (price / (f2.nav * (1 + qr)) - 1) * 100;
+    setPos('.v-nprice', price.toFixed(3));
+    setPos('.v-nprem', premt.toFixed(2) + '%', premt < 2 ? 'ok' : premt < 5 ? 'warn' : 'bad');
+    setPos('.v-np20', f2.prem20 != null ? f2.prem20.toFixed(1) + '%' : '--');
+    document.getElementById('p-ndx').textContent = premt < 2 ? '🟢 真实溢价<2% 可用蓄水池买入' : '🔴 真实溢价' + premt.toFixed(1) + '% ≥2% 等待 (触发线<2%)';
+  }
+  const c = rows['511880'];
+  if (c) {
+    setPos('.v-cprice', parseFloat(c[3]).toFixed(3));
+    const init = parseFloat(LS('posCashInit')) || 0, used = parseFloat(LS('posCashUsed')) || 0;
+    const el = document.getElementById('p-cash');
+    if (init > 0) {
+      setPos('.v-cbal', '¥' + Math.round(init - used).toLocaleString());
+      el.textContent = '剩余 ¥' + Math.round(init - used).toLocaleString() + ' / ' + Math.round(init).toLocaleString() + ' · 等触发: 纳指溢价<2% 或 DD>15%';
+    } else {
+      setPos('.v-cbal', '--');
+      el.textContent = '点 ✏️设置 录入蓄水池初始金额';
+    }
+  }
+}
+function posEdit() {
+  const q = (label, cur) => prompt(P.fund.name + ' 持仓设置\n' + label, cur || '');
+  const c = q('黄金成本价(元/份, 如 8.64)', LS('posGoldCost'));
+  if (c != null && c !== '') localStorage.setItem('posGoldCost', c);
+  const s = q('黄金份额(份)', LS('posGoldShares'));
+  if (s != null && s !== '') localStorage.setItem('posGoldShares', s);
+  const i = q('蓄水池初始金额(元)', LS('posCashInit'));
+  if (i != null && i !== '') localStorage.setItem('posCashInit', i);
+  const u = q('已投入金额(元, 默认0)', LS('posCashUsed') || '0');
+  if (u != null && u !== '') localStorage.setItem('posCashUsed', u);
+  refresh();
 }
 refresh();
 setInterval(refresh, INTERVAL);
@@ -363,12 +493,56 @@ h1{{font-size:20px;font-weight:700}}
 .inf{{font-size:10px;color:#8b949e;margin-top:6px;line-height:1.5}}
 .v-live{{color:#3fb950}}
 .hdr2{{font-size:13px;font-weight:700;margin:14px 0 6px;padding:6px 0;border-bottom:1px solid #21262d}}
+.pos-edit{{float:right;font-size:10px;font-weight:400;color:#58a6ff;cursor:pointer;border:1px solid #30363d;border-radius:6px;padding:1px 8px}}
 .note{{margin-top:14px;padding:10px;background:#1c2128;border-radius:8px;font-size:10px;color:#8b949e;line-height:1.6;border:1px solid #21262d}}
 </style>
 </head>
 <body>
 <h1>📡 场内纳指基金监控</h1>
 <p class="sub">每日快照 {now} · 共{ok_n}/{len(FUNDS)}只 · <span id="rt">🟢 实时行情加载中…</span><br>浏览器实时抓取腾讯行情(60s自动刷新) · GitHub Actions每日更新官方净值</p>
+<div class="hdr2">📊 持仓管理 <span class="pos-edit" onclick="posEdit()">✏️ 设置</span></div>
+<div id="pos">
+  <div class="fund">
+    <div class="hdr"><b>017436 华宝纳指精选A</b><span><span class="cd">主仓·场外定投</span></span></div>
+    <div class="rw">
+      <div class="bx"><div class="lb">最新净值</div><div class="vl v-pnav">--</div></div>
+      <div class="bx"><div class="lb">净值日</div><div class="vl v-pnavd">--</div></div>
+      <div class="bx"><div class="lb">日限购</div><div class="vl v-plimit">--</div></div>
+      <div class="bx"><div class="lb">跟踪偏差</div><div class="vl v-pgap">--</div></div>
+    </div>
+    <div class="inf" id="p-track">每周¥1K按净值定投 · 零溢价 · QDII净值T+1更新(快照)</div>
+  </div>
+  <div class="fund">
+    <div class="hdr"><b>518880 黄金ETF华安</b><span><span class="cd">弹药·场内T+0</span></span></div>
+    <div class="rw">
+      <div class="bx"><div class="lb">现价</div><div class="vl v-gprice">--</div></div>
+      <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-gchg">--</div></div>
+      <div class="bx"><div class="lb">溢价</div><div class="vl v-gprem">--</div></div>
+      <div class="bx"><div class="lb">浮亏DD</div><div class="vl v-gdd">--</div></div>
+    </div>
+    <div class="inf" id="p-gold">点 ✏️设置 录入黄金成本价与份额</div>
+  </div>
+  <div class="fund">
+    <div class="hdr"><b>159632 纳斯达克ETF华安</b><span><span class="cd">抄底·场内</span></span></div>
+    <div class="rw">
+      <div class="bx"><div class="lb">现价</div><div class="vl v-nprice">--</div></div>
+      <div class="bx"><div class="lb">真实溢价</div><div class="vl v-nprem">--</div></div>
+      <div class="bx"><div class="lb">触发线</div><div class="vl"> &lt;2% </div></div>
+      <div class="bx"><div class="lb">20日均</div><div class="vl v-np20">--</div></div>
+    </div>
+    <div class="inf" id="p-ndx">用蓄水池等溢价窗口</div>
+  </div>
+  <div class="fund">
+    <div class="hdr"><b>511880 银华日利</b><span><span class="cd">蓄水池·场内</span></span></div>
+    <div class="rw">
+      <div class="bx"><div class="lb">现价</div><div class="vl v-cprice">--</div></div>
+      <div class="bx"><div class="lb">余额</div><div class="vl v-cbal">--</div></div>
+      <div class="bx"><div class="lb">状态</div><div class="vl">货币ETF</div></div>
+      <div class="bx"><div class="lb">年化</div><div class="vl">~1.8%</div></div>
+    </div>
+    <div class="inf" id="p-cash">点 ✏️设置 录入蓄水池初始金额</div>
+  </div>
+</div>
 <div class="hdr2">⭐ 核心推荐</div>
 <div id="list">{''.join(card(r) for r in cores if r.get('ok'))}</div>
 <div class="hdr2">📋 全部场内纳斯达克100 ETF（按真实溢价升序）</div>
@@ -382,7 +556,7 @@ h1{{font-size:20px;font-weight:700}}
 • 场内ETF无申购限额，但溢价是隐性成本：&lt;5%可买，5-8%谨慎，&gt;8%建议等回落或换标的<br>
 • ⚠️ 若QDII额度恢复、限购解除，溢价会快速收敛，高溢价买入部分将直接受损
 </div>
-<script>const FUND_META = {meta_js};const SNAP_TIME = "{now}";</script>
+<script>const FUND_META = {meta_js};const POSITION_META = {pos_js};const SNAP_TIME = "{now}";</script>
 <script>{RT_JS}</script>
 </body>
 </html>"""
