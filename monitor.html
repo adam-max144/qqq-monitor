@@ -9,8 +9,11 @@
 body{font-family:-apple-system,sans-serif;background:#0d1117;color:#e6edf3;padding:16px;max-width:500px;margin:0 auto}
 h1{font-size:20px;font-weight:700}
 .sub{font-size:11px;color:#8b949e;margin:4px 0 14px}
+#rt{cursor:pointer;font-weight:700}
+#rt.ok{color:#3fb950} #rt.bad{color:#f85149}
 .fund{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px;margin-bottom:10px}
 .fund.core{border-color:#238636;background:linear-gradient(135deg,#12221a,#161b22)}
+.fund.stale{opacity:.45}
 .hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:6px}
 .hdr b{font-size:13px;line-height:1.4}
 .hdr span{display:flex;align-items:center;gap:4px;flex-shrink:0}
@@ -25,241 +28,336 @@ h1{font-size:20px;font-weight:700}
 .ok{color:#3fb950} .warn{color:#d29922} .bad{color:#f85149} .flat{color:#8b949e}
 .up{color:#3fb950} .down{color:#f85149}
 .inf{font-size:10px;color:#8b949e;margin-top:6px;line-height:1.5}
+.v-live{color:#3fb950}
 .hdr2{font-size:13px;font-weight:700;margin:14px 0 6px;padding:6px 0;border-bottom:1px solid #21262d}
 .note{margin-top:14px;padding:10px;background:#1c2128;border-radius:8px;font-size:10px;color:#8b949e;line-height:1.6;border:1px solid #21262d}
 </style>
 </head>
 <body>
 <h1>📡 场内纳指基金监控</h1>
-<p class="sub">2026-08-05 10:18 UTC · 共10/10只 · 腾讯行情+官方净值 · GitHub Actions自动更新</p>
+<p class="sub">每日快照 2026-08-05 22:33 UTC · 共10/10只 · <span id="rt">🟢 实时行情加载中…</span><br>浏览器实时抓取腾讯行情(60s自动刷新) · GitHub Actions每日更新官方净值</p>
 <div class="hdr2">⭐ 核心推荐</div>
 <div id="list">
-    <div class="fund core">
+    <div class="fund core" data-c="159632">
       <div class="hdr"><b>纳斯达克ETF华安</b>
         <span><span class="cd">159632</span><span class="tag idx">纳指100</span><span class="tag core">核心</span></span>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">2.506</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.73%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">13.28%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">13.28%</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">2.506</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.73%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">9.60%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">6.00%</div></div>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+9.43%</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+9.43%</div></div>
         <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">123.06亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">5.31亿</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">123.06亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">5.31亿</div></div>
       </div>
-      <div class="inf">20日均溢价 <b>6.79%</b> · 净值日 2026-08-02 · 真实溢价校正 未校正 · ⭐主力·当前溢价最低的大规模纳指</div>
+      <div class="inf">20日均溢价 <b>6.57%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · ⭐主力·当前溢价最低的大规模纳指<span class="v-live"></span></div>
     </div>
-    <div class="fund core">
+    <div class="fund core" data-c="513300">
       <div class="hdr"><b>纳斯达克ETF华夏</b>
         <span><span class="cd">513300</span><span class="tag idx">纳指100</span><span class="tag core">核心</span></span>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">2.748</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.11%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">9.93%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">6.32%</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">2.748</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.11%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">9.93%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">6.32%</div></div>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+8.66%</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+8.66%</div></div>
         <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">144.6亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">4.23亿</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">144.6亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">4.23亿</div></div>
       </div>
-      <div class="inf">20日均溢价 <b>7.32%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · ⭐主力·规模/流动性/品牌最佳</div>
+      <div class="inf">20日均溢价 <b>7.32%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · ⭐主力·规模/流动性/品牌最佳<span class="v-live"></span></div>
     </div></div>
 <div class="hdr2">📋 全部场内纳斯达克100 ETF（按真实溢价升序）</div>
 
-    <div class="fund core">
+    <div class="fund core" data-c="159632">
       <div class="hdr"><b>纳斯达克ETF华安</b>
         <span><span class="cd">159632</span><span class="tag idx">纳指100</span><span class="tag core">核心</span></span>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">2.506</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.73%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">13.28%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">13.28%</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">2.506</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.73%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">9.60%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">6.00%</div></div>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+9.43%</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+9.43%</div></div>
         <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">123.06亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">5.31亿</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">123.06亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">5.31亿</div></div>
       </div>
-      <div class="inf">20日均溢价 <b>6.79%</b> · 净值日 2026-08-02 · 真实溢价校正 未校正 · ⭐主力·当前溢价最低的大规模纳指</div>
+      <div class="inf">20日均溢价 <b>6.57%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · ⭐主力·当前溢价最低的大规模纳指<span class="v-live"></span></div>
     </div>
-    <div class="fund core">
+    <div class="fund core" data-c="513300">
       <div class="hdr"><b>纳斯达克ETF华夏</b>
         <span><span class="cd">513300</span><span class="tag idx">纳指100</span><span class="tag core">核心</span></span>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">2.748</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.11%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">9.93%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">6.32%</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">2.748</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.11%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">9.93%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">6.32%</div></div>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+8.66%</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+8.66%</div></div>
         <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">144.6亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">4.23亿</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">144.6亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">4.23亿</div></div>
       </div>
-      <div class="inf">20日均溢价 <b>7.32%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · ⭐主力·规模/流动性/品牌最佳</div>
+      <div class="inf">20日均溢价 <b>7.32%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · ⭐主力·规模/流动性/品牌最佳<span class="v-live"></span></div>
     </div>
-    <div class="fund">
-      <div class="hdr"><b>纳指100ETF博时</b>
-        <span><span class="cd">513390</span><span class="tag idx">纳指100</span></span>
-      </div>
-      <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">2.479</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.64%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">9.71%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">6.11%</div></div>
-      </div>
-      <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+9.30%</div></div>
-        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.15%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">51.65亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">2.11亿</div></div>
-      </div>
-      <div class="inf">20日均溢价 <b>6.59%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · 费率最低</div>
-    </div>
-    <div class="fund">
-      <div class="hdr"><b>纳指ETF嘉实</b>
-        <span><span class="cd">159501</span><span class="tag idx">纳指100</span></span>
-      </div>
-      <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">2.111</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.18%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">11.65%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">7.98%</div></div>
-      </div>
-      <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+8.42%</div></div>
-        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.10%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">140.7亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">1.68亿</div></div>
-      </div>
-      <div class="inf">20日均溢价 <b>9.52%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · </div>
-    </div>
-    <div class="fund">
+    <div class="fund" data-c="513110">
       <div class="hdr"><b>纳指ETF华泰柏瑞</b>
         <span><span class="cd">513110</span><span class="tag idx">纳指100</span></span>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">2.529</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.48%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">13.04%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">13.04%</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">2.529</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.48%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">9.40%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">5.81%</div></div>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+9.20%</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+9.20%</div></div>
         <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.80%+0.20%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">55.19亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">3.16亿</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">55.19亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">3.16亿</div></div>
       </div>
-      <div class="inf">20日均溢价 <b>6.79%</b> · 净值日 2026-08-02 · 真实溢价校正 未校正 · 溢价低·费率偏高</div>
+      <div class="inf">20日均溢价 <b>6.56%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · 溢价低·费率偏高<span class="v-live"></span></div>
     </div>
-    <div class="fund">
+    <div class="fund" data-c="513390">
+      <div class="hdr"><b>纳指100ETF博时</b>
+        <span><span class="cd">513390</span><span class="tag idx">纳指100</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">2.479</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.64%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">9.71%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">6.11%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+9.30%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.15%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">51.65亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">2.11亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>6.59%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · 费率最低<span class="v-live"></span></div>
+    </div>
+    <div class="fund" data-c="159659">
       <div class="hdr"><b>纳斯达克100ETF招商</b>
         <span><span class="cd">159659</span><span class="tag idx">纳指100</span></span>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">2.388</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.60%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">13.51%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">13.51%</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">2.388</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.60%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">9.84%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">6.24%</div></div>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+9.19%</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+9.19%</div></div>
         <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.15%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">108.03亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">4.05亿</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">108.03亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">4.05亿</div></div>
       </div>
-      <div class="inf">20日均溢价 <b>7.16%</b> · 净值日 2026-08-02 · 真实溢价校正 未校正 · </div>
+      <div class="inf">20日均溢价 <b>6.95%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · <span class="v-live"></span></div>
     </div>
-    <div class="fund">
+    <div class="fund" data-c="513870">
       <div class="hdr"><b>纳指ETF富国</b>
         <span><span class="cd">513870</span><span class="tag idx">纳指100</span></span>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">2.107</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.44%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">13.60%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">13.60%</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">2.107</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.44%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">9.92%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">6.31%</div></div>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+8.61%</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+8.61%</div></div>
         <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.10%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">28.61亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">2.12亿</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">28.61亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">2.12亿</div></div>
       </div>
-      <div class="inf">20日均溢价 <b>7.22%</b> · 净值日 2026-08-02 · 真实溢价校正 未校正 · </div>
+      <div class="inf">20日均溢价 <b>7.02%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · <span class="v-live"></span></div>
     </div>
-    <div class="fund">
+    <div class="fund" data-c="159696">
       <div class="hdr"><b>纳指ETF易方达</b>
         <span><span class="cd">159696</span><span class="tag idx">纳指100</span></span>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">2.068</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.09%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">14.07%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">14.07%</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">2.068</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.09%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">10.38%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">6.75%</div></div>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+8.33%</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+8.33%</div></div>
         <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.10%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">56.62亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">1.06亿</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">56.62亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">1.06亿</div></div>
       </div>
-      <div class="inf">20日均溢价 <b>8.53%</b> · 净值日 2026-08-02 · 真实溢价校正 未校正 · 费率最低档</div>
+      <div class="inf">20日均溢价 <b>8.29%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · 费率最低档<span class="v-live"></span></div>
     </div>
-    <div class="fund">
+    <div class="fund" data-c="159501">
+      <div class="hdr"><b>纳指ETF嘉实</b>
+        <span><span class="cd">159501</span><span class="tag idx">纳指100</span></span>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">2.111</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.18%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">11.65%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">7.98%</div></div>
+      </div>
+      <div class="rw">
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+8.42%</div></div>
+        <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.50%+0.10%</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">140.7亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">1.68亿</div></div>
+      </div>
+      <div class="inf">20日均溢价 <b>9.52%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · <span class="v-live"></span></div>
+    </div>
+    <div class="fund" data-c="159941">
       <div class="hdr"><b>纳指ETF广发</b>
         <span><span class="cd">159941</span><span class="tag idx">纳指100</span></span>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">1.69</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.62%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">15.83%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">15.83%</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">1.69</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.62%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">12.07%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">8.39%</div></div>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+9.88%</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+9.88%</div></div>
         <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.80%+0.20%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">380.53亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">12.80亿</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">380.53亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">12.80亿</div></div>
       </div>
-      <div class="inf">20日均溢价 <b>8.60%</b> · 净值日 2026-08-02 · 真实溢价校正 未校正 · 规模最大·溢价最贵</div>
+      <div class="inf">20日均溢价 <b>8.40%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · 规模最大·溢价最贵<span class="v-live"></span></div>
     </div>
-    <div class="fund">
+    <div class="fund" data-c="513100">
       <div class="hdr"><b>纳指ETF国泰</b>
         <span><span class="cd">513100</span><span class="tag idx">纳指100</span></span>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">2.267</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl up">+3.42%</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl bad">16.39%</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl bad">16.39%</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">2.267</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg up">+3.42%</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem bad">12.62%</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt bad">8.92%</div></div>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl up">+9.31%</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 up">+9.31%</div></div>
         <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">0.60%+0.20%</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">214.57亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">5.09亿</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">214.57亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">5.09亿</div></div>
       </div>
-      <div class="inf">20日均溢价 <b>9.29%</b> · 净值日 2026-08-02 · 真实溢价校正 未校正 · 老牌最大·溢价全场最贵</div>
+      <div class="inf">20日均溢价 <b>9.09%</b> · 净值日 2026-08-03 · 真实溢价校正 2026-08-03→2026-08-04 +3.4% · 老牌最大·溢价全场最贵<span class="v-live"></span></div>
     </div>
 <div class="note">
 <strong>📐 口径说明</strong><br>
 • <b>披露溢价</b> = 现价/最新官方净值 - 1（QDII净值滞后T+2，会偏高）<br>
-• <b>真实溢价</b> = 现价/(净值×(1+美股区间涨幅)) - 1，用QQQ/SPY把净值日→最新交易日的美股涨幅扣除<br>
-• <b>20日均溢价</b> = 近20个交易日 场内价/同日净值 均值，判断当前贵不贵<br>
+• <b>真实溢价</b> = 现价/(净值×(1+美股区间涨幅)) - 1，用QQQ把净值日→最新交易日的美股涨幅扣除<br>
+• <b>20日均溢价</b> = 近20个交易日 场内价/同日净值 均值，判断当前贵不贵（每日快照更新）<br>
 • 费用 = 管理费+托管费（静态配置，2026-08-03从天天基金App逐只核实）<br>
 • 场内ETF无申购限额，但溢价是隐性成本：&lt;5%可买，5-8%谨慎，&gt;8%建议等回落或换标的<br>
 • ⚠️ 若QDII额度恢复、限购解除，溢价会快速收敛，高溢价买入部分将直接受损
 </div>
+<script>const FUND_META = {"159632": {"market": "sz", "name": "纳斯达克ETF华安", "nav": 2.2865, "navDate": "2026-08-03", "qqqBase": 700.07, "prem20": 6.574027703356275, "usNote": "2026-08-03→2026-08-04 +3.4%", "note": "⭐主力·当前溢价最低的大规模纳指", "core": true}, "513300": {"market": "sh", "name": "纳斯达克ETF华夏", "nav": 2.4997, "navDate": "2026-08-03", "qqqBase": 700.07, "prem20": 7.3216577182713145, "usNote": "2026-08-03→2026-08-04 +3.4%", "note": "⭐主力·规模/流动性/品牌最佳", "core": true}, "513100": {"market": "sh", "name": "纳指ETF国泰", "nav": 2.0129, "navDate": "2026-08-03", "qqqBase": 700.07, "prem20": 9.087406118159675, "usNote": "2026-08-03→2026-08-04 +3.4%", "note": "老牌最大·溢价全场最贵", "core": false}, "159941": {"market": "sz", "name": "纳指ETF广发", "nav": 1.508, "navDate": "2026-08-03", "qqqBase": 700.07, "prem20": 8.402645933163004, "usNote": "2026-08-03→2026-08-04 +3.4%", "note": "规模最大·溢价最贵", "core": false}, "513110": {"market": "sh", "name": "纳指ETF华泰柏瑞", "nav": 2.3117, "navDate": "2026-08-03", "qqqBase": 700.07, "prem20": 6.563354936003721, "usNote": "2026-08-03→2026-08-04 +3.4%", "note": "溢价低·费率偏高", "core": false}, "513390": {"market": "sh", "name": "纳指100ETF博时", "nav": 2.2596, "navDate": "2026-08-03", "qqqBase": 700.07, "prem20": 6.589954353440965, "usNote": "2026-08-03→2026-08-04 +3.4%", "note": "费率最低", "core": false}, "159659": {"market": "sz", "name": "纳斯达克100ETF招商", "nav": 2.174, "navDate": "2026-08-03", "qqqBase": 700.07, "prem20": 6.947834919970479, "usNote": "2026-08-03→2026-08-04 +3.4%", "note": "", "core": false}, "159696": {"market": "sz", "name": "纳指ETF易方达", "nav": 1.8736, "navDate": "2026-08-03", "qqqBase": 700.07, "prem20": 8.29399288886206, "usNote": "2026-08-03→2026-08-04 +3.4%", "note": "费率最低档", "core": false}, "159501": {"market": "sz", "name": "纳指ETF嘉实", "nav": 1.8907, "navDate": "2026-08-03", "qqqBase": 700.07, "prem20": 9.518159996812177, "usNote": "2026-08-03→2026-08-04 +3.4%", "note": "", "core": false}, "513870": {"market": "sh", "name": "纳指ETF富国", "nav": 1.9169, "navDate": "2026-08-03", "qqqBase": 700.07, "prem20": 7.021111402642897, "usNote": "2026-08-03→2026-08-04 +3.4%", "note": "", "core": false}};const SNAP_TIME = "2026-08-05 22:33 UTC";</script>
+<script>
+// ===== 实时行情层 =====
+// 数据源: 腾讯行情 qt.gtimg.cn (Access-Control-Allow-Origin: *, 浏览器可直接fetch)
+// 字段: p[3]现价 p[4]昨收 p[32]涨跌幅% p[37]成交额(万) p[45]总市值(亿) p[63]近5日% p[77]溢价率%(现价/最新净值-1) p[81]腾讯最新净值
+// 真实溢价: 现价/(快照净值 × (1 + 实时QQQ/净值日QQQ收盘 - 1)) - 1，逻辑与每日快照完全一致，仅把静态值换成实时值
+const META = FUND_META;
+const INTERVAL = 60000;                 // 每60秒刷新一次
+const SYMS = Object.keys(META).map(c => META[c].market + c).join(',') + ',usQQQ';
+const $ = s => document.querySelector(s);
+const usOpen = () => {                   // 美股盘中(美东周一~五 9:30-16:00) → 用腾讯实时价; 否则用昨收(=最新收盘)
+  const d = new Date();
+  const n = new Date(d.toLocaleString('en-US', {timeZone: 'America/New_York'}));
+  const h = n.getHours() + n.getMinutes() / 60, w = n.getDay();
+  return w >= 1 && w <= 5 && h >= 9.5 && h < 16;
+};
+const pct = (v, nd, sign) => (v == null || !isFinite(v)) ? '--' : (sign && v > 0 ? '+' : '') + v.toFixed(nd) + '%';
+const premCls = v => (v == null || !isFinite(v)) ? 'flat' : (v < 5 ? 'ok' : (v <= 8 ? 'warn' : 'bad'));
+const chgCls = v => (v == null || !isFinite(v)) ? 'flat' : (v > 0.05 ? 'up' : (v < -0.05 ? 'down' : 'flat'));
+function set(el, sel, txt, cls) {
+  const v = el.querySelector(sel);
+  if (!v) return;
+  v.textContent = txt;
+  if (cls) v.className = 'vl ' + cls;
+}
+async function refresh() {
+  const rt = $('#rt');
+  if (!rt) return;
+  try {
+    const r = await fetch('https://qt.gtimg.cn/q=' + SYMS, {cache: 'no-store'});
+    const buf = await r.arrayBuffer();
+    let txt;
+    try { txt = new TextDecoder('gbk').decode(buf); } catch (e) { txt = new TextDecoder().decode(buf); }
+    const rows = {};
+    for (const seg of txt.split(';')) {
+      const m = seg.match(/v_([A-Za-z0-9.]+)="([^"]*)"/);
+      if (!m) continue;
+      const p = m[2].split('~');
+      if (p.length < 40) continue;
+      rows[p[2]] = p;
+    }
+    const qq = rows['QQQ.OQ'];
+    const qqqLive = qq ? parseFloat(usOpen() ? qq[3] : qq[4]) : null;
+    let n = 0, missing = 0;
+    for (const code in META) {
+      const f = META[code], p = rows[code];
+      const el = document.querySelector('.fund[data-c="' + code + '"]');
+      if (!el) continue;
+      if (!p) { el.classList.add('stale'); missing++; continue; }
+      const price = parseFloat(p[3]), prev = parseFloat(p[4]);
+      if (!isFinite(price) || !isFinite(prev)) { el.classList.add('stale'); missing++; continue; }
+      const chg = (price / prev - 1) * 100;
+      const chg5 = parseFloat(p[63]);
+      const amt = parseFloat(p[37]) / 10000;
+      const mcap = parseFloat(p[45]);
+      const tprem = parseFloat(p[77]);                        // 腾讯披露溢价(最新净值口径) f77
+      let prem = isFinite(tprem) ? tprem : (f.nav ? (price / f.nav - 1) * 100 : null);
+      let premt = null;
+      if (f.qqqBase && qqqLive && f.nav) {                    // 有校正基准 → 用实时QQQ重算真实溢价
+        const qr = qqqLive / f.qqqBase - 1;
+        premt = (price / (f.nav * (1 + qr)) - 1) * 100;
+      }
+      if (premt == null) premt = prem;                        // 未校正 → 与披露溢价一致
+      set(el, '.v-price', price.toFixed(3));
+      set(el, '.v-chg', pct(chg, 2, true), chgCls(chg));
+      set(el, '.v-chg5', pct(chg5, 2, true), chgCls(chg5));
+      set(el, '.v-prem', pct(prem), premCls(prem));
+      set(el, '.v-premt', pct(premt), premCls(premt));
+      if (isFinite(amt)) set(el, '.v-amt', amt.toFixed(2) + '亿');
+      if (isFinite(mcap)) set(el, '.v-mcap', mcap.toFixed(2) + '亿');
+      const live = el.querySelector('.v-live');
+      if (live) {
+        let s = ' · 🟢 实时';
+        if (f.nav && isFinite(parseFloat(p[81])) && Math.abs(parseFloat(p[81]) - f.nav) > f.nav * 0.001) {
+          s += ' · 腾讯净值已更新至 ' + p[81];
+        }
+        live.textContent = s;
+      }
+      el.classList.remove('stale');
+      n++;
+    }
+    const t = new Date();
+    rt.textContent = '🟢 实时 ' + t.toTimeString().slice(0, 8) + ' · ' + n + '/' + Object.keys(META).length + '只'
+      + (qqqLive ? ' · QQQ ' + qqqLive.toFixed(2) : '') + (missing ? ' · ⚠️' + missing + '只无数据' : '') + ' · 60s自动刷新·点击手动';
+    rt.className = 'ok';
+  } catch (e) {
+    rt.textContent = '⚪ 实时获取失败·显示每日快照·点此重试';
+    rt.className = 'bad';
+  }
+}
+refresh();
+setInterval(refresh, INTERVAL);
+$('#rt').onclick = refresh;
+</script>
 </body>
 </html>

@@ -138,11 +138,14 @@ for code, (market, index, mgmt, trust, core, note) in FUNDS.items():
             rec["prem_pct"] = None
 
         # 真实溢价 = 现价/(净值 × (1 + 美股区间涨幅)) - 1，区间 = 净值日→美股最新交易日
+        # qqq_base 是净值日当天的 QQQ 收盘价，浏览器端实时层用它 + 实时QQQ 重算真实溢价
+        rec["qqq_base"] = None
         if nav_date and nav_date in us_closes.get(index, {}):
             us = us_closes[index]
             us_dates = sorted(us.keys())
             last_us_date = us_dates[-1]
-            if last_us_date > nav_date and nav_date in us:
+            rec["qqq_base"] = us[nav_date]
+            if last_us_date > nav_date:
                 chg_us = us[last_us_date] / us[nav_date] - 1
                 rec["prem_true_pct"] = (q["price"] / (nav_last * (1 + chg_us)) - 1) * 100
                 rec["us_chg"] = chg_us * 100
@@ -197,28 +200,136 @@ def card(r):
     prem_c = color_prem(r.get("prem_pct"))
     fee = f"{r['mgmt']:.2f}%+{r['trust']:.2f}%"
     lines = f"""
-    <div class="fund{' core' if r['core'] else ''}">
+    <div class="fund{' core' if r['core'] else ''}" data-c="{r['code']}">
       <div class="hdr"><b>{r.get('name','?')}</b>
         <span><span class="cd">{r['code']}</span><span class="tag idx">{r['index']}</span>{'<span class="tag core">核心</span>' if r['core'] else ''}</span>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">现价</div><div class="vl">{r.get('price','--')}</div></div>
-        <div class="bx"><div class="lb">今日涨跌</div><div class="vl {chg_cls(r.get('chg_pct'))}">{pct_str(r.get('chg_pct'), sign=True)}</div></div>
-        <div class="bx"><div class="lb">披露溢价</div><div class="vl {prem_c}">{pct_str(r.get('prem_pct'))}</div></div>
-        <div class="bx"><div class="lb">真实溢价</div><div class="vl {prem_c}">{pct_str(r.get('prem_true_pct'))}</div></div>
+        <div class="bx"><div class="lb">现价</div><div class="vl v-price">{r.get('price','--')}</div></div>
+        <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-chg {chg_cls(r.get('chg_pct'))}">{pct_str(r.get('chg_pct'), sign=True)}</div></div>
+        <div class="bx"><div class="lb">披露溢价</div><div class="vl v-prem {prem_c}">{pct_str(r.get('prem_pct'))}</div></div>
+        <div class="bx"><div class="lb">真实溢价</div><div class="vl v-premt {prem_c}">{pct_str(r.get('prem_true_pct'))}</div></div>
       </div>
       <div class="rw">
-        <div class="bx"><div class="lb">近5日</div><div class="vl {chg_cls(r.get('chg5_pct'))}">{pct_str(r.get('chg5_pct'), sign=True)}</div></div>
+        <div class="bx"><div class="lb">近5日</div><div class="vl v-chg5 {chg_cls(r.get('chg5_pct'))}">{pct_str(r.get('chg5_pct'), sign=True)}</div></div>
         <div class="bx"><div class="lb">费用(管理+托管)</div><div class="vl">{fee}</div></div>
-        <div class="bx"><div class="lb">规模</div><div class="vl">{r.get('mcap_yi','--')}亿</div></div>
-        <div class="bx"><div class="lb">日成交</div><div class="vl">{f"{r['amount_yi']:.2f}" if r.get('amount_yi') is not None else '--'}亿</div></div>
+        <div class="bx"><div class="lb">规模</div><div class="vl v-mcap">{r.get('mcap_yi','--')}亿</div></div>
+        <div class="bx"><div class="lb">日成交</div><div class="vl v-amt">{f"{r['amount_yi']:.2f}" if r.get('amount_yi') is not None else '--'}亿</div></div>
       </div>
-      <div class="inf">20日均溢价 <b>{pct_str(r.get('prem20'))}</b> · 净值日 {r.get('nav_date','--')} · 真实溢价校正 {r.get('us_note','')} · {r.get('note','')}</div>
+      <div class="inf">20日均溢价 <b>{pct_str(r.get('prem20'))}</b> · 净值日 {r.get('nav_date','--')} · 真实溢价校正 {r.get('us_note','')} · {r.get('note','')}<span class="v-live"></span></div>
     </div>"""
     return lines
 
 now = datetime.now().strftime("%Y-%m-%d %H:%M UTC")
 ok_n = sum(1 for r in results if r["ok"])
+
+# ---------- 浏览器端实时层：把快照值改造成数据，页面打开后实时覆盖 ----------
+meta = {}
+for r in results:
+    if not r.get("ok"):
+        continue
+    meta[r["code"]] = {
+        "market": r["market"], "name": r.get("name", ""),
+        "nav": r.get("nav"), "navDate": r.get("nav_date"),
+        "qqqBase": r.get("qqq_base"),
+        "prem20": r.get("prem20"), "usNote": r.get("us_note", ""),
+        "note": r.get("note", ""), "core": bool(r.get("core")),
+    }
+meta_js = json.dumps(meta, ensure_ascii=False)
+
+RT_JS = r'''
+// ===== 实时行情层 =====
+// 数据源: 腾讯行情 qt.gtimg.cn (Access-Control-Allow-Origin: *, 浏览器可直接fetch)
+// 字段: p[3]现价 p[4]昨收 p[32]涨跌幅% p[37]成交额(万) p[45]总市值(亿) p[63]近5日% p[77]溢价率%(现价/最新净值-1) p[81]腾讯最新净值
+// 真实溢价: 现价/(快照净值 × (1 + 实时QQQ/净值日QQQ收盘 - 1)) - 1，逻辑与每日快照完全一致，仅把静态值换成实时值
+const META = FUND_META;
+const INTERVAL = 60000;                 // 每60秒刷新一次
+const SYMS = Object.keys(META).map(c => META[c].market + c).join(',') + ',usQQQ';
+const $ = s => document.querySelector(s);
+const usOpen = () => {                   // 美股盘中(美东周一~五 9:30-16:00) → 用腾讯实时价; 否则用昨收(=最新收盘)
+  const d = new Date();
+  const n = new Date(d.toLocaleString('en-US', {timeZone: 'America/New_York'}));
+  const h = n.getHours() + n.getMinutes() / 60, w = n.getDay();
+  return w >= 1 && w <= 5 && h >= 9.5 && h < 16;
+};
+const pct = (v, nd, sign) => (v == null || !isFinite(v)) ? '--' : (sign && v > 0 ? '+' : '') + v.toFixed(nd) + '%';
+const premCls = v => (v == null || !isFinite(v)) ? 'flat' : (v < 5 ? 'ok' : (v <= 8 ? 'warn' : 'bad'));
+const chgCls = v => (v == null || !isFinite(v)) ? 'flat' : (v > 0.05 ? 'up' : (v < -0.05 ? 'down' : 'flat'));
+function set(el, sel, txt, cls) {
+  const v = el.querySelector(sel);
+  if (!v) return;
+  v.textContent = txt;
+  if (cls) v.className = 'vl ' + cls;
+}
+async function refresh() {
+  const rt = $('#rt');
+  if (!rt) return;
+  try {
+    const r = await fetch('https://qt.gtimg.cn/q=' + SYMS, {cache: 'no-store'});
+    const buf = await r.arrayBuffer();
+    let txt;
+    try { txt = new TextDecoder('gbk').decode(buf); } catch (e) { txt = new TextDecoder().decode(buf); }
+    const rows = {};
+    for (const seg of txt.split(';')) {
+      const m = seg.match(/v_([A-Za-z0-9.]+)="([^"]*)"/);
+      if (!m) continue;
+      const p = m[2].split('~');
+      if (p.length < 40) continue;
+      rows[p[2]] = p;
+    }
+    const qq = rows['QQQ.OQ'];
+    const qqqLive = qq ? parseFloat(usOpen() ? qq[3] : qq[4]) : null;
+    let n = 0, missing = 0;
+    for (const code in META) {
+      const f = META[code], p = rows[code];
+      const el = document.querySelector('.fund[data-c="' + code + '"]');
+      if (!el) continue;
+      if (!p) { el.classList.add('stale'); missing++; continue; }
+      const price = parseFloat(p[3]), prev = parseFloat(p[4]);
+      if (!isFinite(price) || !isFinite(prev)) { el.classList.add('stale'); missing++; continue; }
+      const chg = (price / prev - 1) * 100;
+      const chg5 = parseFloat(p[63]);
+      const amt = parseFloat(p[37]) / 10000;
+      const mcap = parseFloat(p[45]);
+      const tprem = parseFloat(p[77]);                        // 腾讯披露溢价(最新净值口径) f77
+      let prem = isFinite(tprem) ? tprem : (f.nav ? (price / f.nav - 1) * 100 : null);
+      let premt = null;
+      if (f.qqqBase && qqqLive && f.nav) {                    // 有校正基准 → 用实时QQQ重算真实溢价
+        const qr = qqqLive / f.qqqBase - 1;
+        premt = (price / (f.nav * (1 + qr)) - 1) * 100;
+      }
+      if (premt == null) premt = prem;                        // 未校正 → 与披露溢价一致
+      set(el, '.v-price', price.toFixed(3));
+      set(el, '.v-chg', pct(chg, 2, true), chgCls(chg));
+      set(el, '.v-chg5', pct(chg5, 2, true), chgCls(chg5));
+      set(el, '.v-prem', pct(prem), premCls(prem));
+      set(el, '.v-premt', pct(premt), premCls(premt));
+      if (isFinite(amt)) set(el, '.v-amt', amt.toFixed(2) + '亿');
+      if (isFinite(mcap)) set(el, '.v-mcap', mcap.toFixed(2) + '亿');
+      const live = el.querySelector('.v-live');
+      if (live) {
+        let s = ' · 🟢 实时';
+        if (f.nav && isFinite(parseFloat(p[81])) && Math.abs(parseFloat(p[81]) - f.nav) > f.nav * 0.001) {
+          s += ' · 腾讯净值已更新至 ' + p[81];
+        }
+        live.textContent = s;
+      }
+      el.classList.remove('stale');
+      n++;
+    }
+    const t = new Date();
+    rt.textContent = '🟢 实时 ' + t.toTimeString().slice(0, 8) + ' · ' + n + '/' + Object.keys(META).length + '只'
+      + (qqqLive ? ' · QQQ ' + qqqLive.toFixed(2) : '') + (missing ? ' · ⚠️' + missing + '只无数据' : '') + ' · 60s自动刷新·点击手动';
+    rt.className = 'ok';
+  } catch (e) {
+    rt.textContent = '⚪ 实时获取失败·显示每日快照·点此重试';
+    rt.className = 'bad';
+  }
+}
+refresh();
+setInterval(refresh, INTERVAL);
+$('#rt').onclick = refresh;
+'''
 
 html = f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -231,8 +342,11 @@ html = f"""<!DOCTYPE html>
 body{{font-family:-apple-system,sans-serif;background:#0d1117;color:#e6edf3;padding:16px;max-width:500px;margin:0 auto}}
 h1{{font-size:20px;font-weight:700}}
 .sub{{font-size:11px;color:#8b949e;margin:4px 0 14px}}
+#rt{{cursor:pointer;font-weight:700}}
+#rt.ok{{color:#3fb950}} #rt.bad{{color:#f85149}}
 .fund{{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px;margin-bottom:10px}}
 .fund.core{{border-color:#238636;background:linear-gradient(135deg,#12221a,#161b22)}}
+.fund.stale{{opacity:.45}}
 .hdr{{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:6px}}
 .hdr b{{font-size:13px;line-height:1.4}}
 .hdr span{{display:flex;align-items:center;gap:4px;flex-shrink:0}}
@@ -247,13 +361,14 @@ h1{{font-size:20px;font-weight:700}}
 .ok{{color:#3fb950}} .warn{{color:#d29922}} .bad{{color:#f85149}} .flat{{color:#8b949e}}
 .up{{color:#3fb950}} .down{{color:#f85149}}
 .inf{{font-size:10px;color:#8b949e;margin-top:6px;line-height:1.5}}
+.v-live{{color:#3fb950}}
 .hdr2{{font-size:13px;font-weight:700;margin:14px 0 6px;padding:6px 0;border-bottom:1px solid #21262d}}
 .note{{margin-top:14px;padding:10px;background:#1c2128;border-radius:8px;font-size:10px;color:#8b949e;line-height:1.6;border:1px solid #21262d}}
 </style>
 </head>
 <body>
 <h1>📡 场内纳指基金监控</h1>
-<p class="sub">{now} · 共{ok_n}/{len(FUNDS)}只 · 腾讯行情+官方净值 · GitHub Actions自动更新</p>
+<p class="sub">每日快照 {now} · 共{ok_n}/{len(FUNDS)}只 · <span id="rt">🟢 实时行情加载中…</span><br>浏览器实时抓取腾讯行情(60s自动刷新) · GitHub Actions每日更新官方净值</p>
 <div class="hdr2">⭐ 核心推荐</div>
 <div id="list">{''.join(card(r) for r in cores if r.get('ok'))}</div>
 <div class="hdr2">📋 全部场内纳斯达克100 ETF（按真实溢价升序）</div>
@@ -261,12 +376,14 @@ h1{{font-size:20px;font-weight:700}}
 <div class="note">
 <strong>📐 口径说明</strong><br>
 • <b>披露溢价</b> = 现价/最新官方净值 - 1（QDII净值滞后T+2，会偏高）<br>
-• <b>真实溢价</b> = 现价/(净值×(1+美股区间涨幅)) - 1，用QQQ/SPY把净值日→最新交易日的美股涨幅扣除<br>
-• <b>20日均溢价</b> = 近20个交易日 场内价/同日净值 均值，判断当前贵不贵<br>
+• <b>真实溢价</b> = 现价/(净值×(1+美股区间涨幅)) - 1，用QQQ把净值日→最新交易日的美股涨幅扣除<br>
+• <b>20日均溢价</b> = 近20个交易日 场内价/同日净值 均值，判断当前贵不贵（每日快照更新）<br>
 • 费用 = 管理费+托管费（静态配置，2026-08-03从天天基金App逐只核实）<br>
 • 场内ETF无申购限额，但溢价是隐性成本：&lt;5%可买，5-8%谨慎，&gt;8%建议等回落或换标的<br>
 • ⚠️ 若QDII额度恢复、限购解除，溢价会快速收敛，高溢价买入部分将直接受损
 </div>
+<script>const FUND_META = {meta_js};const SNAP_TIME = "{now}";</script>
+<script>{RT_JS}</script>
 </body>
 </html>"""
 
