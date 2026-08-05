@@ -417,7 +417,7 @@ function updatePos(rows, qqqLive) {
         (dd >= 25 ? '🔴 DD>25% 清仓→买纳指' : dd >= 15 ? '🟡 DD>15% 卖半仓→买纳指' : '🟢 弹药就位');
     } else {
       setPos('.v-gdd', '--');
-      el.textContent = '点 ✏️设置 录入黄金成本价与份额';
+      el.textContent = '每月1手≈¥864(≈¥10K/年) · 点 ✏️设置 录入黄金成本价与份额';
     }
   }
   const n = rows['159632'];
@@ -520,7 +520,7 @@ h1{{font-size:20px;font-weight:700}}
       <div class="bx"><div class="lb">溢价</div><div class="vl v-gprem">--</div></div>
       <div class="bx"><div class="lb">浮亏DD</div><div class="vl v-gdd">--</div></div>
     </div>
-    <div class="inf" id="p-gold">点 ✏️设置 录入黄金成本价与份额</div>
+    <div class="inf" id="p-gold">节奏: 每月1手≈¥864(≈¥10K/年) 或一次性¥10K · 点 ✏️设置 录入成本价与份额</div>
   </div>
   <div class="fund">
     <div class="hdr"><b>159632 纳斯达克ETF华安</b><span><span class="cd">抄底·场内</span></span></div>
