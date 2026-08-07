@@ -9,7 +9,7 @@
 import urllib.request, json, re, time
 from datetime import datetime
 
-# 监控标的（场内QDII ETF/LOF，纯美股指数为主；2026-08-07扩展: 标普500/纳指科技/LOF/海外科技）
+# 监控标的（场内QDII ETF/LOF，纯纳指系；2026-08-07扩展: 纳指科技/纳指LOF/海外科技参考）
 # code: [市场 sh/sz, 指数类别, 管理费%, 托管费%, 是否核心推荐, 备注]
 FUNDS = {
     "159632": ["sz", "纳指100", 0.60, 0.20, True,  "⭐主力·当前溢价最低的大规模纳指"],
@@ -24,12 +24,9 @@ FUNDS = {
     "513870": ["sh", "纳指100", 0.50, 0.10, False, ""],
     "161130": ["sz", "纳指100", 0.50, 0.10, False, "LOF·暂停申购·流动性低"],
     "159509": ["sz", "纳指科技", 0.80, 0.20, False, "⚠️纯科技指数·溢价全场最贵·波动>NDX"],
-    "513500": ["sh", "标普500", 0.60, 0.20, False, "标普500·非纳指"],
-    "513650": ["sh", "标普500", 0.60, 0.15, False, "标普500·非纳指"],
-    "159655": ["sz", "标普500", 0.60, 0.15, False, "标普500·非纳指"],
     "501312": ["sh", "海外科技", 1.00, 0.20, False, "⚠️实为ARK主题FOF(2026Q2实锤)·非纳指·波动2×NDX"],
 }
-INDEX_US = {"纳指100": "QQQ", "标普500": "SPY", "纳指科技": "QQQ", "海外科技": "QQQ"}  # 真实溢价校正用(纳指科技/海外科技用QQQ近似)
+INDEX_US = {"纳指100": "QQQ", "纳指科技": "QQQ", "海外科技": "QQQ"}  # 真实溢价校正(全部用QQQ近似)
 
 def fetch(url, ref, tries=3, enc="utf-8"):
     last = None
@@ -310,7 +307,7 @@ RT_JS = r'''
 // 真实溢价: 现价/(快照净值 × (1 + 实时QQQ/净值日QQQ收盘 - 1)) - 1，逻辑与每日快照完全一致，仅把静态值换成实时值
 const META = FUND_META;
 const INTERVAL = 60000;                 // 每60秒刷新一次
-const SYMS = Object.keys(META).map(c => META[c].market + c).join(',') + ',usQQQ,usSPY,sh518880,sh511880';
+const SYMS = Object.keys(META).map(c => META[c].market + c).join(',') + ',usQQQ,sh518880,sh511880';
 const $ = s => document.querySelector(s);
 const winEl = $('#win');
 function updateWin(premts) {            // 溢价窗口横幅: 任一纯纳指100真实溢价<2% → 显示
@@ -355,10 +352,8 @@ async function refresh() {
       rows[p[2]] = p;
     }
     const findUs = (base) => { for (const k in rows) if (k.indexOf(base + '.') === 0) return rows[k]; return rows[base] || null; };
-    const qq = findUs('QQQ'), spy = findUs('SPY');
+    const qq = findUs('QQQ');
     const qqqLive = qq ? parseFloat(usOpen() ? qq[3] : qq[4]) : null;
-    const spyLive = spy ? parseFloat(usOpen() ? spy[3] : spy[4]) : null;
-    const baseLive = idx => idx === 'SPY' ? spyLive : qqqLive;
     const premts = {};
     let n = 0, missing = 0;
     for (const code in META) {
@@ -375,8 +370,8 @@ async function refresh() {
       const tprem = parseFloat(p[77]);                        // 腾讯披露溢价(最新净值口径) f77
       let prem = isFinite(tprem) ? tprem : (f.nav ? (price / f.nav - 1) * 100 : null);
       let premt = null;
-      const bl = baseLive(f.idx);
-      if (f.qqqBase && bl && f.nav) {                    // 有校正基准 → 用实时QQQ/SPY重算真实溢价
+      const bl = qqqLive;
+      if (f.qqqBase && bl && f.nav) {                    // 有校正基准 → 用实时QQQ重算真实溢价
         const qr = bl / f.qqqBase - 1;
         premt = (price / (f.nav * (1 + qr)) - 1) * 100;
       }
@@ -404,7 +399,7 @@ async function refresh() {
     updatePos(rows, qqqLive);
     updateWin(premts);
     rt.textContent = '🟢 实时 ' + t.toTimeString().slice(0, 8) + ' · ' + n + '/' + Object.keys(META).length + '只'
-      + (qqqLive ? ' · QQQ ' + qqqLive.toFixed(2) : '') + (spyLive ? ' · SPY ' + spyLive.toFixed(2) : '') + (missing ? ' · ⚠️' + missing + '只无数据' : '') + ' · 60s自动刷新·点击手动';
+      + (qqqLive ? ' · QQQ ' + qqqLive.toFixed(2) : '') + (missing ? ' · ⚠️' + missing + '只无数据' : '') + ' · 60s自动刷新·点击手动';
     rt.className = 'ok';
   } catch (e) {
     rt.textContent = '⚪ 实时获取失败·显示每日快照·点此重试';
@@ -584,7 +579,7 @@ h1{{font-size:20px;font-weight:700}}
 <div class="note">
 <strong>📐 口径说明</strong><br>
 • <b>披露溢价</b> = 现价/最新官方净值 - 1（QDII净值滞后T+2，会偏高）<br>
-• <b>真实溢价</b> = 现价/(净值×(1+美股区间涨幅)) - 1，用QQQ(纳指系)/SPY(标普)把净值日→最新交易日的美股涨幅扣除<br>
+• <b>真实溢价</b> = 现价/(净值×(1+美股区间涨幅)) - 1，用QQQ把净值日→最新交易日的美股涨幅扣除<br>
 • <b>20日均溢价</b> = 近20个交易日 场内价/同日净值 均值，判断当前贵不贵（每日快照更新）<br>
 • 费用 = 管理费+托管费（静态配置，2026-08-03从天天基金App逐只核实）<br>
 • 场内ETF无申购限额，但溢价是隐性成本：&lt;5%可买，5-8%谨慎，&gt;8%建议等回落或换标的<br>
