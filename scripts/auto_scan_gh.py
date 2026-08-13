@@ -303,7 +303,8 @@ pos_js = json.dumps(POSITION_META, ensure_ascii=False)
 RT_JS = r'''
 // ===== 实时行情层 =====
 // 数据源: 腾讯行情 qt.gtimg.cn (Access-Control-Allow-Origin: *, 浏览器可直接fetch)
-// 字段: p[3]现价 p[4]昨收 p[32]涨跌幅% p[37]成交额(万) p[45]总市值(亿) p[63]近5日% p[77]溢价率%(现价/最新净值-1) p[81]腾讯最新净值
+// 字段: p[3]现价 p[4]昨收 p[32]涨跌幅% p[37]成交额(万) p[45]总市值(亿) p[63]近5日% p[77]溢价率%(现价/最新净值-1) p[78]腾讯最新净值
+// ⚠️ 2026-08-13实测: 腾讯字段位置会漂移(同一天内±2~3字段; 08-05净值在p[81], 现已移到p[78]) — 固定位置读取必须配合合理性校验, 否则会读到-100.00/-53.67/总份额等垃圾值
 // 真实溢价: 现价/(快照净值 × (1 + 实时QQQ/净值日QQQ收盘 - 1)) - 1，逻辑与每日快照完全一致，仅把静态值换成实时值
 const META = FUND_META;
 const INTERVAL = 60000;                 // 每60秒刷新一次
@@ -362,20 +363,22 @@ async function refresh() {
       if (!el) continue;
       if (!p) { el.classList.add('stale'); missing++; continue; }
       const price = parseFloat(p[3]), prev = parseFloat(p[4]);
-      if (!isFinite(price) || !isFinite(prev)) { el.classList.add('stale'); missing++; continue; }
+      if (!isFinite(price) || price <= 0 || !isFinite(prev)) { el.classList.add('stale'); missing++; continue; }  // 0价(停牌/无行情/垃圾行)→保留快照, 防止回退公式算出-100%
       const chg = (price / prev - 1) * 100;
       const chg5 = parseFloat(p[63]);
       const amt = parseFloat(p[37]) / 10000;
       const mcap = parseFloat(p[45]);
-      const tprem = parseFloat(p[77]);                        // 腾讯披露溢价(最新净值口径) f77
-      let prem = isFinite(tprem) ? tprem : (f.nav ? (price / f.nav - 1) * 100 : null);
+      // ⚠️ 腾讯f77字段位置会漂移: 漂移时p[77]是垃圾值(-100.00/-53.67/总份额10位数) — 只接受[-50%,+50%]合理溢价, 越界回退到快照净值自算
+      const tprem = parseFloat(p[77]);
+      const premSelf = f.nav ? (price / f.nav - 1) * 100 : null;
+      let prem = (isFinite(tprem) && tprem > -50 && tprem < 50) ? tprem : premSelf;
       let premt = null;
       const bl = qqqLive;
       if (f.qqqBase && bl && f.nav) {                    // 有校正基准 → 用实时QQQ重算真实溢价
         const qr = bl / f.qqqBase - 1;
         premt = (price / (f.nav * (1 + qr)) - 1) * 100;
       }
-      if (premt == null) premt = prem;                        // 未校正 → 与披露溢价一致
+      if (premt == null || !isFinite(premt) || premt < -50 || premt > 50) premt = prem;   // 未校正/异常 → 与披露溢价一致
       premts[code] = premt;
       set(el, '.v-price', price.toFixed(3));
       set(el, '.v-chg', pct(chg, 2, true), chgCls(chg));
@@ -387,8 +390,9 @@ async function refresh() {
       const live = el.querySelector('.v-live');
       if (live) {
         let s = ' · 🟢 实时';
-        if (f.nav && isFinite(parseFloat(p[81])) && Math.abs(parseFloat(p[81]) - f.nav) > f.nav * 0.001) {
-          s += ' · 腾讯净值已更新至 ' + p[81];
+        const navT = parseFloat(p[78]);                  // 腾讯最新净值(位置随腾讯漂移, 2026-08-13实测在p[78])
+        if (f.nav && isFinite(navT) && navT > 0.5 && navT < 100 && Math.abs(navT - f.nav) > f.nav * 0.001) {
+          s += ' · 腾讯净值已更新至 ' + navT;
         }
         live.textContent = s;
       }
