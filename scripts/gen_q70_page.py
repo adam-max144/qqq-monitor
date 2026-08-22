@@ -177,6 +177,10 @@ details.card summary::-webkit-details-marker{display:none}
 </style>
 </head>
 <body>
+<nav style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+  <a href="q70.html" style="flex:1;text-align:center;padding:6px;border-radius:8px;background:#12221a;color:#3fb950;text-decoration:none;font-size:12px;font-weight:700;border:1px solid #238636">🥇 Q70/金30 策略</a>
+  <a href="monitor.html" style="flex:1;text-align:center;padding:6px;border-radius:8px;background:#21262d;color:#e6edf3;text-decoration:none;font-size:12px;font-weight:700;border:1px solid #30363d">📡 溢价监控</a>
+</nav>
 <h1>🥇 Q70/金30 静态策略站</h1>
 <p class="sub">20年回测 2006-08~2026-08 · 10万+¥400/周 · <span id="rt">🟢 实时行情加载中…</span><br>浏览器实时抓取腾讯行情(60s自动刷新) · 回测数据由 backtest20y 已验证脚本生成</p>
 <div id="win" class="win hidden"></div>
