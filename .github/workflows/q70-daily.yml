@@ -1,0 +1,23 @@
+name: 每日策略页更新
+on:
+  schedule:
+    - cron: "30 1 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: 生成策略页
+        run: python scripts/gen_q70_page.py
+      - name: 提交更新
+        run: |
+          git config user.name "auto-gen"
+          git config user.email "auto-gen@users.noreply.github.com"
+          git add q70.html
+          git diff --cached --quiet || (git commit -m "auto: 更新Q70策略页快照" && git push)

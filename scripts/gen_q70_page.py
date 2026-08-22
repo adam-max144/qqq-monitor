@@ -11,7 +11,8 @@
 数据全部来自 backtest20y/results_q70_detail.json + results_q70_detail2.json（已验证），
 本脚本只做"读JSON→内嵌→渲染"，不手抄数字。
 """
-import json, os
+import json, os, re, urllib.request, time
+from datetime import datetime
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 BT = os.path.join(BASE, "..", "backtest20y")
@@ -19,6 +20,71 @@ BT = os.path.join(BASE, "..", "backtest20y")
 def load(name):
     with open(os.path.join(BT, name), encoding="utf-8") as f:
         return json.load(f)
+
+def fetch(url, ref, tries=3, enc="utf-8"):
+    last = None
+    for i in range(tries):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Referer": ref})
+            return urllib.request.urlopen(req, timeout=15).read().decode(enc, "ignore")
+        except Exception as e:
+            last = e
+            time.sleep(1.0 * (i + 1))
+    raise last
+
+# ---- 实时抓取快照（017436 净值 + 腾讯行情），失败时回退到内置静态值 ----
+SNAP = {  # 静态默认值（离线/抓取失败时使用），成功抓取后会被覆盖
+    "qqq": 713.44, "qqqDate": "08-21",
+    "gprice": 9.388, "gprem": 0.22,
+    "nprice": 2.436, "nprem": 8.63,
+    "pnav": 2.3201, "pnavDate": "08-20", "plimit": 1000,
+}
+def fetch_snapshot():
+    s = dict(SNAP)
+    now = datetime.now()
+    # 017436 场外净值（东财 lsjz，需 Referer）
+    try:
+        raw = fetch("https://api.fund.eastmoney.com/f10/lsjz?fundCode=017436&pageIndex=1&pageSize=3",
+                    "https://fundf10.eastmoney.com/")
+        m = re.search(r'"LSJZList":\s*(\[.*?\]),', raw, re.DOTALL)
+        if m:
+            lst = json.loads(m.group(1))
+            if lst:
+                s["pnav"] = float(lst[0]["DWJZ"]); s["pnavDate"] = lst[0]["FSRQ"][5:]
+    except Exception:
+        pass
+    # 腾讯行情：518880 黄金 / 159632 场内纳指 / 511880 货币 / QQQ 美股
+    try:
+        raw = fetch("https://qt.gtimg.cn/q=sh518880,sz159632,sh511880,usQQQ",
+                    "https://gu.qq.com/", enc="gbk")
+        for line in raw.strip().split(";"):
+            line = line.strip()
+            if "=" not in line or "~" not in line:
+                continue
+            p = line.split("~")
+            if len(p) < 40:
+                continue
+            code = p[2]
+            try:
+                if code == "518880":
+                    s["gprice"] = float(p[3])
+                    prem = float(p[77])
+                    if -50 < prem < 50:
+                        s["gprem"] = prem
+                elif code == "159632":
+                    s["nprice"] = float(p[3])
+                    prem = float(p[77])
+                    if -50 < prem < 50:
+                        s["nprem"] = prem
+                elif code == "QQQ.OQ" or code == "QQQ":
+                    s["qqq"] = float(p[3])
+                    s["qqqDate"] = now.strftime("%m-%d")
+            except (ValueError, IndexError):
+                pass
+    except Exception:
+        pass
+    s["snapTime"] = now.strftime("%Y-%m-%d %H:%M")
+    return s
 
 det1 = load("results_q70_detail.json")
 det2 = load("results_q70_detail2.json")
@@ -58,13 +124,6 @@ backtest = {
     "grid": grid_table,
     "yearly": yearly_table,
     "dd": dd_table,
-}
-
-SNAP = {  # 2026-08-21 收盘快照（本页静态值，行情卡会被浏览器实时层覆盖）
-    "qqq": 713.44, "qqqDate": "08-21",
-    "gprice": 9.388, "gprem": 0.22,
-    "nprice": 2.436, "nprem": 8.63,
-    "pnav": 2.3201, "pnavDate": "08-20", "plimit": 1000,
 }
 
 def j(v, indent=0):
@@ -111,6 +170,10 @@ ol.steps li{margin-bottom:6px;line-height:1.5;font-size:12px}
 ol.steps b{color:#3fb950}
 .win{display:block;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#002d1a;border:1px solid #238636;color:#3fb950;font-size:12px;font-weight:700;line-height:1.5}
 .win.hidden{display:none}
+details.card summary{cursor:pointer;font-weight:700;font-size:13px;color:#58a6ff;list-style:none}
+details.card summary::before{content:"▸ ";color:#58a6ff}
+details.card[open] summary::before{content:"▾ "}
+details.card summary::-webkit-details-marker{display:none}
 </style>
 </head>
 <body>
@@ -135,29 +198,13 @@ ol.steps b{color:#3fb950}
   <div class="inf">vs 原季度必调方案：XIRR 15.33→<b>15.59%</b>、回撤 38.1→<b>36.9%</b>、操作 80→<b>~15次</b>。<b>再平衡是保险，不是收益来源</b>——不调整也有15.30%，不必过度操作。</div>
 </div>
 
-<div class="hdr2">📋 实盘操作清单（2026-08 快照）</div>
+<div class="hdr2">📋 实盘操作（2026-08 快照）</div>
 <div class="card">
-  <div class="hdr2" style="margin-top:0">存量 10万 <span class="badge opt">一次性</span></div>
   <ol class="steps">
-    <li><b>黄金 ¥3万</b> → 立即买 <b>518880</b>（场内，溢价0.22%畅通，T+0可随时卖 = 再平衡机动层）</li>
-    <li><b>QQQ ¥7万</b> → <b>017436 每日定投 ¥1000</b>（约70个交易日≈3.5个月自动投完，设一次零维护）</li>
-    <li>过渡资金放余额宝（定投自动扣款，无需买511880）</li>
-  </ol>
-</div>
-<div class="card">
-  <div class="hdr2" style="margin-top:0">每月 ¥5000 <span class="badge warn">建仓期→稳态</span></div>
-  <ol class="steps">
-    <li><b>¥3500 QQQ</b> → 017436 日定投已包含（建仓期）/ 每周二 ¥1000 自动（稳态，月¥4330覆盖）</li>
-    <li><b>¥1500 黄金</b> → 518880 场内月中一次买入（或攒两月 ¥3000 一次）</li>
-    <li>日定投吃满额度时工资结余先进余额宝，下月补投</li>
-  </ol>
-</div>
-<div class="card">
-  <div class="hdr2" style="margin-top:0">年度检视 <span class="badge">唯一动手时刻</span></div>
-  <ol class="steps">
-    <li>每年 1 月看一次下面「持仓偏离度」：QQQ 实际占比 vs 70% 目标</li>
-    <li>偏离 &gt;5%（占比 &gt;75% 或 &lt;65%）→ 用 518880 卖出/买入调节，手机10分钟</li>
-    <li>⚠️ 159632 溢价 &lt;2% 才可用场内抄底；<b>不要用"黄金弹药换QQQ"</b>（回测实锤负优化 15.59→14.32）</li>
+    <li><b>存量10万：</b>黄金¥3万→518880 立即买；QQQ¥7万→017436 日投¥1000（约3.5个月投完，过渡钱放余额宝）</li>
+    <li><b>每月¥5K：</b>QQQ¥3.5K（周投¥875）+ 黄金¥1.5K（月中一次，或攒两月¥3K）</li>
+    <li><b>每年1月：</b>看下方「持仓偏离度」，QQQ占比偏离70%超过5pp才调仓（518880买/卖调节，手机10分钟）</li>
+    <li>⚠️ 159632 溢价&lt;2% 才场内抄底；<b>别用黄金弹药换QQQ</b>（回测实锤负优化）</li>
   </ol>
 </div>
 
@@ -183,8 +230,8 @@ ol.steps b{color:#3fb950}
   <div class="inf" id="q-inf">加载中…</div>
 </div>
 
-<div class="hdr2">📈 20年回测数据</div>
-<div class="card">
+<details class="card">
+  <summary>📈 20年回测明细（点击展开）</summary>
   <div class="hdr2" style="margin-top:0">再平衡频率（Q70/金30 固定）</div>
   <div id="t-freq"></div>
   <div class="hdr2">年度/两年 × 触发带</div>
@@ -195,16 +242,13 @@ ol.steps b{color:#3fb950}
   <div id="t-yearly"></div>
   <div class="hdr2">回撤事件（深度&gt;8%）</div>
   <div id="t-dd"></div>
-</div>
+</details>
 
 <div class="note">
-<strong>📐 口径与验证</strong><br>
-• 回测：2006-08-21~2026-08-20（20.0年，1040周）；¥10万一次性 + ¥400/周定投；FX=7.25；价格口径无分红<br>
-• 数据：东财 QQQ/GLD 日线；XIRR=现金流内部收益率；Calmar=XIRR/MaxDD；回撤按周估值计算<br>
-• 最优解：年度检视+偏离&gt;5%触发 = XIRR 15.59% / MaxDD 36.9% / Calmar 0.422（超过季度必调，操作减80%）<br>
-• 已验证：与既有 opt_grid.js 网格逐位一致（15.3336/38.1343/0.4021）；临时验证脚本断言全过<br>
-• ⚠️ 017436 为主动型（YTD 跑输 QQQ ~12pp），限购¥1000/日下美股纯度最高(89.84%)的场外工具，需按月对照跟踪<br>
-• 生成器：scripts/gen_q70_page.py（回测JSON→内嵌数据，不手抄数字）
+<strong>📐 口径</strong> 回测 2006-08-21~2026-08-20 · ¥10万+¥400/周 · FX=7.25 · 价格口径无分红<br>
+• 最优解：年度检视+偏离&gt;5%触发 = XIRR 15.59% / MaxDD 36.9% / Calmar 0.422（比季度必调少 80% 操作）<br>
+• ⚠️ 017436 为主动型（YTD 跑输 QQQ ~12pp），需按月对照跟踪<br>
+• 数据/生成器：东财 QQQ/GLD 日线 → backtest20y 已验证 JSON → scripts/gen_q70_page.py
 </div>
 
 <script>
@@ -359,8 +403,9 @@ $('#rt').onclick = refresh;
 </html>
 """
 
-html = HTML.replace("__BACKTEST__", j(backtest)).replace("__SNAP__", j(SNAP))
+snap = fetch_snapshot()  # 实时抓取（017436净值+腾讯行情），失败回退静态值
+html = HTML.replace("__BACKTEST__", j(backtest)).replace("__SNAP__", j(snap))
 out = os.path.join(os.path.dirname(BASE), "q70.html")
 with open(out, "w", encoding="utf-8") as f:
     f.write(html)
-print("已生成", out, len(html), "bytes")
+print("已生成", out, len(html), "bytes | 快照:", json.dumps(snap, ensure_ascii=False))
