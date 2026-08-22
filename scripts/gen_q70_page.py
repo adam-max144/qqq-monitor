@@ -212,7 +212,7 @@ details.card summary::-webkit-details-marker{display:none}
   </ol>
 </div>
 
-<div class="hdr2">📊 持仓偏离度 <span class="pos-edit" onclick="posEdit()">✏️ 设置份额</span></div>
+<div class="hdr2">📊 持仓偏离度 <span class="pos-edit" id="pos-save-btn" onclick="posSave()">💾 保存</span></div>
 <div class="card">
   <div class="rw">
     <div class="bx"><div class="lb">QQQ 市值(017436)</div><div class="vl" id="p-q">--</div></div>
@@ -220,7 +220,17 @@ details.card summary::-webkit-details-marker{display:none}
     <div class="bx"><div class="lb">QQQ 实际占比</div><div class="vl" id="p-pct">--</div></div>
     <div class="bx"><div class="lb">偏离 70%目标</div><div class="vl" id="p-dev">--</div></div>
   </div>
-  <div class="inf" id="p-advice">点 ✏️设置 录入 017436 份额 与 518880 份额，自动计算当前占比与偏离（年度检视专用，不用记成本价）。</div>
+  <div class="rw" style="align-items:center">
+    <div class="bx" style="text-align:left;padding:6px 8px">
+      <div class="lb">QQQ 金额(¥)</div>
+      <input id="in-q" type="number" inputmode="numeric" placeholder="如 70000" style="width:100%;background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:6px;padding:6px;font-size:14px;margin-top:4px">
+    </div>
+    <div class="bx" style="text-align:left;padding:6px 8px">
+      <div class="lb">黄金金额(¥)</div>
+      <input id="in-g" type="number" inputmode="numeric" placeholder="如 30000" style="width:100%;background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:6px;padding:6px;font-size:14px;margin-top:4px">
+    </div>
+  </div>
+  <div class="inf" id="p-advice">填入您当前的 QQQ 市值（017436 持仓金额）与黄金市值（518880 持仓金额），点 💾保存，自动计算占比与偏离（年度检视专用，建议每年1月更新一次）。</div>
 </div>
 
 <div class="hdr2">🛰 实时行情</div>
@@ -297,38 +307,45 @@ function fmtCNY(v) { return v == null ? '--' : wany(v); }
     [{ t: '峰值', k: 'from' }, { t: '谷底', k: 'to' }, { t: '深度', k: 'depth', d: 1 }, { t: '恢复', k: 'recovered' }, { t: '下跌周', k: 'durWeeks' }, { t: '恢复周', k: 'recWeeks' }],
     B.dd);
 })();
-// ===== 持仓偏离度（localStorage 存份额） =====
+// ===== 持仓偏离度（localStorage 存金额，内嵌输入框，无 prompt） =====
 const LS = k => localStorage.getItem(k);
+const SS = (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } };
 function posVal() {
-  const qShares = parseFloat(LS('posQShares')), gShares = parseFloat(LS('posGShares'));
-  if (!(qShares > 0) || !(gShares > 0)) {
+  const qAmt = parseFloat(LS('posQAmt')), gAmt = parseFloat(LS('posGAmt'));
+  // 回填输入框
+  const inq = $('#in-q'), ing = $('#in-g');
+  if (inq && document.activeElement !== inq) inq.value = qAmt > 0 ? qAmt : '';
+  if (ing && document.activeElement !== ing) ing.value = gAmt > 0 ? gAmt : '';
+  if (!(qAmt > 0) || !(gAmt > 0)) {
     $('#p-q').textContent = '--'; $('#p-g').textContent = '--'; $('#p-pct').textContent = '--'; $('#p-dev').textContent = '--';
-    $('#p-advice').textContent = '点 ✏️设置 录入 017436 份额 与 518880 份额（份额=总金额/成本价，可在券商App查到）';
     return;
   }
-  const qv = qShares * SNAP.pnav;      // 017436 净值快照
-  const gv = gShares * SNAP.gprice;    // 518880 现价（实时层更新后重算）
-  const total = qv + gv;
-  const pct = total > 0 ? qv / total * 100 : 0;
+  const total = qAmt + gAmt;
+  const pct = total > 0 ? qAmt / total * 100 : 0;
   const dev = pct - 70;
-  $('#p-q').textContent = wany(qv);
-  $('#p-g').textContent = wany(gv);
+  $('#p-q').textContent = wany(qAmt);
+  $('#p-g').textContent = wany(gAmt);
   $('#p-pct').textContent = pct.toFixed(1) + '%';
   const devEl = $('#p-dev');
   devEl.textContent = (dev > 0 ? '+' : '') + dev.toFixed(1) + 'pp';
   devEl.className = 'vl ' + (Math.abs(dev) > 10 ? 'bad' : Math.abs(dev) > 5 ? 'warn' : 'ok');
   let advice;
-  if (Math.abs(dev) <= 5) advice = '🟢 占比在 70%±5% 内，无需操作。每年1月检视一次即可。';
-  else if (dev > 5) advice = '🟡 QQQ 超配 ' + dev.toFixed(1) + 'pp（>75%）：新钱全部进黄金 + 卖出部分 QQQ → 年度检视触发，用 518880 买入/场外拆单调节';
+  if (Math.abs(dev) <= 5) advice = '🟢 占比在 70%±5% 内，无需操作。每年1月更新金额再看一次即可。';
+  else if (dev > 5) advice = '🟡 QQQ 超配 ' + dev.toFixed(1) + 'pp（>75%）：新钱全部进黄金 + 卖出部分 QQQ → 用 518880 买入/场外拆单调节';
   else advice = '🟡 QQQ 低配 ' + (-dev).toFixed(1) + 'pp（<65%）：卖出黄金 518880 → 转入 017436 定投（日¥1000，分20-30日）';
-  $('#p-advice').textContent = advice + ' · 017436 净值快照 ' + SNAP.pnavDate + '（T+1，非实时）';
+  $('#p-advice').textContent = advice;
 }
-function posEdit() {
-  const q = (label, cur) => prompt('持仓份额设置\\n' + label, cur || '');
-  const qs = q('017436 份额（净值2.32, ¥1000≈431份）', LS('posQShares'));
-  if (qs != null && qs !== '') localStorage.setItem('posQShares', qs);
-  const gs = q('518880 份额（现价9.39, ¥3000≈320份）', LS('posGShares'));
-  if (gs != null && gs !== '') localStorage.setItem('posGShares', gs);
+function posSave() {
+  const q = parseFloat($('#in-q').value), g = parseFloat($('#in-g').value);
+  const btn = $('#pos-save-btn');
+  if (!(q > 0) || !(g > 0)) {
+    btn.textContent = '⚠️ 金额无效';
+    setTimeout(() => { btn.textContent = '💾 保存'; }, 1800);
+    return;
+  }
+  SS('posQAmt', String(q)); SS('posGAmt', String(g));
+  btn.textContent = '✓ 已保存';
+  setTimeout(() => { btn.textContent = '💾 保存'; }, 1800);
   posVal();
 }
 // ===== 实时行情层（腾讯 qt.gtimg.cn，浏览器直接fetch） =====
@@ -388,7 +405,7 @@ async function refresh() {
     }
     const c = rows['511880'];
     if (c) { const p = parseFloat(c[3]); if (isFinite(p) && p > 50) $('#q-cash').textContent = p.toFixed(3); }
-    posVal();  // 黄金现价更新后重算偏离度
+    posVal();  // 保持输入框回填（金额口径，不依赖价格）
     const t = new Date();
     rt.textContent = '🟢 实时 ' + t.toTimeString().slice(0, 8) + ' · QQQ $' + (SNAP.qqq || 0).toFixed(2) + ' · 60s自动刷新·点击手动';
     rt.className = 'ok';
