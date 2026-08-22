@@ -42,6 +42,20 @@ def should_skip(name):
             return True
     return False
 
+def purge_excluded(dst_root):
+    """清理目标目录中已不应存在的文件（历史残留，如早期复制过的 .lock）"""
+    purged = 0
+    for root, dirs, files in os.walk(dst_root):
+        for f in files:
+            if should_skip(f):
+                p = os.path.join(root, f)
+                try:
+                    os.remove(p)
+                    purged += 1
+                except OSError:
+                    pass
+    return purged
+
 def sync_tree(src, dst):
     """增量复制目录树，返回 (copied, skipped_files)"""
     copied = 0
@@ -116,6 +130,9 @@ def main():
                 except OSError:
                     pass
         report.append(f"  {label}: {n} 文件")
+    purged = purge_excluded(DEST)
+    if purged:
+        report.append(f"  清理残留: {purged} 文件")
     # 时间戳
     stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     with open(os.path.join(DEST, "LAST_SYNC.txt"), "w", encoding="utf-8") as f:
