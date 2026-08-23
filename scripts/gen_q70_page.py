@@ -66,6 +66,8 @@ def fetch_snapshot():
             s["ref13m"] = float(ref[2]); s["ref13mDate"] = ref[0]
             s["mom"] = round((float(lat[2]) / float(ref[2]) - 1) * 100, 1)
             s["qqqKlineDate"] = lat[0]
+            # QQQ 价格/数据日期统一用最近收盘（休市时页面显示上一收盘数据）
+            s["qqq"] = float(lat[2]); s["qqqDate"] = lat[0][5:]
     except Exception:
         pass
     # 腾讯行情：518880 黄金 / 159632 场内纳指 / 511880 货币 / QQQ 美股
@@ -92,8 +94,7 @@ def fetch_snapshot():
                     if -50 < prem < 50:
                         s["nprem"] = prem
                 elif code == "QQQ.OQ" or code == "QQQ":
-                    s["qqq"] = float(p[3])
-                    s["qqqDate"] = now.strftime("%m-%d")
+                    pass  # QQQ 价格统一用东财日线最近收盘（s.qqq），此处不覆盖
             except (ValueError, IndexError):
                 pass
     except Exception:
@@ -462,8 +463,8 @@ async function refresh() {
       if (p.length >= 40) rows[p[2]] = p;
     }
     const qq = rows['QQQ.OQ'] || rows['QQQ'];
-    if (qq) {
-      const q = parseFloat(usOpen() ? qq[3] : qq[4]);
+    if (qq && usOpen()) {  // 美股开盘用实时价；休市保持服务端上一收盘
+      const q = parseFloat(qq[3]);
       if (isFinite(q) && q > 10) { SNAP.qqq = q; }
     }
     const g = rows['518880'];
@@ -496,7 +497,7 @@ async function refresh() {
     updSignal();
     posVal();
     const t = new Date();
-    rt.textContent = '🟢 实时 ' + t.toTimeString().slice(0, 8) + ' · QQQ $' + (SNAP.qqq || 0).toFixed(2) + ' · 60s自动刷新·点击手动';
+    rt.textContent = (usOpen() ? '🟢 盘中 ' : '⚪ 休市 · 上一收盘 ' + (SNAP.qqqDate || '--') + ' ') + t.toTimeString().slice(0, 8) + ' · QQQ $' + (SNAP.qqq || 0).toFixed(2) + ' · 60s自动刷新·点击手动';
     rt.className = 'ok';
   } catch (e) {
     rt.textContent = '⚪ 实时获取失败·显示快照·点此重试';
