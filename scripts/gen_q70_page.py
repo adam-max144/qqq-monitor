@@ -139,7 +139,7 @@ backtest = {
     "yearly": yearly_table,
     "dd": dd_table,
     # Q30 动量切换
-    "q30": sel(q30d["q30"], ["xirr", "maxDD", "calmar", "sharpe", "vol", "finalCNY", "flips", "actions"]),
+    "q30": sel(q30d["q30"], ["name", "xirr", "maxDD", "calmar", "sharpe", "vol", "finalCNY", "flips", "actions"]),
     "q30_monthly": sel(q30d["q30_monthly"], ["name", "xirr", "maxDD", "calmar", "finalCNY", "flips", "actions"]),
     "q30_fliponly": sel(q30d["q30_fliponly"], ["name", "xirr", "maxDD", "calmar", "finalCNY", "flips", "actions"]),
     "q30_base": sel(q30d["baseline"], ["name", "xirr", "maxDD", "calmar", "finalCNY", "flips", "actions"]),
@@ -342,7 +342,7 @@ function fmtCNY(v) { return v == null ? '--' : wany(v); }
   // Q30 三版对比（推荐版高亮）
   tbl('#t-q30cmp',
     [{ t: '版本', k: 'name' }, { t: 'XIRR%', k: 'xirr', d: 2 }, { t: 'MaxDD%', k: 'maxDD', d: 1 }, { t: 'Calmar', k: 'calmar', d: 3 }, { t: '终值', k: 'finalCNY' }, { t: '20年动作', k: 'actions' }],
-    [B.q30, B.q30_monthly, B.q30_fliponly, B.q30_base].map(r => ({ ...r, finalCNY: wany(r.finalCNY), name: r.name.replace('Q30动量切换', 'Q30').replace('旧方案:', '旧方案 ') })), [0]);
+    [B.q30, B.q30_monthly, B.q30_fliponly, B.q30_base].map(r => ({ ...r, finalCNY: wany(r.finalCNY), name: (r.name || 'Q30').replace('Q30动量切换', 'Q30').replace('旧方案:', '旧方案 ') })), [0]);
   // 翻转日历
   tbl('#t-q30flips',
     [{ t: '日期', k: 'd' }, { t: '动量%', k: 'mQ', d: 1 }, { t: '方向', k: 'dirLabel' }, { t: 'QQQ', k: 'qv' }, { t: '黄金', k: 'gv' }, { t: '现金', k: 'cash' }],
