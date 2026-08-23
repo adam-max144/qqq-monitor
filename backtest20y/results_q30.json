@@ -1,0 +1,329 @@
+{
+ "generated": "2026-08-23",
+ "window": "2006-08-21~2026-08-20",
+ "q30": {
+  "name": "Q30动量切换(推荐版:偏离5%带)",
+  "xirr": 15.21,
+  "maxDD": 27.9,
+  "calmar": 0.545,
+  "sharpe": 1.01,
+  "vol": 14.6,
+  "finalCNY": 4094910,
+  "flips": 16,
+  "actions": 52,
+  "flipLog": [
+   {
+    "d": "2006-08-25",
+    "mQ": -3.5,
+    "dir": "down",
+    "qv": 0,
+    "gv": 0,
+    "cash": 100400
+   },
+   {
+    "d": "2006-09-29",
+    "mQ": 5.3,
+    "dir": "up",
+    "qv": 60160,
+    "gv": 42524,
+    "cash": 940
+   },
+   {
+    "d": "2008-02-29",
+    "mQ": -1.6,
+    "dir": "down",
+    "qv": 100243,
+    "gv": 55090,
+    "cash": 555
+   },
+   {
+    "d": "2008-03-28",
+    "mQ": 0.7,
+    "dir": "up",
+    "qv": 81178,
+    "gv": 66727,
+    "cash": 8075
+   },
+   {
+    "d": "2008-06-27",
+    "mQ": -3.3,
+    "dir": "down",
+    "qv": 118572,
+    "gv": 47138,
+    "cash": 510
+   },
+   {
+    "d": "2009-10-30",
+    "mQ": 6.4,
+    "dir": "up",
+    "qv": 114850,
+    "gv": 94738,
+    "cash": 1391
+   },
+   {
+    "d": "2016-01-29",
+    "mQ": -0.8,
+    "dir": "down",
+    "qv": 413964,
+    "gv": 174892,
+    "cash": 799
+   },
+   {
+    "d": "2016-02-26",
+    "mQ": 1.9,
+    "dir": "up",
+    "qv": 328032,
+    "gv": 274708,
+    "cash": 12438
+   },
+   {
+    "d": "2016-03-24",
+    "mQ": -1.2,
+    "dir": "down",
+    "qv": 447547,
+    "gv": 183445,
+    "cash": 505
+   },
+   {
+    "d": "2016-04-29",
+    "mQ": 0.1,
+    "dir": "up",
+    "qv": 402444,
+    "gv": 231846,
+    "cash": 997
+   },
+   {
+    "d": "2016-06-24",
+    "mQ": -6,
+    "dir": "down",
+    "qv": 440525,
+    "gv": 194859,
+    "cash": 662
+   },
+   {
+    "d": "2016-07-29",
+    "mQ": 7.6,
+    "dir": "up",
+    "qv": 407466,
+    "gv": 263212,
+    "cash": 1662
+   },
+   {
+    "d": "2018-12-28",
+    "mQ": -2.1,
+    "dir": "down",
+    "qv": 575519,
+    "gv": 297102,
+    "cash": 657
+   },
+   {
+    "d": "2019-01-25",
+    "mQ": 4.8,
+    "dir": "up",
+    "qv": 605868,
+    "gv": 305878,
+    "cash": 3740
+   },
+   {
+    "d": "2022-04-29",
+    "mQ": -1.8,
+    "dir": "down",
+    "qv": 1107714,
+    "gv": 609460,
+    "cash": 507
+   },
+   {
+    "d": "2023-05-26",
+    "mQ": 9.9,
+    "dir": "up",
+    "qv": 995722,
+    "gv": 791769,
+    "cash": 86456
+   }
+  ],
+  "yearly": [
+   {
+    "year": 2006,
+    "startVal": 100400,
+    "endVal": 115289,
+    "contrib": 7600,
+    "retPct": 7.3
+   },
+   {
+    "year": 2007,
+    "startVal": 115371,
+    "endVal": 165089,
+    "contrib": 20800,
+    "retPct": 25.1
+   },
+   {
+    "year": 2008,
+    "startVal": 158934,
+    "endVal": 153063,
+    "contrib": 20800,
+    "retPct": -16.8
+   },
+   {
+    "year": 2009,
+    "startVal": 156796,
+    "endVal": 234891,
+    "contrib": 21200,
+    "retPct": 36.3
+   },
+   {
+    "year": 2010,
+    "startVal": 240744,
+    "endVal": 310220,
+    "contrib": 20800,
+    "retPct": 20.2
+   },
+   {
+    "year": 2011,
+    "startVal": 313047,
+    "endVal": 344915,
+    "contrib": 20800,
+    "retPct": 3.5
+   },
+   {
+    "year": 2012,
+    "startVal": 357412,
+    "endVal": 405931,
+    "contrib": 20800,
+    "retPct": 7.8
+   },
+   {
+    "year": 2013,
+    "startVal": 419569,
+    "endVal": 492706,
+    "contrib": 20800,
+    "retPct": 12.5
+   },
+   {
+    "year": 2014,
+    "startVal": 491704,
+    "endVal": 581485,
+    "contrib": 20800,
+    "retPct": 14
+   },
+   {
+    "year": 2015,
+    "startVal": 572294,
+    "endVal": 609758,
+    "contrib": 21200,
+    "retPct": 2.8
+   },
+   {
+    "year": 2016,
+    "startVal": 585928,
+    "endVal": 664130,
+    "contrib": 20800,
+    "retPct": 9.8
+   },
+   {
+    "year": 2017,
+    "startVal": 682201,
+    "endVal": 860388,
+    "contrib": 20800,
+    "retPct": 23.1
+   },
+   {
+    "year": 2018,
+    "startVal": 888490,
+    "endVal": 873279,
+    "contrib": 20800,
+    "retPct": -4.1
+   },
+   {
+    "year": 2019,
+    "startVal": 880084,
+    "endVal": 1168705,
+    "contrib": 20800,
+    "retPct": 30.4
+   },
+   {
+    "year": 2020,
+    "startVal": 1179315,
+    "endVal": 1675206,
+    "contrib": 21200,
+    "retPct": 40.3
+   },
+   {
+    "year": 2021,
+    "startVal": 1681038,
+    "endVal": 1988801,
+    "contrib": 20800,
+    "retPct": 17.1
+   },
+   {
+    "year": 2022,
+    "startVal": 1914845,
+    "endVal": 1613738,
+    "contrib": 20800,
+    "retPct": -16.8
+   },
+   {
+    "year": 2023,
+    "startVal": 1630334,
+    "endVal": 2149439,
+    "contrib": 20800,
+    "retPct": 30.6
+   },
+   {
+    "year": 2024,
+    "startVal": 2095729,
+    "endVal": 2758206,
+    "contrib": 20800,
+    "retPct": 30.6
+   },
+   {
+    "year": 2025,
+    "startVal": 2749882,
+    "endVal": 3719192,
+    "contrib": 20800,
+    "retPct": 34.5
+   },
+   {
+    "year": 2026,
+    "startVal": 3625226,
+    "endVal": 4094910,
+    "contrib": 13600,
+    "retPct": 12.6
+   }
+  ]
+ },
+ "q30_monthly": {
+  "name": "Q30动量切换(原版:每月调)",
+  "xirr": 15.28,
+  "maxDD": 27.4,
+  "calmar": 0.558,
+  "sharpe": 1.03,
+  "vol": 14.5,
+  "finalCNY": 4134779,
+  "flips": 16,
+  "actions": 241
+ },
+ "q30_fliponly": {
+  "name": "Q30动量切换(只翻转)",
+  "xirr": 15.09,
+  "maxDD": 33.6,
+  "calmar": 0.448,
+  "sharpe": 0.98,
+  "vol": 14.9,
+  "finalCNY": 4022956,
+  "flips": 16,
+  "actions": 214
+ },
+ "baseline": {
+  "name": "旧方案:Q70/金30 年度+5%带",
+  "xirr": 15.59,
+  "maxDD": 36.9,
+  "calmar": 0.422,
+  "sharpe": 0.98,
+  "vol": 15.4,
+  "finalCNY": 4323840,
+  "flips": 0,
+  "actions": 0,
+  "flipLog": [],
+  "yearly": []
+ }
+}

@@ -1,0 +1,212 @@
+[
+ {
+  "name": "动量9m 下态Q0",
+  "xirr": 13.38,
+  "maxDD": 25.3,
+  "calmar": 0.529,
+  "sharpe": 0.93,
+  "vol": 14,
+  "finalCNY": 3140000,
+  "flips": 24
+ },
+ {
+  "name": "动量9m 下态Q30",
+  "xirr": 14.56,
+  "maxDD": 29.8,
+  "calmar": 0.488,
+  "sharpe": 0.98,
+  "vol": 14.3,
+  "finalCNY": 3730000,
+  "flips": 24
+ },
+ {
+  "name": "动量9m 下态Q50",
+  "xirr": 14.99,
+  "maxDD": 33.8,
+  "calmar": 0.443,
+  "sharpe": 0.97,
+  "vol": 14.9,
+  "finalCNY": 3960000,
+  "flips": 24
+ },
+ {
+  "name": "动量10m 下态Q0",
+  "xirr": 13.35,
+  "maxDD": 25.7,
+  "calmar": 0.519,
+  "sharpe": 0.93,
+  "vol": 14,
+  "finalCNY": 3130000,
+  "flips": 18
+ },
+ {
+  "name": "动量10m 下态Q30",
+  "xirr": 14.67,
+  "maxDD": 29.9,
+  "calmar": 0.49,
+  "sharpe": 0.99,
+  "vol": 14.3,
+  "finalCNY": 3780000,
+  "flips": 18
+ },
+ {
+  "name": "动量10m 下态Q50",
+  "xirr": 15.07,
+  "maxDD": 33.8,
+  "calmar": 0.446,
+  "sharpe": 0.98,
+  "vol": 15,
+  "finalCNY": 4010000,
+  "flips": 18
+ },
+ {
+  "name": "动量11m 下态Q0",
+  "xirr": 14.14,
+  "maxDD": 24.2,
+  "calmar": 0.584,
+  "sharpe": 0.97,
+  "vol": 14.2,
+  "finalCNY": 3510000,
+  "flips": 16
+ },
+ {
+  "name": "动量11m 下态Q30",
+  "xirr": 15,
+  "maxDD": 29.4,
+  "calmar": 0.511,
+  "sharpe": 1,
+  "vol": 14.5,
+  "finalCNY": 3970000,
+  "flips": 16
+ },
+ {
+  "name": "动量11m 下态Q50",
+  "xirr": 15.2,
+  "maxDD": 33.6,
+  "calmar": 0.452,
+  "sharpe": 0.98,
+  "vol": 15,
+  "finalCNY": 4090000,
+  "flips": 16
+ },
+ {
+  "name": "动量12m 下态Q0",
+  "xirr": 14.63,
+  "maxDD": 21.7,
+  "calmar": 0.674,
+  "sharpe": 1.01,
+  "vol": 14.2,
+  "finalCNY": 3760000,
+  "flips": 16
+ },
+ {
+  "name": "动量12m 下态Q30",
+  "xirr": 15.28,
+  "maxDD": 27.4,
+  "calmar": 0.558,
+  "sharpe": 1.03,
+  "vol": 14.5,
+  "finalCNY": 4130000,
+  "flips": 16
+ },
+ {
+  "name": "动量12m 下态Q50",
+  "xirr": 15.34,
+  "maxDD": 32.8,
+  "calmar": 0.468,
+  "sharpe": 0.99,
+  "vol": 15,
+  "finalCNY": 4170000,
+  "flips": 16
+ },
+ {
+  "name": "动量13m 下态Q0",
+  "xirr": 14.2,
+  "maxDD": 23.7,
+  "calmar": 0.598,
+  "sharpe": 0.99,
+  "vol": 14.1,
+  "finalCNY": 3530000,
+  "flips": 12
+ },
+ {
+  "name": "动量13m 下态Q30",
+  "xirr": 15.07,
+  "maxDD": 29.4,
+  "calmar": 0.513,
+  "sharpe": 1.01,
+  "vol": 14.4,
+  "finalCNY": 4010000,
+  "flips": 12
+ },
+ {
+  "name": "动量13m 下态Q50",
+  "xirr": 15.25,
+  "maxDD": 33.7,
+  "calmar": 0.452,
+  "sharpe": 0.99,
+  "vol": 15,
+  "finalCNY": 4120000,
+  "flips": 12
+ },
+ {
+  "name": "动量14m 下态Q0",
+  "xirr": 14.44,
+  "maxDD": 23.2,
+  "calmar": 0.621,
+  "sharpe": 1.01,
+  "vol": 14.1,
+  "finalCNY": 3660000,
+  "flips": 12
+ },
+ {
+  "name": "动量14m 下态Q30",
+  "xirr": 15.14,
+  "maxDD": 27.9,
+  "calmar": 0.543,
+  "sharpe": 1.02,
+  "vol": 14.5,
+  "finalCNY": 4050000,
+  "flips": 12
+ },
+ {
+  "name": "动量14m 下态Q50",
+  "xirr": 15.26,
+  "maxDD": 33.1,
+  "calmar": 0.462,
+  "sharpe": 0.99,
+  "vol": 15,
+  "finalCNY": 4120000,
+  "flips": 12
+ },
+ {
+  "name": "动量15m 下态Q0",
+  "xirr": 14.54,
+  "maxDD": 23.1,
+  "calmar": 0.63,
+  "sharpe": 1.02,
+  "vol": 14.1,
+  "finalCNY": 3720000,
+  "flips": 10
+ },
+ {
+  "name": "动量15m 下态Q30",
+  "xirr": 15.17,
+  "maxDD": 27.9,
+  "calmar": 0.544,
+  "sharpe": 1.02,
+  "vol": 14.5,
+  "finalCNY": 4070000,
+  "flips": 10
+ },
+ {
+  "name": "动量15m 下态Q50",
+  "xirr": 15.27,
+  "maxDD": 33.4,
+  "calmar": 0.457,
+  "sharpe": 0.99,
+  "vol": 15,
+  "finalCNY": 4130000,
+  "flips": 10
+ }
+]

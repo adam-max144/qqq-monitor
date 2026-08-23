@@ -532,7 +532,7 @@ h1{{font-size:20px;font-weight:700}}
 <body>
 <nav style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
   <a href="monitor.html" style="flex:1;text-align:center;padding:6px;border-radius:8px;background:#21262d;color:#e6edf3;text-decoration:none;font-size:12px;font-weight:700;border:1px solid #30363d">📡 溢价监控</a>
-  <a href="q70.html" style="flex:1;text-align:center;padding:6px;border-radius:8px;background:#12221a;color:#3fb950;text-decoration:none;font-size:12px;font-weight:700;border:1px solid #238636">🥇 Q70/金30 策略</a>
+  <a href="q70.html" style="flex:1;text-align:center;padding:6px;border-radius:8px;background:#12221a;color:#3fb950;text-decoration:none;font-size:12px;font-weight:700;border:1px solid #238636">🥇 Q30 动量 策略</a>
 </nav>
 <h1>📡 场内纳指基金监控</h1>
 <p class="sub">每日快照 {now} · 共{ok_n}/{len(FUNDS)}只 · <span id="rt">🟢 实时行情加载中…</span><br>浏览器实时抓取腾讯行情(60s自动刷新) · GitHub Actions每日更新官方净值</p>
