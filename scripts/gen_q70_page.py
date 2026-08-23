@@ -448,6 +448,10 @@ const usOpen = () => {
   const h = n.getHours() + n.getMinutes() / 60, w = n.getDay();
   return w >= 1 && w <= 5 && h >= 9.5 && h < 16;
 };
+// 渲染实时行情卡的 QQQ：盘中=实时价；休市=上一收盘(带数据日期)
+function renderQQQ() {
+  $('#q-qqq').textContent = '$' + (SNAP.qqq || 0).toFixed(2) + (usOpen() ? '' : ' (' + (SNAP.qqqDate || '--') + ')');
+}
 async function refresh() {
   const rt = $('#rt');
   try {
@@ -467,6 +471,7 @@ async function refresh() {
       const q = parseFloat(qq[3]);
       if (isFinite(q) && q > 10) { SNAP.qqq = q; }
     }
+    renderQQQ();
     const g = rows['518880'];
     if (g) {
       const price = parseFloat(g[3]);
@@ -504,8 +509,10 @@ async function refresh() {
     rt.className = 'bad';
     updSignal();
     posVal();
+    renderQQQ();
   }
 }
+renderQQQ();
 updSignal();
 posVal();
 refresh();
