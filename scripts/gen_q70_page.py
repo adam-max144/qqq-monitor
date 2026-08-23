@@ -40,7 +40,7 @@ SNAP = {
     "nprice": 2.436, "nprem": 8.63,
     "pnav": 2.3201, "pnavDate": "08-20", "plimit": 1000,
     # QQQ 12m动量参考（13个月前收盘价 + 动量%）——东财日线抓取，失败回退静态值
-    "ref13m": 564.17, "ref13mDate": "2025-07-21", "mom": 26.4, "qqqKlineDate": "2026-08-21",
+    "ref13m": 558.56, "ref13mDate": "2025-07-22", "mom": 27.7, "qqqKlineDate": "2026-08-21",
 }
 def fetch_snapshot():
     s = dict(SNAP)
@@ -234,6 +234,7 @@ details.subd[open] summary::before{content:"▾ "}
     <div class="bx"><div class="lb">12m动量</div><div class="vl" id="s-mom">--</div></div>
     <div class="bx"><div class="lb">状态</div><div class="vl" id="s-state">--</div></div>
   </div>
+  <div class="inf" id="s-trigger" style="margin-top:10px;padding:8px;background:#002d1a;border:1px solid #238636;border-radius:8px;color:#3fb950">📌 最近触发：读取中…</div>
   <div class="inf" id="s-target">动量 = QQQ现价 ÷ 约13个月前收盘价 − 1（过去12个月涨跌，跳过最近1个月）。动量&gt;0 → <b>上行态 70/30</b>；≤0 → <b>下行态 30/30/40</b>。参考价由 Actions 每日自动更新（东财 QQQ 日线）。</div>
 </div>
 
@@ -380,6 +381,8 @@ function updSignal() {
   const stEl = $('#s-state');
   stEl.textContent = stateUp() ? '上行态' : '下行态';
   stEl.className = 'vl ' + (stateUp() ? 'up' : 'down');
+  const trg = $('#s-trigger');
+  trg.textContent = '📌 最近触发 ' + (SNAP.qqqKlineDate || '--') + '（收盘）：12m动量 ' + (mom > 0 ? '+' : '') + mom.toFixed(1) + '% → ' + (stateUp() ? '上行态' : '下行态') + '。' + (stateUp() ? '目标 70% QQQ+30% 金 · 新钱 ¥3500Q+¥1500金' : '目标 30% QQQ+30% 金+40% 现金 · 赎回 QQQ 至30% · 新钱 ¥1500Q+¥1500金+¥2000现金');
   $('#s-target').innerHTML = stateUp()
     ? '✅ 动量>0 → <b>上行态</b>：目标 70% QQQ(017436) + 30% 黄金(518880)。新钱 ¥3500 Q + ¥1500 金。'
     : '⚠️ 动量≤0 → <b>下行态</b>：目标 30% QQQ + 30% 金 + 40% 现金(511880)。赎回 QQQ 到30%，新钱 ¥1500 Q + ¥1500 金 + ¥2000 现金。';
