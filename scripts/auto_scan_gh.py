@@ -263,9 +263,11 @@ try:
     qq = us_closes.get("纳指100", {})
     qds = sorted(qq)
     qqq_ytd = None
+    qqq_base = None
     for d in qds:
         if d >= "2026-01-01":
             qqq_ytd = (qq[qds[-1]] / qq[d] - 1) * 100
+            qqq_base = qq[d]
             break
     limit = None
     try:
@@ -282,7 +284,7 @@ try:
     except Exception:
         pass
     pos = {"nav": nav_map[ds[-1]], "navDate": ds[-1], "limit": limit,
-           "ytd": ret_at("2026-01-01"), "qqqYtd": qqq_ytd, "ok": True}
+           "ytd": ret_at("2026-01-01"), "qqqYtd": qqq_ytd, "qqqBase": qqq_base, "ok": True}
     print(f"017436: 净值 {pos['nav']} ({pos['navDate']}) 限购 {limit} YTD {pos['ytd']:.1f}% vs QQQ {qqq_ytd:.1f}%")
 except Exception as e:
     print(f"  ⚠️ 017436 持仓数据失败: {e}")
@@ -293,7 +295,8 @@ POSITION_META = {
              "navDate": pos.get("navDate") if pos.get("ok") else None,
              "limit": pos.get("limit") if pos.get("ok") else None,
              "ytd": pos.get("ytd") if pos.get("ok") else None,
-             "qqqYtd": pos.get("qqqYtd") if pos.get("ok") else None},
+             "qqqYtd": pos.get("qqqYtd") if pos.get("ok") else None,
+             "qqqBase": pos.get("qqqBase") if pos.get("ok") else None},
     "gold": {"code": "518880", "name": "黄金ETF华安", "market": "sh"},
     "ndx": {"code": "159632", "name": "纳斯达克ETF华安", "market": "sz"},
     "cash": {"code": "511880", "name": "银华日利ETF", "market": "sh"},
@@ -425,11 +428,21 @@ function updatePos(rows, qqqLive) {
     setPos('.v-pnav', f.nav.toFixed(4));
     setPos('.v-pnavd', f.navDate);
     setPos('.v-plimit', f.limit == null ? '--' : f.limit === 0 ? '暂停' : '¥' + (f.limit >= 1000 ? (f.limit / 1000) + 'K' : f.limit) + '/日');
-    const gap = (f.ytd != null && f.qqqYtd != null) ? f.ytd - f.qqqYtd : null;
+    let qqY = f.qqqYtd;
+    if (qqqLive && f.qqqBase) qqY = (qqqLive / f.qqqBase - 1) * 100;   // 盘中用实时QQQ重算YTD → 偏差实时更新
+    const gap = (f.ytd != null && qqY != null) ? f.ytd - qqY : null;
     if (gap != null) {
-      setPos('.v-pgap', (gap > 0 ? '+' : '') + gap.toFixed(1) + 'pp', gap < -10 ? 'bad' : gap < -5 ? 'warn' : gap < 0 ? 'flat' : 'ok');
+      setPos('.v-pgap', (gap > 0 ? '+' : '') + gap.toFixed(1) + 'pp', gap < -5 ? 'bad' : gap < 0 ? 'warn' : 'ok');
       const tr = document.getElementById('p-track');
-      if (tr) tr.textContent = 'YTD ' + f.ytd.toFixed(1) + '% vs QQQ ' + f.qqqYtd.toFixed(1) + '% · 主动型, 连续两季跑输>10pp换标的';
+      if (tr) {
+        if (gap < -5) {
+          tr.textContent = '🔴 偏差 ' + gap.toFixed(1) + 'pp 超5pp → 停止加仓·只减不增 → 改投指数联接(华夏015299/博时016055/嘉实016532/天弘018043)';
+          tr.className = 'inf bad';
+        } else {
+          tr.textContent = 'YTD ' + f.ytd.toFixed(1) + '% vs QQQ ' + qqY.toFixed(1) + '% · 偏差' + (gap > 0 ? '+' : '') + gap.toFixed(1) + 'pp · ≤5pp 正常定投';
+          tr.className = 'inf';
+        }
+      }
     }
   }
   const g = rows['518880'];
@@ -521,6 +534,8 @@ h1{{font-size:20px;font-weight:700}}
 .ok{{color:#3fb950}} .warn{{color:#d29922}} .bad{{color:#f85149}} .flat{{color:#8b949e}}
 .up{{color:#3fb950}} .down{{color:#f85149}}
 .inf{{font-size:10px;color:#8b949e;margin-top:6px;line-height:1.5}}
+.inf.bad{{color:#f85149;font-weight:700}}
+.inf.ok{{color:#3fb950}}
 .v-live{{color:#3fb950}}
 .hdr2{{font-size:13px;font-weight:700;margin:14px 0 6px;padding:6px 0;border-bottom:1px solid #21262d}}
 .pos-edit{{float:right;font-size:10px;font-weight:400;color:#58a6ff;cursor:pointer;border:1px solid #30363d;border-radius:6px;padding:1px 8px}}
@@ -547,7 +562,7 @@ h1{{font-size:20px;font-weight:700}}
       <div class="bx"><div class="lb">日限购</div><div class="vl v-plimit">--</div></div>
       <div class="bx"><div class="lb">跟踪偏差</div><div class="vl v-pgap">--</div></div>
     </div>
-    <div class="inf" id="p-track">每周¥1K按净值定投 · 零溢价 · QDII净值T+1更新(快照)</div>
+    <div class="inf" id="p-track">场外净值定投·零溢价 · 偏差>5pp 停止加仓只减不增 · QDII净值T+1(快照)</div>
   </div>
   <div class="fund">
     <div class="hdr"><b>518880 黄金ETF华安</b><span><span class="cd">弹药·场内T+0</span></span></div>
