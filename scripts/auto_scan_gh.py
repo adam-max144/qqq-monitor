@@ -435,11 +435,14 @@ function updatePos(rows, qqqLive) {
       setPos('.v-pgap', (gap > 0 ? '+' : '') + gap.toFixed(1) + 'pp', gap < -5 ? 'bad' : gap < 0 ? 'warn' : 'ok');
       const tr = document.getElementById('p-track');
       if (tr) {
-        if (gap < -5) {
-          tr.textContent = '🔴 偏差 ' + gap.toFixed(1) + 'pp 超5pp → 停止加仓·只减不增 → 改投指数联接(华夏015299/博时016055/嘉实016532/天弘018043)';
+        if (gap < -20) {
+          tr.textContent = '🔴🔴 偏差 ' + gap.toFixed(1) + 'pp 超硬线(-20pp) → 停止加仓017436 → 转511880蓄水池等窗口';
+          tr.className = 'inf bad';
+        } else if (gap < -5) {
+          tr.textContent = '🔴 偏差 ' + gap.toFixed(1) + 'pp(>5pp) · 额度危机下唯一大额通道,继续过渡定投 · 硬线-20pp停加 · 场内<2%或指数恢复时替换';
           tr.className = 'inf bad';
         } else {
-          tr.textContent = 'YTD ' + f.ytd.toFixed(1) + '% vs QQQ ' + qqY.toFixed(1) + '% · 偏差' + (gap > 0 ? '+' : '') + gap.toFixed(1) + 'pp · ≤5pp 正常定投';
+          tr.textContent = 'YTD ' + f.ytd.toFixed(1) + '% vs QQQ ' + qqY.toFixed(1) + '% · 偏差' + (gap > 0 ? '+' : '') + gap.toFixed(1) + 'pp · 场外净值定投·零溢价';
           tr.className = 'inf';
         }
       }
@@ -555,14 +558,14 @@ h1{{font-size:20px;font-weight:700}}
 <div class="hdr2">📊 持仓管理 <span class="pos-edit" onclick="posEdit()">✏️ 设置</span></div>
 <div id="pos">
   <div class="fund">
-    <div class="hdr"><b>017436 华宝纳指精选A</b><span><span class="cd">主仓·场外定投</span></span></div>
+    <div class="hdr"><b>017436 华宝纳指精选A</b><span><span class="cd">过渡主仓·场外定投</span></span></div>
     <div class="rw">
       <div class="bx"><div class="lb">最新净值</div><div class="vl v-pnav">--</div></div>
       <div class="bx"><div class="lb">净值日</div><div class="vl v-pnavd">--</div></div>
       <div class="bx"><div class="lb">日限购</div><div class="vl v-plimit">--</div></div>
       <div class="bx"><div class="lb">跟踪偏差</div><div class="vl v-pgap">--</div></div>
     </div>
-    <div class="inf" id="p-track">场外净值定投·零溢价 · 偏差>5pp 停止加仓只减不增 · QDII净值T+1(快照)</div>
+    <div class="inf" id="p-track">过渡主仓·场外净值定投零溢价 · 硬线-20pp停加 · 场内<2%或指数恢复时替换 · QDII净值T+1(快照)</div>
   </div>
   <div class="fund">
     <div class="hdr"><b>518880 黄金ETF华安</b><span><span class="cd">弹药·场内T+0</span></span></div>
