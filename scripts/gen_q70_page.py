@@ -35,12 +35,12 @@ def fetch(url, ref, tries=3, enc="utf-8"):
 
 # ---- 实时抓取快照（017436净值 + 腾讯行情 + QQQ日线），失败时回退到内置静态值 ----
 SNAP = {
-    "qqq": 713.44, "qqqDate": "08-21",
+    "qqq": 721.11, "qqqDate": "08-27",
     "gprice": 9.388, "gprem": 0.22,
     "nprice": 2.436, "nprem": 8.63,
     "pnav": 2.3201, "pnavDate": "08-20", "plimit": 1000,
-    # QQQ 12m动量参考（13个月前收盘价 + 动量%）——东财日线抓取，失败回退静态值
-    "ref13m": 558.56, "ref13mDate": "2025-07-22", "mom": 27.7, "qqqKlineDate": "2026-08-21",
+    # QQQ 12m动量参考（13个月前收盘价 + 动量%）——新浪日K抓取，失败回退静态值
+    "ref13m": 568.14, "ref13mDate": "2025-07-28", "mom": 26.9, "qqqKlineDate": "2026-08-27",
 }
 def fetch_snapshot():
     s = dict(SNAP)
@@ -57,17 +57,21 @@ def fetch_snapshot():
     except Exception:
         pass
     # QQQ 日线：最新收盘 + 273个交易日前收盘（=12m动量跳过最近1个月）
+    # 数据源: 新浪美股日K（东财 push2his 2026-08 起不稳定, 页面曾停在旧快照 08-21）
     try:
-        raw = fetch("https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=105.QQQ&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56&klt=101&fqt=1&beg=20050101&end=20500101&lmt=1000000",
-                    "https://quote.eastmoney.com/")
-        kl = json.loads(raw)["data"]["klines"]
-        if len(kl) > 273:
-            lat = kl[-1].split(","); ref = kl[-1 - 273].split(",")
-            s["ref13m"] = float(ref[2]); s["ref13mDate"] = ref[0]
-            s["mom"] = round((float(lat[2]) / float(ref[2]) - 1) * 100, 1)
-            s["qqqKlineDate"] = lat[0]
+        raw = fetch("https://stock.finance.sina.com.cn/usstock/api/jsonp_v2.php/var%20_QQQ_=/US_MinKService.getDailyK?symbol=QQQ&___qn=600",
+                    "https://finance.sina.com.cn/")
+        m = re.search(r"\((.*)\)", raw, re.DOTALL)
+        data = json.loads(m.group(1))
+        rows = [(r["d"], float(r["c"])) for r in data if isinstance(r, dict) and "d" in r and "c" in r]
+        rows.sort()
+        if len(rows) > 273:
+            lat_d, lat_c = rows[-1]; ref_d, ref_c = rows[-1 - 273]
+            s["ref13m"] = round(ref_c, 2); s["ref13mDate"] = ref_d
+            s["mom"] = round((lat_c / ref_c - 1) * 100, 1)
+            s["qqqKlineDate"] = lat_d
             # QQQ 价格/数据日期统一用最近收盘（休市时页面显示上一收盘数据）
-            s["qqq"] = float(lat[2]); s["qqqDate"] = lat[0][5:]
+            s["qqq"] = round(lat_c, 2); s["qqqDate"] = lat_d[5:]
     except Exception:
         pass
     # 腾讯行情：518880 黄金 / 159632 场内纳指 / 511880 货币 / QQQ 美股
