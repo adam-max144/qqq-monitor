@@ -81,8 +81,8 @@ def fetch_nav(code):
     return nav_map, dates[-1] if dates else None, nav_map[dates[-1]] if dates else None
 
 # ---------- 3. 腾讯日K（场内价，算近期涨跌和20日均溢价） ----------
-def fetch_kline(sym):
-    raw = fetch(f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={sym},day,,,45,qfq",
+def fetch_kline(sym, n=45):
+    raw = fetch(f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={sym},day,,,{n},qfq",
                 "https://gu.qq.com/")
     d = json.loads(raw)
     k = d["data"][sym]
@@ -92,7 +92,7 @@ def fetch_kline(sym):
 # ---------- 4. 美股日K（QQQ/SPY 校正） ----------
 def fetch_us_kline(sym):
     url = (f"https://stock.finance.sina.com.cn/usstock/api/jsonp_v2.php/"
-           f"var%20_{sym}_=/US_MinKService.getDailyK?symbol={sym}&___qn=30")
+           f"var%20_{sym}_=/US_MinKService.getDailyK?symbol={sym}&___qn=600")
     raw = fetch(url, "https://finance.sina.com.cn/")
     m = re.search(r"\((.*)\)", raw, re.DOTALL)
     if not m:
@@ -204,6 +204,14 @@ def chg_cls(v):
         return "down"
     return "flat"
 
+def lv(v):           # 支撑位显示: 大数值取整, 小数值两位
+    return f"{v:.0f}" if v >= 100 else f"{v:.2f}"
+
+def dist(v, s):      # 现价距支撑 % (距下方)
+    if not v or not s:
+        return "--"
+    return f"{max(0.0, (1 - s / v) * 100):.1f}%"
+
 def card(r):
     prem_c = color_prem(r.get("prem_pct"))
     fee = f"{r['mgmt']:.2f}%+{r['trust']:.2f}%"
@@ -303,6 +311,57 @@ POSITION_META = {
 }
 pos_js = json.dumps(POSITION_META, ensure_ascii=False)
 
+# ---------- 关键支撑位（每日快照自动刷新52周/200日统计; S1/S2为结构位标注, 结构变化时人工校准） ----------
+# QQQ S1/S2(2026-09-02标注): S1=8/24 近月低706.32, S2=7/29 近3月低661.73, 下方还有 200日线656≈S2带
+# 黄金 S1/S2(2026-09-02标注): S1=8/4 双底上沿8.408, S2=7/1 年内低8.271(双底下沿), 200日线9.50在上方=压力
+QQQ_STATIC = {"last": 707.64, "lastDate": "2026-09-01", "high52": 746.16, "low52": 558.28,
+              "ma200": 656.08, "s1": 706.32, "s1Date": "08-24", "s2": 661.73, "s2Date": "07-29",
+              "dd52": -5.2, "pos52": 79.7, "chgPct": -1.27}
+GOLD_STATIC = {"last": 8.902, "lastDate": "2026-09-02", "high52": 11.904, "low52": 7.374,
+               "ma200": 9.499, "s1": 8.408, "s1Date": "08-04", "s2": 8.271, "s2Date": "07-01",
+               "dd52": -25.2, "pos52": 33.6, "chgPct": -2.39}
+
+def support_stats(dmap, s1, s1d, s2, s2d):
+    """合并: 自动统计(52周高/低/位/回撤/200日线/最新) + 人工标注 S1/S2。历史不足250根→返回None走静态快照。"""
+    ds = sorted(dmap)
+    closes = [dmap[d] for d in ds]
+    if len(closes) < 250 or not closes[-1]:
+        return None
+    last, lastDate = closes[-1], ds[-1]
+    high52, low52 = max(closes[-252:]), min(closes[-252:])
+    ma200 = sum(closes[-200:]) / 200.0
+    return {"last": last, "lastDate": lastDate, "high52": high52, "low52": low52, "ma200": ma200,
+            "s1": s1, "s1Date": s1d, "s2": s2, "s2Date": s2d,
+            "dd52": (last / high52 - 1) * 100, "pos52": (last - low52) / (high52 - low52) * 100,
+            "chgPct": (closes[-1] / closes[-2] - 1) * 100}
+
+gold_kline = {}
+try:
+    gold_kline = fetch_kline("sh518880", 300)
+    print(f"518880 日K: {len(gold_kline)} 根")
+except Exception as e:
+    print(f"  ⚠️ 518880 日K失败(支撑用静态快照): {e}")
+
+qsup = support_stats(us_closes.get("纳指100") or {}, 706.32, "08-24", 661.73, "07-29") or QQQ_STATIC
+gsup = support_stats(gold_kline, 8.408, "08-04", 8.271, "07-01") or GOLD_STATIC
+SUPPORT_META = {"qqq": qsup, "gold": gsup, "asof": "2026-09-02"}
+support_js = json.dumps(SUPPORT_META, ensure_ascii=False)
+
+# ---------- 模板显示变量(QQQ卡/黄金支撑行, 服务端预渲染, 浏览器端实时层再刷新) ----------
+qq_price = f"{qsup['last']:.2f}"
+qq_chg = pct_str(qsup.get('chgPct'), sign=True)
+qq_chg_cls = chg_cls(qsup.get('chgPct'))
+qq_dd = pct_str(qsup.get('dd52'))
+qq_dd_cls = 'warn' if (qsup.get('dd52') or 0) < -10 else 'ok'
+qq_pos = f"{qsup['pos52']:.0f}%" if qsup.get('pos52') is not None else '--'
+qq_s1, qq_s1d, qq_s2, qq_s2d, qq_ma200 = lv(qsup['s1']), qsup['s1Date'], lv(qsup['s2']), qsup['s2Date'], lv(qsup['ma200'])
+qq_dist1, qq_dist2 = dist(qsup['last'], qsup['s1']), dist(qsup['last'], qsup['s2'])
+g_s1, g_s1d, g_s2, g_s2d, g_ma200 = lv(gsup['s1']), gsup['s1Date'], lv(gsup['s2']), gsup['s2Date'], lv(gsup['ma200'])
+g_ma_note = '（上方压力）' if gsup['ma200'] > gsup['last'] else '（下方）'
+g_dist1, g_dist2 = dist(gsup['last'], gsup['s1']), dist(gsup['last'], gsup['s2'])
+
+
+
 RT_JS = r'''
 // ===== 实时行情层 =====
 // 数据源: 腾讯行情 qt.gtimg.cn (Access-Control-Allow-Origin: *, 浏览器可直接fetch)
@@ -358,6 +417,7 @@ async function refresh() {
     const findUs = (base) => { for (const k in rows) if (k.indexOf(base + '.') === 0) return rows[k]; return rows[base] || null; };
     const qq = findUs('QQQ');
     const qqqLive = qq ? parseFloat(usOpen() ? qq[3] : qq[4]) : null;
+    updateQQQCard(qq, qqqLive);
     const premts = {};
     let n = 0, missing = 0;
     for (const code in META) {
@@ -415,6 +475,35 @@ async function refresh() {
 }
 // ===== 持仓管理(方案: 017436主仓 + 518880黄金弹药 + 159632抄底 + 511880蓄水池) =====
 const P = POSITION_META;
+const SUPP = SUPPORT_META;              // {qqq/gold: 52周/200日/支撑S1S2}
+function qSuppDist(price, lv) { return (isFinite(price) && lv) ? Math.max(0, (1 - lv / price) * 100) : null; }
+function setSuppSpan(id, price, lv, warnPct) {   // 支撑距 % 更新 + 贴支撑提醒
+  const el = document.getElementById(id);
+  if (!el) return;
+  const d = qSuppDist(price, lv);
+  el.textContent = d == null ? '--' : d.toFixed(1) + '%';
+  if (d != null) el.className = price <= lv ? 'bad' : (d <= warnPct ? 'warn' : '');
+}
+function updateQQQCard(qq, qqqLive) {              // QQQ 卡(v2口径): 现价/涨跌/52周回撤/52周位 + 支撑距
+  const el = document.getElementById('qqq-card');
+  if (!el || !qq) return;
+  const price = (isFinite(qqqLive) && qqqLive > 0) ? qqqLive : null;
+  const prev = parseFloat(qq[4]);
+  let chg = null;
+  if (usOpen() && price && isFinite(prev) && prev > 0) chg = (price / prev - 1) * 100;
+  else { const c32 = parseFloat(qq[32]); if (isFinite(c32)) chg = c32; }
+  if (price) {
+    setPos('.v-qprice', price.toFixed(2), chgCls(chg));
+    if (chg != null) setPos('.v-qchg', pct(chg, 2, true), chgCls(chg));
+    const qs = SUPP.qqq;
+    if (qs && qs.high52 && qs.low52) {
+      setPos('.v-qdd52', pct((price / qs.high52 - 1) * 100, 1), (price / qs.high52 - 1) * 100 < -10 ? 'warn' : 'ok');
+      setPos('.v-qpos52', Math.round((price - qs.low52) / (qs.high52 - qs.low52) * 100) + '%');
+    }
+    if (qs) { setSuppSpan('q-d-s1', price, qs.s1, 1.5); setSuppSpan('q-d-s2', price, qs.s2, 3); }
+  }
+}
+
 const LS = k => localStorage.getItem(k);
 function setPos(sel, txt, cls) {
   const el = document.querySelector(sel);
@@ -456,14 +545,17 @@ function updatePos(rows, qqqLive) {
     setPos('.v-gprem', isFinite(prem) ? prem.toFixed(2) + '%' : '--', premCls(prem));
     const cost = parseFloat(LS('posGoldCost')), sh = parseInt(LS('posGoldShares'));
     const el = document.getElementById('p-gold');
+    if (SUPP.gold) { setSuppSpan('g-d-s1', price, SUPP.gold.s1, 2); setSuppSpan('g-d-s2', price, SUPP.gold.s2, 4); }
     if (cost > 0 && sh > 0) {
       const dd = (1 - price / cost) * 100, mv = price * sh;
       setPos('.v-gdd', (dd > 0 ? '+' : '') + dd.toFixed(1) + '%', dd >= 25 ? 'bad' : dd >= 15 ? 'warn' : 'ok');
       el.textContent = '成本 ' + cost.toFixed(3) + ' · 市值 ¥' + Math.round(mv) + ' · ' +
-        (dd >= 25 ? '🔴 DD>25% 清仓→买纳指' : dd >= 15 ? '🟡 DD>15% 卖半仓→买纳指' : '🟢 弹药就位');
+        (dd >= 25 ? '🔴 浮亏DD ' + dd.toFixed(1) + '% ≥25% · 30%金仓按主方案管·不卖金换纳指(回测负优化)'
+         : dd >= 15 ? '🟡 浮亏DD ' + dd.toFixed(1) + '% ≥15% · 仅提示·偏离±5pp才随检视调整'
+         : '🟢 浮亏DD ' + dd.toFixed(1) + '% · 金30%仓正常');
     } else {
       setPos('.v-gdd', '--');
-      el.textContent = '每月1手≈¥864(≈¥10K/年) · 点 ✏️设置 录入黄金成本价与份额';
+      el.textContent = '金30%仓位 · 月投¥1500(≈1.7手)或按偏离补足 · 点 ✏️设置 录入黄金成本价与份额';
     }
   }
   const n = rows['159632'];
@@ -483,7 +575,7 @@ function updatePos(rows, qqqLive) {
     const el = document.getElementById('p-cash');
     if (init > 0) {
       setPos('.v-cbal', '¥' + Math.round(init - used).toLocaleString());
-      el.textContent = '剩余 ¥' + Math.round(init - used).toLocaleString() + ' / ' + Math.round(init).toLocaleString() + ' · 等触发: 纳指溢价<2% 或 DD>15%';
+      el.textContent = '剩余 ¥' + Math.round(init - used).toLocaleString() + ' / ' + Math.round(init).toLocaleString() + ' · 等触发: 场内纳指真实溢价<2% 补仓';
     } else {
       setPos('.v-cbal', '--');
       el.textContent = '点 ✏️设置 录入蓄水池初始金额';
@@ -557,6 +649,16 @@ h1{{font-size:20px;font-weight:700}}
 <div id="win" class="win hidden"></div>
 <div class="hdr2">📊 持仓管理 <span class="pos-edit" onclick="posEdit()">✏️ 设置</span></div>
 <div id="pos">
+  <div class="fund core" id="qqq-card">
+    <div class="hdr"><b>QQQ 纳指100</b><span><span class="cd">US:QQQ</span><span class="tag idx">纳指100</span><span class="tag core">v2口径</span></span></div>
+    <div class="rw">
+      <div class="bx"><div class="lb">现价(USD)</div><div class="vl v-qprice">{qq_price}</div></div>
+      <div class="bx"><div class="lb">今日</div><div class="vl v-qchg {qq_chg_cls}">{qq_chg}</div></div>
+      <div class="bx"><div class="lb">52周回撤</div><div class="vl v-qdd52 {qq_dd_cls}">{qq_dd}</div></div>
+      <div class="bx"><div class="lb">52周位</div><div class="vl v-qpos52">{qq_pos}</div></div>
+    </div>
+    <div class="inf" id="q-supp"><b>🎯 关键支撑</b>（v2口径, {qq_s1d}/{qq_s2d}标注）: S1 <b>{qq_s1}</b> → S2 <b>{qq_s2}</b> → 200日线 {qq_ma200} · 现价距S1 <span id="q-d-s1">{qq_dist1}</span> · 距S2 <span id="q-d-s2">{qq_dist2}</span><span class="v-live"></span></div>
+  </div>
   <div class="fund">
     <div class="hdr"><b>017436 华宝纳指精选A</b><span><span class="cd">过渡主仓·场外定投</span></span></div>
     <div class="rw">
@@ -568,14 +670,15 @@ h1{{font-size:20px;font-weight:700}}
     <div class="inf" id="p-track">过渡主仓·场外净值定投零溢价 · 硬线-20pp停加 · 场内<2%或指数恢复时替换 · QDII净值T+1(快照)</div>
   </div>
   <div class="fund">
-    <div class="hdr"><b>518880 黄金ETF华安</b><span><span class="cd">弹药·场内T+0</span></span></div>
+    <div class="hdr"><b>518880 黄金ETF华安</b><span><span class="cd">金30%仓·T+0</span></span></div>
     <div class="rw">
       <div class="bx"><div class="lb">现价</div><div class="vl v-gprice">--</div></div>
       <div class="bx"><div class="lb">今日涨跌</div><div class="vl v-gchg">--</div></div>
       <div class="bx"><div class="lb">溢价</div><div class="vl v-gprem">--</div></div>
       <div class="bx"><div class="lb">浮亏DD</div><div class="vl v-gdd">--</div></div>
     </div>
-    <div class="inf" id="p-gold">节奏: 每月1手≈¥864(≈¥10K/年) 或一次性¥10K · 点 ✏️设置 录入成本价与份额</div>
+    <div class="inf" id="p-gold">金30%仓位 · 月投¥1500(≈1.7手)或按偏离补足 · 点 ✏️设置 录入成本价与份额</div>
+    <div class="inf" id="g-supp"><b>🎯 关键支撑</b>: S1 <b>{g_s1}</b>（{g_s1d} 8月低）→ S2 <b>{g_s2}</b>（{g_s2d} 年内低·双底）· 200日线 {g_ma200}{g_ma_note} · 距S1 <span id="g-d-s1">{g_dist1}</span> · 距S2 <span id="g-d-s2">{g_dist2}</span></div>
   </div>
   <div class="fund">
     <div class="hdr"><b>159632 纳斯达克ETF华安</b><span><span class="cd">抄底·场内</span></span></div>
@@ -612,7 +715,7 @@ h1{{font-size:20px;font-weight:700}}
 • ⚠️ 若QDII额度恢复、限购解除，溢价会快速收敛，高溢价买入部分将直接受损<br>
 • 501312海外科技LOF 名义基准纳指100×80%，实为ARK主题FOF(2026Q2实锤) — 仅作低溢价参考，非纳指
 </div>
-<script>const FUND_META = {meta_js};const POSITION_META = {pos_js};const SNAP_TIME = "{now}";</script>
+<script>const FUND_META = {meta_js};const POSITION_META = {pos_js};const SUPPORT_META = {support_js};const SNAP_TIME = "{now}";</script>
 <script>{RT_JS}</script>
 </body>
 </html>"""
