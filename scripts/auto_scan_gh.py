@@ -377,7 +377,7 @@ function updateWin(premts) {            // 溢价窗口横幅: 任一纯纳指10
   if (!winEl) return;
   const hits = Object.keys(premts).filter(c => META[c] && META[c].win && premts[c] < 2);
   if (hits.length) {
-    winEl.textContent = '🟢 溢价窗口开启! ' + hits.map(c => META[c].name + ' 真实溢价' + premts[c].toFixed(1) + '%').join(' / ') + ' → 可用蓄水池/弹药买入';
+    winEl.textContent = '🟢 溢价窗口开启! ' + hits.map(c => META[c].name + ' 真实溢价' + premts[c].toFixed(2) + '%').join(' / ') + ' → 可用蓄水池/弹药买入';
     winEl.classList.remove('hidden');
   } else {
     winEl.classList.add('hidden');
@@ -446,8 +446,8 @@ async function refresh() {
       set(el, '.v-price', price.toFixed(3));
       set(el, '.v-chg', pct(chg, 2, true), chgCls(chg));
       set(el, '.v-chg5', pct(chg5, 2, true), chgCls(chg5));
-      set(el, '.v-prem', pct(prem), premCls(prem));
-      set(el, '.v-premt', pct(premt), premCls(premt));
+      set(el, '.v-prem', pct(prem, 2), premCls(prem));
+      set(el, '.v-premt', pct(premt, 2), premCls(premt));
       if (isFinite(amt)) set(el, '.v-amt', amt.toFixed(2) + '亿');
       if (isFinite(mcap)) set(el, '.v-mcap', mcap.toFixed(2) + '亿');
       const live = el.querySelector('.v-live');
@@ -565,8 +565,8 @@ function updatePos(rows, qqqLive) {
     const premt = (price / (f2.nav * (1 + qr)) - 1) * 100;
     setPos('.v-nprice', price.toFixed(3));
     setPos('.v-nprem', premt.toFixed(2) + '%', premt < 2 ? 'ok' : premt < 5 ? 'warn' : 'bad');
-    setPos('.v-np20', f2.prem20 != null ? f2.prem20.toFixed(1) + '%' : '--');
-    document.getElementById('p-ndx').textContent = premt < 2 ? '🟢 真实溢价<2% 可用蓄水池买入' : '🔴 真实溢价' + premt.toFixed(1) + '% ≥2% 等待 (触发线<2%)';
+    setPos('.v-np20', f2.prem20 != null ? f2.prem20.toFixed(2) + '%' : '--');
+    document.getElementById('p-ndx').textContent = premt < 2 ? '🟢 真实溢价<2% 可用蓄水池买入' : '🔴 真实溢价' + premt.toFixed(2) + '% ≥2% 等待 (触发线<2%)';
   }
   const c = rows['511880'];
   if (c) {
