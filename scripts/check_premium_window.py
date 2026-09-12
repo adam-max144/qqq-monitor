@@ -123,7 +123,8 @@ def send_mail(title, body):
     pwd = os.environ.get("SMTP_PASS", "").strip()
     to = os.environ.get("MAIL_TO", "").strip()
     if not (user and pwd):
-        return "skip(未配置 SMTP_USER/SMTP_PASS)"
+        missing = " + ".join(n for n, v in (("SMTP_USER", user), ("SMTP_PASS", pwd)) if not v)
+        return f"skip(缺 {missing})"
     msg = EmailMessage()
     msg["From"] = user
     msg["To"] = to
