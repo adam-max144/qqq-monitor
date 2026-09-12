@@ -14,8 +14,9 @@
 
 退出码: 0 正常(含未触发); 1 取数失败; 2 推送失败
 """
-import json, os, re, sys
+import json, os, re, smtplib, ssl, sys
 from datetime import datetime
+from email.message import EmailMessage
 from zoneinfo import ZoneInfo
 import requests
 
@@ -87,15 +88,64 @@ def main():
     title = f"🟢 溢价窗口开启({len(hits)}只<{THRESHOLD:g}%)"
     body = f"{txt}\n现价已回到成本线附近 → 可用蓄水池/弹药买入场内纳指\n(触发线 <2%, 数据源: 页面快照净值+QQQ实时校正)"
     print(f"\n触发推送: {title} | {body.splitlines()[0]}")
-    if not TOPIC:
-        print("未配置 NTFY_TOPIC, 只打印不推送")
+
+    results = {}
+    if TOPIC:
+        results["ntfy"] = send_ntfy(title, body)
+    if os.environ.get("MAIL_TO", "").strip():
+        results["mail"] = send_mail(title, body)
+    if not results:
+        print("未配置任何推送渠道(NTFY_TOPIC / MAIL_TO), 只打印不推送")
         return 0
-    r = requests.post("https://ntfy.sh/", timeout=20, json={
-        "topic": TOPIC, "title": title, "message": body,
-        "priority": 4, "tags": ["moneybag"], "click": PAGE_URL,
-    })   # ⚠️ 必须走 JSON 接口: HTTP 头是 latin-1, 中文/emoji 标题会在 http.client 里直接抛 UnicodeEncodeError
-    print("推送结果:", r.status_code, r.json().get("id"))
-    return 0 if r.status_code == 200 else 2
+    for k, v in results.items():
+        print(f"  {k}: {v}")
+    # 只有真正发失败才算失败; skip(未配置)不算 —— 否则缺凭据时 CI 会天天标红
+    return 2 if any(str(v).startswith("fail") for v in results.values()) else 0
+
+
+def send_ntfy(title, body):
+    """走 JSON 接口 —— HTTP 头是 latin-1, 中文/emoji 标题用头会抛 UnicodeEncodeError"""
+    try:
+        r = requests.post("https://ntfy.sh/", timeout=20, json={
+            "topic": TOPIC, "title": title, "message": body,
+            "priority": 4, "tags": ["moneybag"], "click": PAGE_URL,
+        })
+        return "ok" if r.status_code == 200 else f"fail({r.status_code})"
+    except Exception as e:
+        return f"fail({type(e).__name__}: {str(e)[:60]})"
+
+
+def send_mail(title, body):
+    """SMTP 发邮件(默认 QQ 邮箱 smtp.qq.com:465 SSL; 密码填**授权码**, 不是登录密码)"""
+    host = os.environ.get("SMTP_HOST", "smtp.qq.com")
+    port = int(os.environ.get("SMTP_PORT", "465"))
+    user = os.environ.get("SMTP_USER", "").strip()
+    pwd = os.environ.get("SMTP_PASS", "").strip()
+    to = os.environ.get("MAIL_TO", "").strip()
+    if not (user and pwd):
+        return "skip(未配置 SMTP_USER/SMTP_PASS)"
+    msg = EmailMessage()
+    msg["From"] = user
+    msg["To"] = to
+    msg["Subject"] = title
+    msg.set_content(f"{title}\n\n{body}\n\n页面: {PAGE_URL}\n(由 GitHub Actions 每日自检自动发出)")
+    try:
+        auth = os.environ.get("SMTP_AUTH", "1") != "0"      # 0 = 无认证中继(本地联调/自建中继用)
+        if port == 465:
+            with smtplib.SMTP_SSL(host, port, timeout=25, context=ssl.create_default_context()) as s:
+                if auth:
+                    s.login(user, pwd)
+                s.send_message(msg)
+        else:
+            with smtplib.SMTP(host, port, timeout=25) as s:
+                if os.environ.get("SMTP_TLS", "1") != "0":
+                    s.starttls(context=ssl.create_default_context())
+                if auth:
+                    s.login(user, pwd)
+                s.send_message(msg)
+        return "ok"
+    except Exception as e:
+        return f"fail({type(e).__name__}: {str(e)[:80]})"
 
 
 if __name__ == "__main__":
