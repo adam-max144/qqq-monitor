@@ -28,9 +28,9 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install requests tzdata
-      - name: 检查真实溢价并推送(ntfy + 邮件)
+      - name: 检查真实溢价并推送(邮件)
         env:
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          # NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}   # 2026-09-12 用户要求关停 ntfy, 只留邮件; 想恢复取消本行注释即可
           MAIL_TO: ${{ secrets.MAIL_TO }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}   # QQ邮箱授权码(非登录密码); 未配置时邮件渠道自动跳过
