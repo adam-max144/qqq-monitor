@@ -7,7 +7,14 @@
 输出: monitor.html（场内纳指基金监控页）
 """
 import urllib.request, json, re, time
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+BJ = timezone(timedelta(hours=8))   # 东财净值时间戳记的是北京 00:00 → 必须按 +08:00 解析, 用 utcfromtimestamp 会早一天
+
+
+def nav_date_of(ms):
+    """东财 Data_netWorthTrend 的毫秒时间戳 → 正确的中文净值日期(YYYY-MM-DD)"""
+    return datetime.fromtimestamp(ms / 1000, BJ).strftime("%Y-%m-%d")
 
 # 监控标的（场内QDII ETF/LOF，纯纳指系；2026-08-07扩展: 纳指科技/纳指LOF/海外科技参考）
 # code: [市场 sh/sz, 指数类别, 管理费%, 托管费%, 是否核心推荐, 备注]
@@ -75,7 +82,7 @@ def fetch_nav(code):
     trend = json.loads(m.group(1))
     nav_map = {}
     for p in trend:
-        d = datetime.utcfromtimestamp(p["x"] / 1000).strftime("%Y-%m-%d")
+        d = nav_date_of(p["x"])
         nav_map[d] = p["y"]
     dates = sorted(nav_map.keys())
     return nav_map, dates[-1] if dates else None, nav_map[dates[-1]] if dates else None
@@ -145,19 +152,22 @@ for code, (market, index, mgmt, trust, core, note) in FUNDS.items():
         else:
             rec["prem_pct"] = None
 
-        # 真实溢价 = 现价/(净值 × (1 + 美股区间涨幅)) - 1，区间 = 净值日→美股最新交易日
-        # qqq_base 是净值日当天的 QQQ 收盘价，浏览器端实时层用它 + 实时QQQ 重算真实溢价
+        # 真实溢价 = 现价/(净值 × (1 + 美股区间涨幅)) - 1
+        # QDII 滞后: 北京日期 D 的净值 = 美股「D 之前的最近一个交易日」收盘 → 基准取该日收盘价。
+        # 注: 2026-09-11 前用错位的净值日期查 us[nav_date] 恰好等价于 T-1, 现在日期修正后必须显式取 D 之前。
+        # qqq_base 供浏览器实时层用实时 QQQ 重算真实溢价
         rec["qqq_base"] = None
-        if nav_date and nav_date in us_closes.get(index, {}):
-            us = us_closes[index]
-            us_dates = sorted(us.keys())
+        us = us_closes.get(index, {})
+        us_dates = sorted(us)
+        base_d = max((d for d in us_dates if d < nav_date), default=None) if nav_date else None
+        if base_d and nav_last:
             last_us_date = us_dates[-1]
-            rec["qqq_base"] = us[nav_date]
-            if last_us_date > nav_date:
-                chg_us = us[last_us_date] / us[nav_date] - 1
+            rec["qqq_base"] = us[base_d]
+            if last_us_date > base_d:
+                chg_us = us[last_us_date] / us[base_d] - 1
                 rec["prem_true_pct"] = (q["price"] / (nav_last * (1 + chg_us)) - 1) * 100
                 rec["us_chg"] = chg_us * 100
-                rec["us_note"] = f"{nav_date}→{last_us_date} {chg_us*100:+.1f}%"
+                rec["us_note"] = f"{base_d}→{last_us_date} {chg_us*100:+.1f}%"
         if "prem_true_pct" not in rec:
             rec["prem_true_pct"] = rec["prem_pct"]
             rec["us_note"] = "未校正"
@@ -236,7 +246,7 @@ def card(r):
     </div>"""
     return lines
 
-now = datetime.now().strftime("%Y-%m-%d %H:%M UTC")
+now = datetime.now(BJ).strftime("%Y-%m-%d %H:%M 北京")
 ok_n = sum(1 for r in results if r["ok"])
 
 # ---------- 浏览器端实时层：把快照值改造成数据，页面打开后实时覆盖 ----------
@@ -261,7 +271,7 @@ try:
     raw = fetch("https://fund.eastmoney.com/pingzhongdata/017436.js", "https://fund.eastmoney.com/")
     m = re.search(r"Data_netWorthTrend\s*=\s*(\[.*?\]);", raw, re.DOTALL)
     trend = json.loads(m.group(1))
-    nav_map = {datetime.utcfromtimestamp(p["x"] / 1000).strftime("%Y-%m-%d"): p["y"] for p in trend}
+    nav_map = {nav_date_of(p["x"]): p["y"] for p in trend}
     ds = sorted(nav_map)
     def ret_at(anchor):
         for d in ds:
