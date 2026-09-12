@@ -153,13 +153,14 @@ for code, (market, index, mgmt, trust, core, note) in FUNDS.items():
             rec["prem_pct"] = None
 
         # 真实溢价 = 现价/(净值 × (1 + 美股区间涨幅)) - 1
-        # QDII 滞后: 北京日期 D 的净值 = 美股「D 之前的最近一个交易日」收盘 → 基准取该日收盘价。
-        # 注: 2026-09-11 前用错位的净值日期查 us[nav_date] 恰好等价于 T-1, 现在日期修正后必须显式取 D 之前。
+        # 口径(2026-09-13 实测校正): 净值日 D 的净值 = **美股 D 日收盘**(T+2 只是「披露」滞后, 不是估值滞后)。
+        #   验证: 513100 净值日收益 vs QQQ 日收益 57 日回归 corr(同日)=+0.999 / corr(前一交易日)=-0.003。
+        #   故基准 = 不晚于净值日的最近一个美股交易日收盘; 净值日恰逢美股假日时自动落到前一交易日。
         # qqq_base 供浏览器实时层用实时 QQQ 重算真实溢价
         rec["qqq_base"] = None
         us = us_closes.get(index, {})
         us_dates = sorted(us)
-        base_d = max((d for d in us_dates if d < nav_date), default=None) if nav_date else None
+        base_d = max((d for d in us_dates if d <= nav_date), default=None) if nav_date else None
         if base_d and nav_last:
             last_us_date = us_dates[-1]
             rec["qqq_base"] = us[base_d]
@@ -393,12 +394,18 @@ function updateWin(premts) {            // 溢价窗口横幅: 任一纯纳指10
     winEl.classList.add('hidden');
   }
 }
-const usOpen = () => {                   // 美股盘中(美东周一~五 9:30-16:00) → 用腾讯实时价; 否则用昨收(=最新收盘)
+const usPhase = () => {                  // 美股阶段: open 盘中(9:30-16:00) / pre 盘前(4:00-9:30) / settled 收盘后·凌晨·周末
   const d = new Date();
   const n = new Date(d.toLocaleString('en-US', {timeZone: 'America/New_York'}));
   const h = n.getHours() + n.getMinutes() / 60, w = n.getDay();
-  return w >= 1 && w <= 5 && h >= 9.5 && h < 16;
+  if (w >= 1 && w <= 5 && h >= 9.5 && h < 16) return 'open';
+  if (w >= 1 && w <= 5 && h >= 4 && h < 9.5) return 'pre';
+  return 'settled';
 };
+const usOpen = () => usPhase() === 'open';
+// 最新美股价: ⚠️ 腾讯 p[4]「昨收」= 最新收盘的**前一交易日**收盘, 只有盘前(p[3] 是盘前成交价)才该用它。
+// 收盘后/凌晨/周末/假日 p[3] 本身就是最新交易日收盘, 取 p[4] 会整体少算一天美股涨跌(实测差 2pp, = 触发线)。
+const qqqLast = qq => parseFloat(usPhase() === 'pre' ? qq[4] : qq[3]);
 const pct = (v, nd, sign) => (v == null || !isFinite(v)) ? '--' : (sign && v > 0 ? '+' : '') + v.toFixed(nd) + '%';
 const premCls = v => (v == null || !isFinite(v)) ? 'flat' : (v < 5 ? 'ok' : (v <= 8 ? 'warn' : 'bad'));
 const chgCls = v => (v == null || !isFinite(v)) ? 'flat' : (v > 0.05 ? 'up' : (v < -0.05 ? 'down' : 'flat'));
@@ -426,7 +433,7 @@ async function refresh() {
     }
     const findUs = (base) => { for (const k in rows) if (k.indexOf(base + '.') === 0) return rows[k]; return rows[base] || null; };
     const qq = findUs('QQQ');
-    const qqqLive = qq ? parseFloat(usOpen() ? qq[3] : qq[4]) : null;
+    const qqqLive = qq ? qqqLast(qq) : null;
     updateQQQCard(qq, qqqLive);
     const premts = {};
     let n = 0, missing = 0;

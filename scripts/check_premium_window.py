@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-"""溢价窗口提醒 —— 场内纳指ETF「真实溢价」跌破阈值时用 ntfy 推到手机
+"""溢价窗口提醒 —— 场内纳指ETF「真实溢价」跌破阈值时推送(邮件; ntfy 已于 2026-09-12 关停)
 
 口径与 monitor.html 浏览器实时层完全一致(单一事实源):
   1) 从线上 monitor.html 取内嵌 FUND_META(净值/净值日/QQQ基准/是否纳指100)
-  2) 腾讯行情取现价 + QQQ 最新收盘(休市用昨收, 同页面 usOpen 逻辑)
+  2) 腾讯行情取现价 + QQQ 最新「已收盘」价(同页面 usPhase/qqqLast 逻辑)
   3) 真实溢价 = 现价 / (净值 × (1 + QQQ最新/QQQ基准 - 1)) - 1
   4) 任一"纯纳指100"(win=true) 标的真实溢价 < 阈值 → 推送
 
 环境变量:
-  NTFY_TOPIC  必填(缺失则只打印不发), 例如 qqq-premium-xxxx
+  MAIL_TO / SMTP_USER / SMTP_PASS  邮件渠道(缺任一则跳过该渠道, 且不算失败)
+  NTFY_TOPIC  可选, 留空则不发 ntfy(现役配置为空)
   THRESHOLD   可选, 默认 2 (%); workflow_dispatch 可传入做端到端测试
   PAGE_URL    可选, 默认线上 Pages 地址
 
@@ -35,8 +36,15 @@ def fetch_meta():
     return json.loads(m.group(1))
 
 
-def us_open(now_et):
-    return now_et.weekday() < 5 and 9.5 <= now_et.hour + now_et.minute / 60 < 16
+def us_phase(now_et):
+    """美股阶段: open 盘中(9:30-16:00) / pre 盘前(4:00-9:30) / settled 收盘后·凌晨·周末"""
+    h = now_et.hour + now_et.minute / 60
+    wd = now_et.weekday()
+    if wd < 5 and 9.5 <= h < 16:
+        return "open"
+    if wd < 5 and 4 <= h < 9.5:
+        return "pre"
+    return "settled"
 
 
 def fetch_quotes(codes):
@@ -60,8 +68,11 @@ def main():
     qqq = next((v for k, v in rows.items() if k.startswith("QQQ.")), None) or rows.get("QQQ")
     if not qqq:
         print("QQQ 行情缺失"); return 1
-    qqq_live = float(qqq[3] if us_open(now_et) else qqq[4])
-    print(f"QQQ = {qqq_live}  ({'盘中' if us_open(now_et) else '休市·取昨收'})  阈值 {THRESHOLD}%  北京 {datetime.now(ZoneInfo('Asia/Shanghai')):%m-%d %H:%M}")
+    # ⚠️ 腾讯 p[4]「昨收」= 最新收盘的**前一交易日**收盘: 只有盘前(p[3] 是盘前成交价)才该用它;
+    #    10:40 检查时美股恒为「收盘后」, 若取 p[4] 会整体少算一天美股涨跌 → 溢价虚高 ~2pp(恰是触发线)。
+    phase = us_phase(now_et)
+    qqq_live = float(qqq[4] if phase == "pre" else qqq[3])
+    print(f"QQQ = {qqq_live}  ({'盘中' if phase == 'open' else '盘前·取上日收盘' if phase == 'pre' else '休市·取最新收盘'})  阈值 {THRESHOLD}%  北京 {datetime.now(ZoneInfo('Asia/Shanghai')):%m-%d %H:%M}")
 
     hits, lines = [], []
     for code, f in meta.items():
