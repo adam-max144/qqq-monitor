@@ -1,0 +1,42 @@
+name: 广东摇滚演出日报
+
+# 每日北京 10:00 抓秀动(showstart)广东各城「摇滚」风格演出 → 邮件推送 QQ 邮箱
+# 数据源是秀动的 Nuxt SSR 页面(window.__NUXT__.listData), 普通 UA 即可, 无需签名接口
+# 想手动跑/试跑: Actions → 本 workflow → Run workflow
+on:
+  schedule:
+    - cron: '0 2 * * *'        # UTC 02:00 = 北京 10:00
+  workflow_dispatch:
+    inputs:
+      days:
+        description: '未来多少天内的演出'
+        default: '45'
+        required: false
+      dry:
+        description: '填 1 只抓取不发送邮件(看日志)'
+        default: ''
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rock-gd
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 抓取并推送
+        env:
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}   # QQ邮箱授权码(非登录密码)
+          HORIZON_DAYS: ${{ github.event.inputs.days || '45' }}
+          DRY_RUN: ${{ github.event.inputs.dry }}
+        run: python scripts/rock_gd.py --send
