@@ -60,6 +60,14 @@ def now_cn() -> datetime:
     return datetime.now(TZ_CN).replace(tzinfo=None)
 
 
+def run_url() -> str:
+    """可点的运行日志地址 — CI 里指向本次 run, 本地跑退回 Actions 首页。"""
+    run = os.environ.get("GITHUB_RUN_ID")
+    base = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+    repo = os.environ.get("GITHUB_REPOSITORY", "adam-max144/qqq-monitor")
+    return f"{base}/{repo}/actions/runs/{run}" if run else f"{base}/{repo}/actions"
+
+
 # ---------------------------------------------------------------- fetch / parse
 def curl(url: str, timeout: int = 30) -> str:
     try:
@@ -312,7 +320,14 @@ def main() -> int:
           f"→ 未来 {a.days} 天内 {len(events)} 场")
 
     if total == 0:
-        print("!! 全部城市零响应 —— 站点结构或访问被挡, 本次不发邮件", file=sys.stderr)
+        # 云端自动化最怕「静默死亡」: 站点改版/被拦时, 至少让用户收到一封告警而不是什么都没有
+        warn = (f"秀动页面 {len(cities)} 个城市全部返回 0 条记录 —— 站点可能改版/被拦。\n"
+                f"本次未发送正常日报, 请查看运行日志: {run_url()}")
+        print("!! " + warn, file=sys.stderr)
+        try:
+            print(send_mail("⚠️ 广东摇滚日报抓取失败(0 条)", f"<pre>{warn}</pre>", warn))
+        except Exception as e:  # noqa: BLE001
+            print(f"!! 告警邮件也发不出去: {e}", file=sys.stderr)
         return 2
 
     html_body = build_html(events, cities, a.days)
