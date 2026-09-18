@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """广东摇滚演出日报 — 抓秀动(showstart.com) 服务端渲染页 → 汇总 → 邮件推送。
 
 用法:
@@ -74,7 +73,7 @@ def curl(url: str, timeout: int = 30) -> str:
         r = subprocess.run(
             ["curl", "-s", "--compressed", "--max-time", str(timeout), "-A", UA,
              "-H", "Referer: https://www.showstart.com/", url],
-            capture_output=True, text=True, encoding="utf-8", errors="replace")
+            capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
         return r.stdout or ""
     except Exception as e:  # noqa: BLE001
         print(f"  ! curl fail {url}: {e}", file=sys.stderr)
@@ -167,7 +166,8 @@ def event_dt(ev: dict) -> datetime | None:
     hm = _TIME_RE.search(s)
     hh, mi = (int(hm.group(1)), int(hm.group(2))) if hm else (20, 0)
     try:
-        return datetime(y, mo, d, hh, mi)
+        # naive 北京时间: 全脚本统一在「北京本地时刻」空间里比较, 见 now_cn()
+        return datetime(y, mo, d, hh, mi)  # noqa: DTZ001
     except ValueError:
         return None
 
@@ -197,7 +197,8 @@ def collect(cities: list[tuple[str, str]], horizon: int) -> tuple[list[dict], in
                 break
         ok_cities += 1 if got_city else 0
         print(f"  {name}: 累计 {len(out)} 场(未来{horizon}天)")
-    return sorted(out.values(), key=lambda e: event_dt(e) or datetime.max), total, ok_cities
+    # 保留的事件都带合法日期, 「无日期」排序兜底不改变顺序
+    return sorted(out.values(), key=lambda e: (event_dt(e) is None, event_dt(e) or today)), total, ok_cities
 
 
 # ---------------------------------------------------------------- render
