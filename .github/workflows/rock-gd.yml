@@ -18,7 +18,7 @@ on:
         required: false
 
 permissions:
-  contents: read
+  contents: write          # 每天把刷新后的 rock.ics 提交回仓库(Pages 订阅用)
 
 concurrency:
   group: rock-gd
@@ -40,3 +40,17 @@ jobs:
           HORIZON_DAYS: ${{ github.event.inputs.days || '45' }}
           DRY_RUN: ${{ github.event.inputs.dry }}
         run: python scripts/rock_gd.py --send
+      - name: 刷新 rock.ics(手机日历订阅用)
+        continue-on-error: true                 # 日历失败不该影响已发出的邮件
+        run: |
+          pip install -q icalendar tzdata
+          python scripts/rock_ics.py --days ${{ github.event.inputs.days || '45' }} --out rock.ics
+      - name: 提交 rock.ics
+        run: |
+          git config user.name "rock bot"
+          git config user.email "rock-bot@qqq-monitor"
+          git add rock.ics
+          if git diff --staged --quiet; then echo "rock.ics 无变化"; else
+            git commit -m "auto: 刷新广东摇滚演出日历"
+            git pull --rebase --autostash origin main && git push && echo "pushed"
+          fi
