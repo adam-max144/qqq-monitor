@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """把「广东摇滚演出」导出成 .ics 日历 —— 手机订阅一次, 之后自动更新, 零维护。
 
 用法:
@@ -16,15 +15,14 @@
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import rock_gd as rg  # noqa: E402
-
-from icalendar import Calendar, Event, Timezone as IcalTimezone  # noqa: E402
+import rock_gd as rg
+from icalendar import Calendar, Event
+from icalendar import Timezone as IcalTimezone
 
 PRODID = "-//qqq-monitor//GD rock digest//CN"
 UID_DOMAIN = "showstart.gd.qqq-monitor"
