@@ -3,13 +3,11 @@
 Hermetic: 全部离线。四个易踩点各有对应用例 —— UID 稳定性 / 时区语义 / RFC5545 折行 / 字符转义。
 """
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
 import pytest
-from icalendar import Calendar
-
 import rock_gd as rg
 import rock_ics as ri
+from icalendar import Calendar
 
 TZ = rg.TZ_CN
 NOW = datetime(2026, 9, 18, 12, 0, tzinfo=timezone.utc)
