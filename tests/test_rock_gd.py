@@ -9,9 +9,9 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 import pytest
+import rock_gd as rg
 from freezegun import freeze_time
 
-import rock_gd as rg
 
 # --- fixtures ---------------------------------------------------------------
 # 形状与真实页面一致: Nuxt 把字面量压成 IIFE 形参, listData 里是裸标识符
@@ -23,8 +23,8 @@ def page_with(events_js: str) -> str:
 
 
 def ev(id_, title, when, site="e"):
-    return ('{"id":%d,"title":"%s","showTime":"%s","siteName":%s,"cityName":d,'
-            '"performers":"band","price":"¥10起"}' % (id_, title, when, site))
+    return (f'{{"id":{id_},"title":"{title}","showTime":"{when}","siteName":{site},'
+            f'"cityName":d,"performers":"band","price":"¥10起"}}')
 
 
 PAGE = page_with(ev(1, "硬摇滚之夜", "2026/10/01 20:00") + "," +
@@ -205,7 +205,7 @@ def test_missing_credentials_skips_without_raising(monkeypatch):
 
 def test_html_flag_writes_body(monkeypatch, tmp_path):
     out = tmp_path / "d.html"
-    code, calls, _, _ = run_main(monkeypatch, ["--dry", "--html", str(out)], fake_collect())
+    code, _, _, _ = run_main(monkeypatch, ["--dry", "--html", str(out)], fake_collect())
     assert code == 0 and out.read_text(encoding="utf-8").startswith("<html>")
 
 
@@ -229,5 +229,7 @@ def test_live_scrape_returns_upcoming_events():
 @pytest.mark.network
 def test_live_cli_dry_run():
     r = subprocess.run([sys.executable, rg.__file__, "--dry", "--days", "20"],
-                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       timeout=180, check=False)
     assert r.returncode == 0 and "抓取" in r.stdout
+
