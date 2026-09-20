@@ -1,11 +1,13 @@
 name: 广东摇滚演出日报
 
-# 每日北京 10:00 抓秀动(showstart)广东各城「摇滚」风格演出 → 邮件推送 QQ 邮箱
+# 每日北京 10:00 抓秀动(showstart)广东各城「摇滚」风格演出 → 邮件推送
+# 收件人 = 仓库 secret MAIL_TO(逗号分隔可多个); 发件人 = SMTP_USER
 # 数据源是秀动的 Nuxt SSR 页面(window.__NUXT__.listData), 普通 UA 即可, 无需签名接口
 # 想手动跑/试跑: Actions → 本 workflow → Run workflow
 on:
   schedule:
-    - cron: '0 2 * * *'        # UTC 02:00 = 北京 10:00
+    - cron: '0 2 * * *'        # UTC 02:00 = 北京 10:00 (主任务)
+    - cron: '45 3 * * *'       # 北京 11:45 (备用: 主任务被 GitHub 跳过/严重延迟时兜底, 脚本内按 run 历史去重)
   workflow_dispatch:
     inputs:
       days:
@@ -19,6 +21,7 @@ on:
 
 permissions:
   contents: write          # 每天把刷新后的 rock.ics 提交回仓库(Pages 订阅用)
+  actions: read            # 备用 cron 要读 run 历史做「今天是否已发过」的去重判断
 
 concurrency:
   group: rock-gd
@@ -34,11 +37,12 @@ jobs:
           python-version: '3.12'
       - name: 抓取并推送
         env:
-          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}       # 逗号分隔多个收件人
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}   # QQ邮箱授权码(非登录密码)
           HORIZON_DAYS: ${{ github.event.inputs.days || '45' }}
           DRY_RUN: ${{ github.event.inputs.dry }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # 幂等去重要读 run 历史
         run: python scripts/rock_gd.py --send
       - name: 刷新 rock.ics(手机日历订阅用)
         continue-on-error: true                 # 日历失败不该影响已发出的邮件

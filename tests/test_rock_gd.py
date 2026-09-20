@@ -203,6 +203,114 @@ def test_missing_credentials_skips_without_raising(monkeypatch):
     assert rg.send_mail("s", "<b>x</b>", "x").startswith("mail: skip")
 
 
+def test_mail_to_accepts_multiple_recipients(monkeypatch):
+    """MAIL_TO 支持逗号分隔多收件人(qq + foxmail)。"""
+    got = {}
+
+    class FakeSMTP:
+        def __init__(self, *a, **k):
+            pass
+
+        def login(self, u, p):
+            got["user"] = u
+
+        def sendmail(self, frm, to, msg):
+            got["to"] = to
+
+        def close(self):
+            pass
+
+    monkeypatch.setenv("SMTP_USER", "a@qq.com")
+    monkeypatch.setenv("SMTP_PASS", "x")
+    monkeypatch.setenv("MAIL_TO", "941189835@qq.com, evansunyifei@foxmail.com")
+    monkeypatch.setattr(rg.smtplib, "SMTP_SSL", FakeSMTP)
+    out = rg.send_mail("s", "<b>x</b>", "x")
+    assert got["to"] == ["941189835@qq.com", "evansunyifei@foxmail.com"]
+    assert "evansunyifei@foxmail.com" in out
+
+
+# --- 幂等(备用 cron 去重) ---------------------------------------------------
+def test_already_sent_today_local_returns_none(monkeypatch):
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+    assert rg.already_sent_today() is None
+
+
+def test_already_sent_today_detects_same_day_success(monkeypatch):
+    import json as _json
+    today = rg.now_cn().date().isoformat()
+    payload = {"workflow_runs": [
+        {"id": 999, "conclusion": "success", "created_at": f"{today}T02:05:00Z"},   # 今天(北京)
+        {"id": 111, "conclusion": "success", "created_at": "2020-01-01T02:00:00Z"},  # 很久以前
+        {"id": 222, "conclusion": "failure", "created_at": f"{today}T02:00:00Z"},   # 失败不算
+    ]}
+
+    class R:
+        def read(self):
+            return _json.dumps(payload).encode()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setenv("GITHUB_TOKEN", "t")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "adam-max144/qqq-monitor")
+    monkeypatch.setenv("GITHUB_RUN_ID", "555")
+    monkeypatch.setattr(rg.urllib.request, "urlopen", lambda req, timeout=20: R())
+    assert rg.already_sent_today() == "run 999"
+
+
+def test_already_sent_today_ignores_own_run(monkeypatch):
+    import json as _json
+    today = rg.now_cn().date().isoformat()
+    payload = {"workflow_runs": [{"id": 555, "conclusion": "success",
+                                  "created_at": f"{today}T02:05:00Z"}]}
+
+    class R:
+        def read(self):
+            return _json.dumps(payload).encode()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setenv("GITHUB_TOKEN", "t")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "r/r")
+    monkeypatch.setenv("GITHUB_RUN_ID", "555")
+    monkeypatch.setattr(rg.urllib.request, "urlopen", lambda req, timeout=20: R())
+    assert rg.already_sent_today() is None
+
+
+def test_already_sent_today_fails_open(monkeypatch):
+    def boom(req, timeout=20):
+        raise OSError("network down")
+
+    monkeypatch.setenv("GITHUB_TOKEN", "t")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "r/r")
+    monkeypatch.setattr(rg.urllib.request, "urlopen", boom)
+    assert rg.already_sent_today() is None      # 宁可多收一封, 也不能整天收不到
+
+
+def test_main_skips_send_when_already_sent(monkeypatch):
+    """定时任务(schedule)当天已发过 → 跳过, 不重复发信。"""
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "schedule")
+    monkeypatch.setattr(rg, "already_sent_today", lambda *a, **k: "run 999")
+    code, calls, out, _ = run_main(monkeypatch, ["--send"], fake_collect())
+    assert code == 0 and calls == [] and "今日已成功发送过" in out
+
+
+def test_manual_dispatch_always_sends(monkeypatch):
+    """手动触发/本地跑不受幂等约束 —— 用户点 Run workflow 就该收到邮件。"""
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "workflow_dispatch")
+    monkeypatch.setattr(rg, "already_sent_today", lambda *a, **k: "run 999")
+    code, calls, _, _ = run_main(monkeypatch, ["--send"], fake_collect())
+    assert code == 0 and len(calls) == 1
+
+
 def test_html_flag_writes_body(monkeypatch, tmp_path):
     out = tmp_path / "d.html"
     code, _, _, _ = run_main(monkeypatch, ["--dry", "--html", str(out)], fake_collect())

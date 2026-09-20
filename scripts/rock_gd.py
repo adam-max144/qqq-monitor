@@ -23,6 +23,7 @@ import re
 import smtplib
 import subprocess
 import sys
+import urllib.request
 from datetime import datetime, timedelta, timezone
 from email.header import Header
 from email.mime.text import MIMEText
@@ -65,6 +66,44 @@ def run_url() -> str:
     base = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
     repo = os.environ.get("GITHUB_REPOSITORY", "adam-max144/qqq-monitor")
     return f"{base}/{repo}/actions/runs/{run}" if run else f"{base}/{repo}/actions"
+
+
+def _parse_iso(s: object) -> datetime | None:
+    """ISO 时间串 → datetime; 解析不了返回 None(不抛异常, 调用方跳过该条)。"""
+    try:
+        return datetime.fromisoformat(str(s).replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return None
+
+
+def already_sent_today(workflow: str = "rock-gd.yml") -> str | None:
+    """今天是否已有成功的 run(北京时间口径) —— 备用 cron 靠它避免重复发信。
+
+    只在 CI 里生效(GITHUB_TOKEN + GITHUB_REPOSITORY 都在时); 本地跑返回 None。
+    查询失败时**按未发送处理**(fail-open): 宁可多收一封, 也不要整天收不到。
+    """
+    tok, repo = os.environ.get("GITHUB_TOKEN"), os.environ.get("GITHUB_REPOSITORY")
+    if not (tok and repo):
+        return None
+    api = os.environ.get("GITHUB_API_URL", "https://api.github.com")
+    url = f"{api}/repos/{repo}/actions/workflows/{workflow}/runs?per_page=20"
+    req = urllib.request.Request(url, headers={
+        "Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json",
+        "User-Agent": "rock-gd-digest"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            runs = json.load(r)["workflow_runs"]
+    except Exception as e:  # noqa: BLE001
+        print(f"  (幂等检查失败, 按未发送处理: {type(e).__name__})", file=sys.stderr)
+        return None
+    me, today = os.environ.get("GITHUB_RUN_ID"), now_cn().date()
+    for r in runs:
+        if str(r.get("id")) == me or r.get("conclusion") != "success":
+            continue
+        d = _parse_iso(r.get("created_at"))
+        if d and d.astimezone(TZ_CN).date() == today:
+            return f"run {r['id']}"
+    return None
 
 
 # ---------------------------------------------------------------- fetch / parse
@@ -338,6 +377,12 @@ def main() -> int:
             f.write(html_body)
 
     if a.send:
+        # 幂等只对「定时任务」生效: 手动触发(Actions 点 Run workflow)和本地跑一律照发
+        if os.environ.get("GITHUB_EVENT_NAME") == "schedule":
+            dup = already_sent_today()
+            if dup:
+                print(f"今日已成功发送过({dup}) → 本次跳过(备用 cron 去重, 不重复发信)")
+                return 0
         subject = f"🎸 广东摇滚 {len(events)} 场 · 未来{a.days}天 · {now_cn():%m-%d}"
         print(send_mail(subject, html_body, text_body))
     else:
