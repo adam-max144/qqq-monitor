@@ -226,7 +226,13 @@ def test_mail_to_accepts_multiple_recipients(monkeypatch):
     monkeypatch.setattr(rg.smtplib, "SMTP_SSL", FakeSMTP)
     out = rg.send_mail("s", "<b>x</b>", "x")
     assert got["to"] == ["941189835@qq.com", "evansunyifei@foxmail.com"]
-    assert "evansunyifei@foxmail.com" in out
+    assert "2 个收件人" in out and "foxmail.com" in out
+    assert "evansunyifei" not in out          # 日志脱敏: 不打印完整地址
+
+
+def test_mask_helper():
+    assert rg._mask("evansunyifei@foxmail.com") == "eva***@foxmail.com"
+    assert rg._mask("no-at-sign") == "***"
 
 
 # --- 幂等(备用 cron 去重) ---------------------------------------------------
