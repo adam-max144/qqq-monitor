@@ -319,6 +319,11 @@ def build_text(events: list[dict], cities: list[tuple[str, str]], horizon: int) 
 
 
 # ---------------------------------------------------------------- mail
+def _mask(addr: str) -> str:
+    """941189835@qq.com → 941***@qq.com —— 日志里可核对收件人数, 又不泄露完整地址。"""
+    return addr[:3] + "***" + addr[addr.index("@"):] if "@" in addr else "***"
+
+
 def send_mail(subject: str, html_body: str, text_body: str) -> str:
     user = os.environ.get("SMTP_USER", "").strip()
     pwd = os.environ.get("SMTP_PASS", "").strip()
@@ -335,7 +340,7 @@ def send_mail(subject: str, html_body: str, text_body: str) -> str:
         s.sendmail(user, to, msg.as_string())
     finally:
         s.close()
-    return f"mail: ok -> {', '.join(to)}"
+    return f"mail: ok -> {len(to)} 个收件人: " + ", ".join(_mask(x) for x in to)
 
 
 # ---------------------------------------------------------------- main
