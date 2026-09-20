@@ -6,7 +6,8 @@
 - 费用/成立/经理: 静态配置（2026-08-03 从天天基金App接口逐只验证）
 输出: monitor.html（场内纳指基金监控页）
 """
-import urllib.request, json, re, time
+import json, re, time
+from net import fetch as net_fetch      # 带退避重试的取数(scripts/net.py; tenacity 可选)
 from datetime import datetime, timezone, timedelta
 
 BJ = timezone(timedelta(hours=8))   # 东财净值时间戳记的是北京 00:00 → 必须按 +08:00 解析, 用 utcfromtimestamp 会早一天
@@ -36,15 +37,8 @@ FUNDS = {
 INDEX_US = {"纳指100": "QQQ", "纳指科技": "QQQ", "海外科技": "QQQ"}  # 真实溢价校正(全部用QQQ近似)
 
 def fetch(url, ref, tries=3, enc="utf-8"):
-    last = None
-    for i in range(tries):
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Referer": ref})
-            return urllib.request.urlopen(req, timeout=20).read().decode(enc, "ignore")
-        except Exception as e:
-            last = e
-            time.sleep(1.0 * (i + 1))
-    raise last
+    """取数(带指数退避+抖动重试, 只重试瞬时错误) —— 实现见 scripts/net.py"""
+    return net_fetch(url, ref, enc, timeout=20, tries=tries)
 
 # ---------- 1. 腾讯批量行情 ----------
 def fetch_quotes():

@@ -28,7 +28,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install requests tzdata
+      # holidays: A股休市日跳过(cn_calendar); tenacity: scripts/net.py 的退避重试后端(缺则自动回退内置实现)
+      - run: pip install requests tzdata holidays tenacity
       - name: 检查真实溢价并推送(邮件)
         env:
           # NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}   # 2026-09-12 用户要求关停 ntfy, 只留邮件; 想恢复取消本行注释即可
@@ -36,4 +37,6 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}   # QQ邮箱授权码(非登录密码); 未配置时邮件渠道自动跳过
           THRESHOLD: ${{ github.event.inputs.threshold || '2' }}
+          # 手动触发(填了 threshold)时强制跑 —— 否则节假日测不了推送链路; 定时任务是空值, 休市日照常跳过
+          FORCE: ${{ github.event.inputs.threshold && '1' || '' }}
         run: python scripts/check_premium_window.py

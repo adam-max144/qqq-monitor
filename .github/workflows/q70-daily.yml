@@ -13,6 +13,11 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
+      # tenacity: scripts/net.py 的退避重试后端(缺则自动回退内置实现, 不会坏)
+      # 注意: 这里**不做**「A股休市日跳过」—— 页面里 QQQ 价/动量/支撑是美股数据, A股休市时美股照样走,
+      # 跳过会让页面在国庆这种长假里冻住一周。只在真正「两个市场都没开」时才没有新数据(且那时
+      # 下面的 git diff 判空会自然跳过提交), 所以无需额外守卫。
+      - run: pip install tenacity
       - name: 生成策略页
         run: python scripts/gen_q70_page.py
       - name: 提交更新

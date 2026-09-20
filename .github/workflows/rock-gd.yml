@@ -35,6 +35,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      # tenacity: scripts/net.py 的退避重试后端(秀动页面抓取; 缺则自动回退内置实现)
+      - run: pip install tenacity
       - name: 抓取并推送
         env:
           MAIL_TO: ${{ secrets.MAIL_TO }}       # 逗号分隔多个收件人
@@ -47,7 +49,7 @@ jobs:
       - name: 刷新 rock.ics(手机日历订阅用)
         continue-on-error: true                 # 日历失败不该影响已发出的邮件
         run: |
-          pip install -q icalendar tzdata
+          pip install -q icalendar tzdata tenacity
           python scripts/rock_ics.py --days ${{ github.event.inputs.days || '45' }} --out rock.ics
       - name: 提交 rock.ics
         run: |

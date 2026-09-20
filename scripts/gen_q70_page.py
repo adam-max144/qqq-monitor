@@ -12,8 +12,10 @@
 数据来源: backtest20y/results_q30.json + results_q70_detail.json + results_q70_detail2.json（已验证），
 本脚本只做"读JSON→内嵌→渲染"，不手抄数字。
 """
-import json, os, re, urllib.request, time
+import json, os, re
 from datetime import datetime
+
+from net import fetch as net_fetch      # 带退避重试的取数(scripts/net.py; tenacity 可选)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 BT = os.path.join(BASE, "..", "backtest20y")
@@ -23,15 +25,8 @@ def load(name):
         return json.load(f)
 
 def fetch(url, ref, tries=3, enc="utf-8"):
-    last = None
-    for i in range(tries):
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Referer": ref})
-            return urllib.request.urlopen(req, timeout=15).read().decode(enc, "ignore")
-        except Exception as e:
-            last = e
-            time.sleep(1.0 * (i + 1))
-    raise last
+    """取数(带指数退避+抖动重试, 只重试瞬时错误) —— 实现见 scripts/net.py"""
+    return net_fetch(url, ref, enc, timeout=15, tries=tries)
 
 # ---- 实时抓取快照（017436净值 + 腾讯行情 + QQQ日线），失败时回退到内置静态值 ----
 SNAP = {

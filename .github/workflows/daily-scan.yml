@@ -13,6 +13,9 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
+      # tenacity: scripts/net.py 的退避重试后端(缺则自动回退内置实现)
+      # 同样不做「A股休市日跳过」: monitor.html 里的 QQQ 卡/支撑位是美股数据, 休市日依旧会变。
+      - run: pip install tenacity
       - name: 运行扫描
         run: python scripts/auto_scan_gh.py
       - name: 提交更新

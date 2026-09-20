@@ -12,14 +12,21 @@
   NTFY_TOPIC  可选, 留空则不发 ntfy(现役配置为空)
   THRESHOLD   可选, 默认 2 (%); workflow_dispatch 可传入做端到端测试
   PAGE_URL    可选, 默认线上 Pages 地址
+  FORCE       可选, =1 时忽略「A股休市日跳过」(本地联调/端到端自测用)
 
-退出码: 0 正常(含未触发); 1 取数失败; 2 推送失败
+行为: **A股休市日直接跳过(exit 0)** —— 休市没有新行情, 算出来的溢价是陈旧数据, 白跑还容易误报。
+      2026 年有 19 个工作日是休市(春节/国庆等)。需要强制跑加 `--force` 或 `FORCE=1`。
+
+退出码: 0 正常(含未触发/休市跳过); 1 取数失败; 2 推送失败
 """
 import json, os, re, smtplib, ssl, sys
 from datetime import datetime
 from email.message import EmailMessage
 from zoneinfo import ZoneInfo
 import requests
+
+import cn_calendar                      # A股交易日历(scripts/cn_calendar.py)
+from net import fetch as net_fetch      # 带退避重试的取数(scripts/net.py)
 
 PAGE_URL = os.environ.get("PAGE_URL", "https://adam-max144.github.io/qqq-monitor/monitor.html")
 TOPIC = os.environ.get("NTFY_TOPIC", "").strip()
@@ -29,7 +36,7 @@ UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
 def fetch_meta():
     """从生成好的页面里取 FUND_META —— 与页面同源, 不另立一套净值口径"""
-    html = requests.get(PAGE_URL, headers=UA, timeout=30).text
+    html = net_fetch(PAGE_URL, timeout=30, headers=UA)
     m = re.search(r"const FUND_META = (\{.*?\});const POSITION_META", html, re.DOTALL)
     if not m:
         raise SystemExit("未能从页面解析 FUND_META(页面结构可能已变)")
@@ -49,8 +56,8 @@ def us_phase(now_et):
 
 def fetch_quotes(codes):
     syms = ",".join(("sh" if c.startswith(("5", "6")) else "sz") + c for c in codes) + ",usQQQ"
-    raw = requests.get("https://qt.gtimg.cn/q=" + syms, headers={**UA, "Referer": "https://gu.qq.com/"},
-                       timeout=25).content.decode("gbk", "replace")
+    raw = net_fetch("https://qt.gtimg.cn/q=" + syms, ref="https://gu.qq.com/", enc="gbk",
+                    timeout=25, headers=UA)
     rows = {}
     for seg in raw.split(";"):
         m = re.search(r'v_([A-Za-z0-9.]+)="([^"]*)"', seg)
@@ -62,6 +69,13 @@ def fetch_quotes(codes):
 
 
 def main():
+    force = "--force" in sys.argv or os.environ.get("FORCE", "").strip().lower() in ("1", "true", "yes")
+    today = cn_calendar.today_cn()
+    if not force and not cn_calendar.is_trading_day("cn", today):
+        why = cn_calendar.holiday_name("cn", today) or "周末"
+        print(f"A股休市({today} {today.strftime('%a')} {why}) → 跳过: 休市日无新行情, 溢价为陈旧数据。")
+        print("  (要强制跑: 加 --force 或 FORCE=1; Actions 手动触发带 threshold 时会自动带上)")
+        return 0
     meta = fetch_meta()
     now_et = datetime.now(ZoneInfo("America/New_York"))
     rows = fetch_quotes(list(meta.keys()))

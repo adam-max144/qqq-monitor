@@ -21,9 +21,10 @@ import json
 import os
 import re
 import smtplib
-import subprocess
 import sys
 import urllib.request
+
+from net import fetch as net_fetch      # 带退避重试的取数(scripts/net.py; tenacity 可选)
 from datetime import datetime, timedelta, timezone
 from email.header import Header
 from email.mime.text import MIMEText
@@ -108,14 +109,12 @@ def already_sent_today(workflow: str = "rock-gd.yml") -> str | None:
 
 # ---------------------------------------------------------------- fetch / parse
 def curl(url: str, timeout: int = 30) -> str:
+    """取秀动页面(带退避重试 —— 见 scripts/net.py; 失败返回空串由调用方跳过)。"""
     try:
-        r = subprocess.run(
-            ["curl", "-s", "--compressed", "--max-time", str(timeout), "-A", UA,
-             "-H", "Referer: https://www.showstart.com/", url],
-            capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
-        return r.stdout or ""
+        return net_fetch(url, ref="https://www.showstart.com/", timeout=timeout,
+                         headers={"User-Agent": UA})
     except Exception as e:  # noqa: BLE001
-        print(f"  ! curl fail {url}: {e}", file=sys.stderr)
+        print(f"  ! fetch fail {url}: {type(e).__name__}: {e}", file=sys.stderr)
         return ""
 
 
