@@ -31,43 +31,10 @@ TZOFFSETTO:+0800
 END:STANDARD
 END:VTIMEZONE
 BEGIN:VEVENT
-SUMMARY:广州｜NEEVE 2026 秋季巡演「Am I on your mind?」广州站
-DTSTART;TZID=Asia/Shanghai:20261006T200000
-DTEND;TZID=Asia/Shanghai:20261006T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-309965
-DESCRIPTION:艺人: NEEVE/Myle\n票价: ¥218起\n购票: https://www.show
- start.com/event/309965\n来源: 秀动 showstart.com
-LOCATION:SDlivehouse 广州
-URL:https://www.showstart.com/event/309965
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-SUMMARY:广州｜Anisong派对 ACG摇滚之“夜”4.0
-DTSTART;TZID=Asia/Shanghai:20261007T143000
-DTEND;TZID=Asia/Shanghai:20261007T173000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-311200
-DESCRIPTION:艺人: 扭蛋姬乐队/芭菲水族馆PafeAqua/ARARITA\n票
- 价: ¥88起\n购票: https://www.showstart.com/event/311200\n来源: 秀
- 动 showstart.com
-LOCATION:MAOLivehouse广州（永庆坊店） 广州
-URL:https://www.showstart.com/event/311200
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
 SUMMARY:深圳｜NEEVE 2026 秋季巡演「Am I on your mind?」深圳站
 DTSTART;TZID=Asia/Shanghai:20261007T200000
 DTEND;TZID=Asia/Shanghai:20261007T230000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-309966
 DESCRIPTION:艺人: NEEVE\n票价: ¥218起\n购票: https://www.showstart
  .com/event/309966\n来源: 秀动 showstart.com
@@ -80,27 +47,10 @@ TRIGGER:-P1D
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-SUMMARY:广州｜秋籁——器乐摇滚联袂展演 体熊专科 & Jason
-  Kui INSTRUMENTAL LOVE!!
-DTSTART;TZID=Asia/Shanghai:20261010T200000
-DTEND;TZID=Asia/Shanghai:20261010T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-308373
-DESCRIPTION:艺人: 体熊专科/JASON KUI\n票价: ¥150起\n购票: http
- s://www.showstart.com/event/308373\n来源: 秀动 showstart.com
-LOCATION:声音共和Livehouse（广州塔店） 广州
-URL:https://www.showstart.com/event/308373
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
 SUMMARY:珠海｜留声RECORD音乐企划
 DTSTART;TZID=Asia/Shanghai:20261017T110000
 DTEND;TZID=Asia/Shanghai:20261017T140000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-309617
 DESCRIPTION:艺人: BO5乐队/NERUNERU\n票价: ¥68起\n购票: https://w
  ww.showstart.com/event/309617\n来源: 秀动 showstart.com
@@ -113,60 +63,10 @@ TRIGGER:-P1D
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-SUMMARY:广州｜情绪集结King-Size Emoride二十周年室内音乐节
-DTSTART;TZID=Asia/Shanghai:20261017T150000
-DTEND;TZID=Asia/Shanghai:20261017T180000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-309365
-DESCRIPTION:艺人: 吹波糖/闪星TWINKLESTAR/TOOKOO/toa-T/堆填区LAND
- FILLS/HYPER SLASH超级斩/Nein or Gas Mus無高潮/遗失愿望清单Miss
- ingWishes/中西部情绪麻将/What You Don't See\n票价: ¥148起\n购
- 票: https://www.showstart.com/event/309365\n来源: 秀动 showstart.com
-LOCATION:SDlivehouse 广州
-URL:https://www.showstart.com/event/309365
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-SUMMARY:广州｜Hogee「从今晚开始」巡演-广州站
-DTSTART;TZID=Asia/Shanghai:20261017T200000
-DTEND;TZID=Asia/Shanghai:20261017T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-310328
-DESCRIPTION:艺人: Hogee\n票价: ¥119起\n购票: https://www.showstart
- .com/event/310328\n来源: 秀动 showstart.com
-LOCATION:疆进酒·OMNI SPACE 广州 2号馆 广州
-URL:https://www.showstart.com/event/310328
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-SUMMARY:广州｜Ozielzinho巴西小伙2026乐队巡演  广州站
-DTSTART;TZID=Asia/Shanghai:20261023T200000
-DTEND;TZID=Asia/Shanghai:20261023T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-310069
-DESCRIPTION:艺人: Ozielzinho巴西小伙\n票价: ¥150起\n购票: http
- s://www.showstart.com/event/310069\n来源: 秀动 showstart.com
-LOCATION:疆进酒·OMNI SPACE 广州 2号馆 广州
-URL:https://www.showstart.com/event/310069
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
 SUMMARY:深圳｜BLAM! 次元乱斗哈喽喂 · 万圣摇滚祭 
 DTSTART;TZID=Asia/Shanghai:20261024T140000
 DTEND;TZID=Asia/Shanghai:20261024T170000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-311216
 DESCRIPTION:艺人: AniMax/Bucket List愿望清单乐队\n票价: ¥68起
  \n购票: https://www.showstart.com/event/311216\n来源: 秀动 showstart
@@ -180,44 +80,10 @@ TRIGGER:-P1D
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-SUMMARY:广州｜“世界最高峰贝斯手” Nathan East 2026中国巡
- 演 - 致敬与Eric Clapton合作四十年纪念音乐会 - 广州站
-DTSTART;TZID=Asia/Shanghai:20261024T200000
-DTEND;TZID=Asia/Shanghai:20261024T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-308376
-DESCRIPTION:艺人: 潘高峰/内森·伊斯特（Nathan East）\n票价: 
- ¥280起\n购票: https://www.showstart.com/event/308376\n来源: 秀动 s
- howstart.com
-LOCATION:声音共和Livehouse 广州
-URL:https://www.showstart.com/event/308376
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-SUMMARY:广州｜Bôa 巡演 2026 广州站
-DTSTART;TZID=Asia/Shanghai:20261024T200000
-DTEND;TZID=Asia/Shanghai:20261024T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-297595
-DESCRIPTION:艺人: Bôa \n票价: ¥280起\n购票: https://www.showstart
- .com/event/297595\n来源: 秀动 showstart.com
-LOCATION:MAO Livehouse广州中大店（一号馆） 广州
-URL:https://www.showstart.com/event/297595
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
 SUMMARY:东莞｜【都市醉汉】Vansdaddy家乡特别专场-东莞站
 DTSTART;TZID=Asia/Shanghai:20261024T200000
 DTEND;TZID=Asia/Shanghai:20261024T230000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-309536
 DESCRIPTION:艺人: Vansdaddy\n票价: ¥188\n购票: https://www.showstar
  t.com/event/309536\n来源: 秀动 showstart.com
@@ -233,7 +99,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜Bôa 巡演 2026 深圳站
 DTSTART;TZID=Asia/Shanghai:20261025T200000
 DTEND;TZID=Asia/Shanghai:20261025T230000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-297597
 DESCRIPTION:艺人: Bôa \n票价: ¥280起\n购票: https://www.showstart
  .com/event/297597\n来源: 秀动 showstart.com
@@ -246,27 +112,11 @@ TRIGGER:-P1D
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-SUMMARY:广州｜2026善地M音乐巡演 广州站
-DTSTART;TZID=Asia/Shanghai:20261027T200000
-DTEND;TZID=Asia/Shanghai:20261027T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-311244
-DESCRIPTION:艺人: 善地M\n票价: ¥128起\n购票: https://www.showsta
- rt.com/event/311244\n来源: 秀动 showstart.com
-LOCATION:疆进酒·OMNI SPACE 广州 2号馆 广州
-URL:https://www.showstart.com/event/311244
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
 SUMMARY:深圳｜PaulGilbert (保罗·吉尔伯特) WROC 2026巡演 深圳
  站
 DTSTART;TZID=Asia/Shanghai:20261027T200000
 DTEND;TZID=Asia/Shanghai:20261027T230000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-308458
 DESCRIPTION:艺人: Paul Gilbert/木飞伞乐队/JASON KUI\n票价: ¥380
  起\n购票: https://www.showstart.com/event/308458\n来源: 秀动 showst
@@ -283,7 +133,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜2026善地M音乐巡演 深圳站
 DTSTART;TZID=Asia/Shanghai:20261028T203000
 DTEND;TZID=Asia/Shanghai:20261028T233000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-311188
 DESCRIPTION:艺人: 善地M\n票价: ¥128起\n购票: https://www.showsta
  rt.com/event/311188\n来源: 秀动 showstart.com
@@ -296,59 +146,10 @@ TRIGGER:-P1D
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-SUMMARY:广州｜夏日麽麽茶第一轮巡演 广州站
-DTSTART;TZID=Asia/Shanghai:20261030T200000
-DTEND;TZID=Asia/Shanghai:20261030T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-310146
-DESCRIPTION:艺人: 夏日麽麽茶\n票价: ¥98起\n购票: https://www.
- showstart.com/event/310146\n来源: 秀动 showstart.com
-LOCATION:声音共和Livehouse（广州塔店） 广州
-URL:https://www.showstart.com/event/310146
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-SUMMARY:广州｜莫西子诗“黑夜闪闪发光”2026LIVEHOUSE巡演-
- 广州站
-DTSTART;TZID=Asia/Shanghai:20261031T200000
-DTEND;TZID=Asia/Shanghai:20261031T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-303883
-DESCRIPTION:艺人: 莫西子诗\n票价: ¥128起\n购票: https://www.sh
- owstart.com/event/303883\n来源: 秀动 showstart.com
-LOCATION:声音共和Livehouse 广州
-URL:https://www.showstart.com/event/303883
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-SUMMARY:广州｜門图MOOTOO《開》2026巡演 广州站
-DTSTART;TZID=Asia/Shanghai:20261031T200000
-DTEND;TZID=Asia/Shanghai:20261031T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-309084
-DESCRIPTION:艺人: 門图MOOTOO\n票价: ¥89起\n购票: https://www.sho
- wstart.com/event/309084\n来源: 秀动 showstart.com
-LOCATION:疆进酒·OMNI SPACE 广州 2号馆 广州
-URL:https://www.showstart.com/event/309084
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
 SUMMARY:深圳｜夏日麽麽茶第一轮巡演 深圳站
 DTSTART;TZID=Asia/Shanghai:20261031T200000
 DTEND;TZID=Asia/Shanghai:20261031T230000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-310147
 DESCRIPTION:艺人: 夏日麽麽茶\n票价: ¥98起\n购票: https://www.
  showstart.com/event/310147\n来源: 秀动 showstart.com
@@ -365,7 +166,7 @@ SUMMARY:深圳｜莫西子诗“黑夜闪闪发光”2026LIVEHOUSE巡演-
  深圳站
 DTSTART;TZID=Asia/Shanghai:20261101T200000
 DTEND;TZID=Asia/Shanghai:20261101T230000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-303886
 DESCRIPTION:艺人: 莫西子诗\n票价: ¥128起\n购票: https://www.sh
  owstart.com/event/303886\n来源: 秀动 showstart.com
@@ -381,7 +182,7 @@ BEGIN:VEVENT
 SUMMARY:珠海｜碎梦飞跃「外面是夏天」2026巡演 珠海站
 DTSTART;TZID=Asia/Shanghai:20261104T200000
 DTEND;TZID=Asia/Shanghai:20261104T230000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-308114
 DESCRIPTION:艺人: Sleep Leaps 碎梦飞跃\n票价: ¥100起\n购票: ht
  tps://www.showstart.com/event/308114\n来源: 秀动 showstart.com
@@ -397,7 +198,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜只是一场简单对话—深圳站
 DTSTART;TZID=Asia/Shanghai:20261106T190000
 DTEND;TZID=Asia/Shanghai:20261106T220000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-307282
 DESCRIPTION:艺人: 简单对话 A Little Conversation\n票价: ¥149起\n
  购票: https://www.showstart.com/event/307282\n来源: 秀动 showstart.c
@@ -411,44 +212,11 @@ TRIGGER:-P1D
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-SUMMARY:广州｜碎梦飞跃「外面是夏天」2026巡演 广州站
-DTSTART;TZID=Asia/Shanghai:20261106T200000
-DTEND;TZID=Asia/Shanghai:20261106T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-308115
-DESCRIPTION:艺人: Sleep Leaps 碎梦飞跃\n票价: ¥100起\n购票: ht
- tps://www.showstart.com/event/308115\n来源: 秀动 showstart.com
-LOCATION:MAOLivehouse广州（永庆坊店CLUB厅） 广州
-URL:https://www.showstart.com/event/308115
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-SUMMARY:广州｜只是一场简单对话—广州站
-DTSTART;TZID=Asia/Shanghai:20261107T190000
-DTEND;TZID=Asia/Shanghai:20261107T220000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-305773
-DESCRIPTION:艺人: 简单对话 A Little Conversation\n票价: ¥149起\n
- 购票: https://www.showstart.com/event/305773\n来源: 秀动 showstart.c
- om
-LOCATION:疆进酒•OMNI SPACE 广州 1号馆 广州
-URL:https://www.showstart.com/event/305773
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
 SUMMARY:深圳｜飞行冠军【浮出水面】2026新专辑巡演 深圳
  站
 DTSTART;TZID=Asia/Shanghai:20261107T200000
 DTEND;TZID=Asia/Shanghai:20261107T230000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-303249
 DESCRIPTION:艺人: 飞行冠军\n票价: ¥99起\n购票: https://www.sho
  wstart.com/event/303249\n来源: 秀动 showstart.com
@@ -461,44 +229,10 @@ TRIGGER:-P1D
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-SUMMARY:广州｜零~夜时巫女一周年X京阿尼ONLY LIVE
-DTSTART;TZID=Asia/Shanghai:20261108T130500
-DTEND;TZID=Asia/Shanghai:20261108T160500
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-309611
-DESCRIPTION:艺人: Ringo/明日重启/祈喵末班车/零~夜时巫女\n
- 票价: ¥19.90起\n购票: https://www.showstart.com/event/309611\n来源
- : 秀动 showstart.com
-LOCATION:MAOLivehouse广州（永庆坊店CLUB厅） 广州
-URL:https://www.showstart.com/event/309611
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-SUMMARY:广州｜飞行冠军【浮出水面】2026新专辑巡演 广州
- 站
-DTSTART;TZID=Asia/Shanghai:20261108T200000
-DTEND;TZID=Asia/Shanghai:20261108T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-303347
-DESCRIPTION:艺人: 飞行冠军\n票价: ¥99起\n购票: https://www.sho
- wstart.com/event/303347\n来源: 秀动 showstart.com
-LOCATION:MAO Livehouse广州（太古仓店） 广州
-URL:https://www.showstart.com/event/303347
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
 SUMMARY:深圳｜碎梦飞跃「外面是夏天」2026巡演 深圳站
 DTSTART;TZID=Asia/Shanghai:20261108T200000
 DTEND;TZID=Asia/Shanghai:20261108T230000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-308116
 DESCRIPTION:艺人: Sleep Leaps 碎梦飞跃\n票价: ¥100起\n购票: ht
  tps://www.showstart.com/event/308116\n来源: 秀动 showstart.com
@@ -511,44 +245,11 @@ TRIGGER:-P1D
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-SUMMARY:广州｜【声厂呈现】瑞士器乐三重奏Schnellertollermei
- er巡演·广州站
-DTSTART;TZID=Asia/Shanghai:20261110T203000
-DTEND;TZID=Asia/Shanghai:20261110T233000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-309395
-DESCRIPTION:艺人: Schnellertollermeier\n票价: ¥158起\n购票: https:
- //www.showstart.com/event/309395\n来源: 秀动 showstart.com
-LOCATION:疆进酒·OMNI SPACE 广州 2号馆 广州
-URL:https://www.showstart.com/event/309395
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-SUMMARY:广州｜八十分钟工工工-广州站
-DTSTART;TZID=Asia/Shanghai:20261111T200000
-DTEND;TZID=Asia/Shanghai:20261111T230000
-DTSTAMP:20260928T081842Z
-UID:showstart.gd.qqq-monitor-311049
-DESCRIPTION:艺人: 工工工\n票价: ¥120起\n购票: https://www.shows
- tart.com/event/311049\n来源: 秀动 showstart.com
-LOCATION:声音共和Livehouse（广州塔店） 广州
-URL:https://www.showstart.com/event/311049
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:演出明天\, 记得看票
-TRIGGER:-P1D
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
 SUMMARY:深圳｜【声厂呈现】瑞士器乐三重奏Schnellertollermei
  er巡演·深圳站
 DTSTART;TZID=Asia/Shanghai:20261111T203000
 DTEND;TZID=Asia/Shanghai:20261111T233000
-DTSTAMP:20260928T081842Z
+DTSTAMP:20260928T101144Z
 UID:showstart.gd.qqq-monitor-309396
 DESCRIPTION:艺人: Schnellertollermeier\n票价: ¥158起\n购票: https:
  //www.showstart.com/event/309396\n来源: 秀动 showstart.com
