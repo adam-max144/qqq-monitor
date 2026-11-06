@@ -34,7 +34,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜只是一场简单对话—深圳站
 DTSTART;TZID=Asia/Shanghai:20261106T190000
 DTEND;TZID=Asia/Shanghai:20261106T220000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-307282
 DESCRIPTION:艺人: 简单对话 A Little Conversation\n票价: ¥149起\n
  购票: https://www.showstart.com/event/307282\n来源: 秀动 showstart.c
@@ -51,7 +51,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜碎梦飞跃「外面是夏天」2026巡演 广州站
 DTSTART;TZID=Asia/Shanghai:20261106T200000
 DTEND;TZID=Asia/Shanghai:20261106T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-308115
 DESCRIPTION:艺人: Sleep Leaps 碎梦飞跃/想想XiangXiang\n票价: ¥1
  00起\n购票: https://www.showstart.com/event/308115\n来源: 秀动 show
@@ -69,7 +69,7 @@ SUMMARY:广州｜马帮乐队「远走--安居的漂泊者」两广巡演
  ·广州站
 DTSTART;TZID=Asia/Shanghai:20261106T200000
 DTEND;TZID=Asia/Shanghai:20261106T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312750
 DESCRIPTION:艺人: 马帮乐队\n票价: ¥78起\n购票: https://www.sho
  wstart.com/event/312750\n来源: 秀动 showstart.com
@@ -85,7 +85,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜MOMENTIA LAND
 DTSTART;TZID=Asia/Shanghai:20261107T130000
 DTEND;TZID=Asia/Shanghai:20261107T160000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-314996
 DESCRIPTION:艺人: \n票价: ¥60起\n购票: https://www.showstart.com/e
  vent/314996\n来源: 秀动 showstart.com
@@ -101,7 +101,7 @@ BEGIN:VEVENT
 SUMMARY:惠州｜惠州 BanG Dream专场 LIVE
 DTSTART;TZID=Asia/Shanghai:20261107T133000
 DTEND;TZID=Asia/Shanghai:20261107T163000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312500
 DESCRIPTION:艺人: 四度领域/百合帝国/猫猫响铃卷/YORUAME-夜
  雨\n票价: ¥48起\n购票: https://www.showstart.com/event/312500\n来
@@ -118,7 +118,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜只是一场简单对话—广州站
 DTSTART;TZID=Asia/Shanghai:20261107T190000
 DTEND;TZID=Asia/Shanghai:20261107T220000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-305773
 DESCRIPTION:艺人: 简单对话 A Little Conversation\n票价: ¥149起\n
  购票: https://www.showstart.com/event/305773\n来源: 秀动 showstart.c
@@ -135,7 +135,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜不对称现场005｜旧迹矗立，新刃轰鸣
 DTSTART;TZID=Asia/Shanghai:20261107T200000
 DTEND;TZID=Asia/Shanghai:20261107T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-314527
 DESCRIPTION:艺人: 遗迹RELIC/广州relic乐队/Old Testament旧约\n票
  价: ¥68起\n购票: https://www.showstart.com/event/314527\n来源: 秀
@@ -152,7 +152,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜【免票】凛冬开燥丨立冬双核硬摇拼盘
 DTSTART;TZID=Asia/Shanghai:20261107T200000
 DTEND;TZID=Asia/Shanghai:20261107T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-315155
 DESCRIPTION:艺人: \n票价: ¥0\n购票: https://www.showstart.com/event
  /315155\n来源: 秀动 showstart.com
@@ -169,7 +169,7 @@ SUMMARY:深圳｜飞行冠军【浮出水面】2026新专辑巡演 深圳
  站
 DTSTART;TZID=Asia/Shanghai:20261107T200000
 DTEND;TZID=Asia/Shanghai:20261107T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-303249
 DESCRIPTION:艺人: 飞行冠军\n票价: ¥99起\n购票: https://www.sho
  wstart.com/event/303249\n来源: 秀动 showstart.com
@@ -185,7 +185,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜零~夜时巫女一周年X京阿尼ONLY LIVE
 DTSTART;TZID=Asia/Shanghai:20261108T130500
 DTEND;TZID=Asia/Shanghai:20261108T160500
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-309611
 DESCRIPTION:艺人: 明日重启/Rikka立夏/零~夜时巫女/Ringo乐队
  \n票价: ¥19.90起\n购票: https://www.showstart.com/event/309611\n来
@@ -202,7 +202,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜韩昕哲THE NEXT STATION下一站-广州
 DTSTART;TZID=Asia/Shanghai:20261108T200000
 DTEND;TZID=Asia/Shanghai:20261108T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312480
 DESCRIPTION:艺人: 韩昕哲\n票价: ¥88起\n购票: https://www.showst
  art.com/event/312480\n来源: 秀动 showstart.com
@@ -219,7 +219,7 @@ SUMMARY:广州｜飞行冠军【浮出水面】No Stage新专辑巡演 广
  州站
 DTSTART;TZID=Asia/Shanghai:20261108T200000
 DTEND;TZID=Asia/Shanghai:20261108T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-303347
 DESCRIPTION:艺人: 飞行冠军\n票价: ¥99起\n购票: https://www.sho
  wstart.com/event/303347\n来源: 秀动 showstart.com
@@ -236,7 +236,7 @@ SUMMARY:广州｜大提琴摇滚：燃烧的弦乐队重塑摇滚经典之
  夜
 DTSTART;TZID=Asia/Shanghai:20261108T200000
 DTEND;TZID=Asia/Shanghai:20261108T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-310809
 DESCRIPTION:艺人: \n票价: ¥80起\n购票: https://www.showstart.com/e
  vent/310809\n来源: 秀动 showstart.com
@@ -252,7 +252,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜秋风狂诗曲｜犬儒 × 梁正 联合专场 广州站
 DTSTART;TZID=Asia/Shanghai:20261108T200000
 DTEND;TZID=Asia/Shanghai:20261108T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313411
 DESCRIPTION:艺人: 犬儒/梁正\n票价: ¥128起\n购票: https://www.s
  howstart.com/event/313411\n来源: 秀动 showstart.com
@@ -268,7 +268,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜碎梦飞跃「外面是夏天」2026巡演 深圳站
 DTSTART;TZID=Asia/Shanghai:20261108T200000
 DTEND;TZID=Asia/Shanghai:20261108T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-308116
 DESCRIPTION:艺人: Fisheye Lens/Sleep Leaps 碎梦飞跃\n票价: ¥100
  起\n购票: https://www.showstart.com/event/308116\n来源: 秀动 showst
@@ -286,7 +286,7 @@ SUMMARY:广州｜【声厂呈现】瑞士器乐三重奏Schnellertollermei
  er巡演·广州站
 DTSTART;TZID=Asia/Shanghai:20261110T203000
 DTEND;TZID=Asia/Shanghai:20261110T233000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-309395
 DESCRIPTION:艺人: Schnellertollermeier\n票价: ¥158起\n购票: https:
  //www.showstart.com/event/309395\n来源: 秀动 showstart.com
@@ -302,7 +302,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜八十分钟工工工-广州站
 DTSTART;TZID=Asia/Shanghai:20261111T200000
 DTEND;TZID=Asia/Shanghai:20261111T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-311049
 DESCRIPTION:艺人: 工工工\n票价: ¥120起\n购票: https://www.shows
  tart.com/event/311049\n来源: 秀动 showstart.com
@@ -319,7 +319,7 @@ SUMMARY:深圳｜【声厂呈现】瑞士器乐三重奏Schnellertollermei
  er巡演·深圳站
 DTSTART;TZID=Asia/Shanghai:20261111T203000
 DTEND;TZID=Asia/Shanghai:20261111T233000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-309396
 DESCRIPTION:艺人: Schnellertollermeier\n票价: ¥158起\n购票: https:
  //www.showstart.com/event/309396\n来源: 秀动 showstart.com
@@ -335,7 +335,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜八十分钟工工工-深圳
 DTSTART;TZID=Asia/Shanghai:20261112T200000
 DTEND;TZID=Asia/Shanghai:20261112T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-311168
 DESCRIPTION:艺人: 工工工\n票价: ¥120起\n购票: https://www.shows
  tart.com/event/311168\n来源: 秀动 showstart.com
@@ -351,7 +351,7 @@ BEGIN:VEVENT
 SUMMARY:珠海｜八十分钟工工工-珠海
 DTSTART;TZID=Asia/Shanghai:20261113T200000
 DTEND;TZID=Asia/Shanghai:20261113T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312892
 DESCRIPTION:艺人: 工工工\n票价: ¥120起\n购票: https://www.shows
  tart.com/event/312892\n来源: 秀动 showstart.com
@@ -368,7 +368,7 @@ SUMMARY:广州｜「Before Sunrise」恋音契约×碎夜瑠璃LapisLazuli
   联合演出
 DTSTART;TZID=Asia/Shanghai:20261114T130000
 DTEND;TZID=Asia/Shanghai:20261114T160000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312339
 DESCRIPTION:艺人: 碎夜瑠璃LapisLazuli/恋音契约\n票价: ¥0.01
  起\n购票: https://www.showstart.com/event/312339\n来源: 秀动 showst
@@ -385,7 +385,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜PeeKaBoo乐队一周年庆 · 猫坞狂欢
 DTSTART;TZID=Asia/Shanghai:20261114T140000
 DTEND;TZID=Asia/Shanghai:20261114T170000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313051
 DESCRIPTION:艺人: 妖都告示Decitice/湾岸电力/BO5乐队/PeeKaBoo
  乐队/朔云Kaunun\n票价: ¥78起\n购票: https://www.showstart.com/ev
@@ -402,7 +402,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜TO THE MONSTERS NIGHT 11.14 Vol.01
 DTSTART;TZID=Asia/Shanghai:20261114T160000
 DTEND;TZID=Asia/Shanghai:20261114T190000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313673
 DESCRIPTION:艺人: 瘟疫之骇Horror Of Pestilence/区间乐队/耀星ET
  OBRITES/幻劫.Dream of ruin/月匙Moon-Key\n票价: ¥98起\n购票: http
@@ -419,7 +419,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜帆布小镇今夜无法入眠Ⅱ特别专场-广州站
 DTSTART;TZID=Asia/Shanghai:20261114T200000
 DTEND;TZID=Asia/Shanghai:20261114T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-306733
 DESCRIPTION:艺人: 帆布小镇\n票价: ¥99起\n购票: https://www.sho
  wstart.com/event/306733\n来源: 秀动 showstart.com
@@ -436,7 +436,7 @@ SUMMARY:广州｜觅屿乐队《支线任务也很有趣》巡演-广州
  站
 DTSTART;TZID=Asia/Shanghai:20261114T200000
 DTEND;TZID=Asia/Shanghai:20261114T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-311551
 DESCRIPTION:艺人: 觅屿-WHISPER\n票价: ¥52起\n购票: https://www.s
  howstart.com/event/311551\n来源: 秀动 showstart.com
@@ -452,7 +452,7 @@ BEGIN:VEVENT
 SUMMARY:珠海｜活出我人生 Mr.Lan2026巡演 珠海站
 DTSTART;TZID=Asia/Shanghai:20261114T200000
 DTEND;TZID=Asia/Shanghai:20261114T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313704
 DESCRIPTION:艺人: Mr.Lan\n票价: ¥88起\n购票: https://www.showstart
  .com/event/313704\n来源: 秀动 showstart.com
@@ -468,7 +468,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜次元趴·宅化危机 ACG乐队拼盘
 DTSTART;TZID=Asia/Shanghai:20261115T133000
 DTEND;TZID=Asia/Shanghai:20261115T163000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313885
 DESCRIPTION:艺人: MOLOMOGO没落魔果/MARUNOMI/AniMax/Bucket List愿望
  清单乐队\n票价: ¥68起\n购票: https://www.showstart.com/event/313
@@ -486,7 +486,7 @@ SUMMARY:广州｜【免票】“海阔南沙·即刻开声”2026湾区校
  园音乐季
 DTSTART;TZID=Asia/Shanghai:20261115T150000
 DTEND;TZID=Asia/Shanghai:20261115T180000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-314557
 DESCRIPTION:艺人: Mr.乐队/讲者（Prosa）\n票价: ¥0\n购票: http
  s://www.showstart.com/event/314557\n来源: 秀动 showstart.com
@@ -502,7 +502,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜假日ACG派对
 DTSTART;TZID=Asia/Shanghai:20261115T180000
 DTEND;TZID=Asia/Shanghai:20261115T210000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-314560
 DESCRIPTION:艺人: 下划线\n票价: ¥68起\n购票: https://www.showst
  art.com/event/314560\n来源: 秀动 showstart.com
@@ -518,7 +518,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜广州·范晓萱&100%  Let’s Party巡回演唱会 
 DTSTART;TZID=Asia/Shanghai:20261115T190000
 DTEND;TZID=Asia/Shanghai:20261115T220000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312168
 DESCRIPTION:艺人: 范晓萱/范晓萱&100%\n票价: ¥497起\n购票: ht
  tps://www.showstart.com/event/312168\n来源: 秀动 showstart.com
@@ -534,7 +534,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜活出我人生 Mr.Lan2026巡演 广州站
 DTSTART;TZID=Asia/Shanghai:20261115T200000
 DTEND;TZID=Asia/Shanghai:20261115T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313698
 DESCRIPTION:艺人: Mr.Lan\n票价: ¥88起\n购票: https://www.showstart
  .com/event/313698\n来源: 秀动 showstart.com
@@ -551,7 +551,7 @@ SUMMARY:深圳｜觅屿乐队《支线任务也很有趣》巡演-深圳
  站
 DTSTART;TZID=Asia/Shanghai:20261115T200000
 DTEND;TZID=Asia/Shanghai:20261115T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-311826
 DESCRIPTION:艺人: 觅屿-WHISPER\n票价: ¥52起\n购票: https://www.s
  howstart.com/event/311826\n来源: 秀动 showstart.com
@@ -568,7 +568,7 @@ SUMMARY:广州｜杨培安《廿廿不忘》出道二十周年演唱会-
  广州站
 DTSTART;TZID=Asia/Shanghai:20261121T193000
 DTEND;TZID=Asia/Shanghai:20261121T223000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-311813
 DESCRIPTION:艺人: 杨培安\n票价: ¥199起\n购票: https://www.shows
  tart.com/event/311813\n来源: 秀动 showstart.com
@@ -584,7 +584,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜11.21｜HYPEEZY胡永鹏「夢醒」｜个人专场
 DTSTART;TZID=Asia/Shanghai:20261121T200000
 DTEND;TZID=Asia/Shanghai:20261121T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-311613
 DESCRIPTION:艺人: Whyyyy./Handsome Lau（刘汉森）/Hypeezy/冯泳/奥
  力/CHECKYHON（冯仔）/Abbly邓乐怡/梁淑铭Circlllee\n票价: ¥188
@@ -602,7 +602,7 @@ BEGIN:VEVENT
 SUMMARY:惠州｜SWAG BAND 中文说唱派对
 DTSTART;TZID=Asia/Shanghai:20261121T200000
 DTEND;TZID=Asia/Shanghai:20261121T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313067
 DESCRIPTION:艺人: 崎舌Saki Tongue\n票价: ¥68起\n购票: https://ww
  w.showstart.com/event/313067\n来源: 秀动 showstart.com
@@ -619,7 +619,7 @@ SUMMARY:广州｜【猫啤呈现】「fallin@_@infall」fallingnana 秋季
  巡演 · 广州站
 DTSTART;TZID=Asia/Shanghai:20261122T200000
 DTEND;TZID=Asia/Shanghai:20261122T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-309153
 DESCRIPTION:艺人: 情书失窃 Love Letter Lost/falling nana/小洋圖
  文Yoko the printer\n票价: ¥78起\n购票: https://www.showstart.com/ev
@@ -637,7 +637,7 @@ SUMMARY:深圳｜【声厂呈现】泰国迷幻爵士摇滚乐队LEPYUTIN
  2026巡演·深圳站
 DTSTART;TZID=Asia/Shanghai:20261124T203000
 DTEND;TZID=Asia/Shanghai:20261124T233000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312731
 DESCRIPTION:艺人: LEPYUTIN\n票价: ¥150起\n购票: https://www.showst
  art.com/event/312731\n来源: 秀动 showstart.com
@@ -654,7 +654,7 @@ SUMMARY:广州｜【声厂呈现】泰国迷幻爵士摇滚乐队LEPYUTIN
  2026巡演·广州站
 DTSTART;TZID=Asia/Shanghai:20261125T203000
 DTEND;TZID=Asia/Shanghai:20261125T233000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312713
 DESCRIPTION:艺人: LEPYUTIN\n票价: ¥150起\n购票: https://www.showst
  art.com/event/312713\n来源: 秀动 showstart.com
@@ -671,7 +671,7 @@ SUMMARY:深圳｜【声厂呈现】Black Country\, New Road 2026巡演·
  深圳站
 DTSTART;TZID=Asia/Shanghai:20261125T203000
 DTEND;TZID=Asia/Shanghai:20261125T233000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-305654
 DESCRIPTION:艺人: Black Country\, New Road\n票价: ¥300起\n购票: ht
  tps://www.showstart.com/event/305654\n来源: 秀动 showstart.com
@@ -688,7 +688,7 @@ SUMMARY:广州｜【声厂呈现】Black Country\, New Road 2026巡演·
  广州站
 DTSTART;TZID=Asia/Shanghai:20261126T203000
 DTEND;TZID=Asia/Shanghai:20261126T233000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-305653
 DESCRIPTION:艺人: Black Country\, New Road\n票价: ¥300起\n购票: ht
  tps://www.showstart.com/event/305653\n来源: 秀动 showstart.com
@@ -705,7 +705,7 @@ SUMMARY:广州｜美国电子流行唱作人【Demxntia】2026巡演 广
  州站
 DTSTART;TZID=Asia/Shanghai:20261127T200000
 DTEND;TZID=Asia/Shanghai:20261127T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-309491
 DESCRIPTION:艺人: Demxntia\n票价: ¥220起\n购票: https://www.showst
  art.com/event/309491\n来源: 秀动 showstart.com
@@ -722,7 +722,7 @@ SUMMARY:广州｜大粉乐队十五周年巡演  粉末登场·凝华 广
  州站
 DTSTART;TZID=Asia/Shanghai:20261127T200000
 DTEND;TZID=Asia/Shanghai:20261127T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312288
 DESCRIPTION:艺人: 大粉乐队\n票价: ¥100起\n购票: https://www.sh
  owstart.com/event/312288\n来源: 秀动 showstart.com
@@ -738,7 +738,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜2026廿艾·低苦艾20周年巡演深圳站
 DTSTART;TZID=Asia/Shanghai:20261127T200000
 DTEND;TZID=Asia/Shanghai:20261127T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313279
 DESCRIPTION:艺人: 低苦艾\n票价: ¥138起\n购票: https://www.shows
  tart.com/event/313279\n来源: 秀动 showstart.com
@@ -755,7 +755,7 @@ SUMMARY:深圳｜attosec阿托秒「The Last Optimist」最后的乐观主
  义者巡演 深圳站
 DTSTART;TZID=Asia/Shanghai:20261128T133000
 DTEND;TZID=Asia/Shanghai:20261128T163000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313233
 DESCRIPTION:艺人: attosec\n票价: ¥59起\n购票: https://www.showstar
  t.com/event/313233\n来源: 秀动 showstart.com
@@ -772,7 +772,7 @@ SUMMARY:广州｜闪星TWINKLESTAR「情绪少年」不插电巡演 广州
  站
 DTSTART;TZID=Asia/Shanghai:20261128T200000
 DTEND;TZID=Asia/Shanghai:20261128T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-309809
 DESCRIPTION:艺人: 闪星TWINKLESTAR\n票价: ¥124起\n购票: https://w
  ww.showstart.com/event/309809\n来源: 秀动 showstart.com
@@ -788,7 +788,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜2026廿艾·低苦艾20周年巡演广州站
 DTSTART;TZID=Asia/Shanghai:20261128T200000
 DTEND;TZID=Asia/Shanghai:20261128T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312200
 DESCRIPTION:艺人: 低苦艾\n票价: ¥138起\n购票: https://www.shows
  tart.com/event/312200\n来源: 秀动 showstart.com
@@ -805,7 +805,7 @@ SUMMARY:深圳｜美国电子流行唱作人【Demxntia】2026巡演 深
  圳站
 DTSTART;TZID=Asia/Shanghai:20261128T200000
 DTEND;TZID=Asia/Shanghai:20261128T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-309492
 DESCRIPTION:艺人: Demxntia\n票价: ¥220起\n购票: https://www.showst
  art.com/event/309492\n来源: 秀动 showstart.com
@@ -822,7 +822,7 @@ SUMMARY:惠州｜「今夜谁都别想全身而退」Flame Dream X 路子
  乐队湾区联合巡演 惠州站
 DTSTART;TZID=Asia/Shanghai:20261128T200000
 DTEND;TZID=Asia/Shanghai:20261128T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-314444
 DESCRIPTION:艺人: 路子乐队/FlameDream炽热织梦\n票价: ¥56起\n
  购票: https://www.showstart.com/event/314444\n来源: 秀动 showstart.c
@@ -840,7 +840,7 @@ SUMMARY:深圳｜大粉乐队十五周年巡演  粉末登场·凝华 深
  圳站
 DTSTART;TZID=Asia/Shanghai:20261129T200000
 DTEND;TZID=Asia/Shanghai:20261129T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312289
 DESCRIPTION:艺人: 大粉乐队\n票价: ¥100起\n购票: https://www.sh
  owstart.com/event/312289\n来源: 秀动 showstart.com
@@ -857,7 +857,7 @@ SUMMARY:深圳｜放风乐队「大家一起来放风」2026巡演 深圳
  站
 DTSTART;TZID=Asia/Shanghai:20261203T200000
 DTEND;TZID=Asia/Shanghai:20261203T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313623
 DESCRIPTION:艺人: 放风乐队\n票价: ¥68起\n购票: https://www.sho
  wstart.com/event/313623\n来源: 秀动 showstart.com
@@ -874,7 +874,7 @@ SUMMARY:广州｜放风乐队「大家一起来放风」2026巡演 广州
  站
 DTSTART;TZID=Asia/Shanghai:20261204T200000
 DTEND;TZID=Asia/Shanghai:20261204T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313624
 DESCRIPTION:艺人: 放风乐队\n票价: ¥68起\n购票: https://www.sho
  wstart.com/event/313624\n来源: 秀动 showstart.com
@@ -890,7 +890,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜A公馆摇滚铁人三项2026巡演 广州站
 DTSTART;TZID=Asia/Shanghai:20261204T200000
 DTEND;TZID=Asia/Shanghai:20261204T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-311084
 DESCRIPTION:艺人: A公馆\n票价: ¥99起\n购票: https://www.showstar
  t.com/event/311084\n来源: 秀动 showstart.com
@@ -906,7 +906,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜危房改造「香火」2026巡演 深圳站
 DTSTART;TZID=Asia/Shanghai:20261204T200000
 DTEND;TZID=Asia/Shanghai:20261204T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-311022
 DESCRIPTION:艺人: 危房改造\n票价: ¥55起\n购票: https://www.sho
  wstart.com/event/311022\n来源: 秀动 showstart.com
@@ -923,7 +923,7 @@ SUMMARY:惠州｜失落掠夺2026《大盗归来》同名EP巡演 惠州
  站
 DTSTART;TZID=Asia/Shanghai:20261204T200000
 DTEND;TZID=Asia/Shanghai:20261204T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313902
 DESCRIPTION:艺人: 失落掠夺theLostLooting\n票价: ¥49起\n购票: h
  ttps://www.showstart.com/event/313902\n来源: 秀动 showstart.com
@@ -939,7 +939,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜2026CHEEZY岂是音乐节 广州站
 DTSTART;TZID=Asia/Shanghai:20261205T170000
 DTEND;TZID=Asia/Shanghai:20261205T200000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313482
 DESCRIPTION:艺人: 假假條JaJaTao/反复攻击小明/紅髮少年殺人
  事件/小犬作/册纸CEZHI\n票价: ¥120起\n购票: https://www.showst
@@ -956,7 +956,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜危房改造「香火」2026巡演 广州站
 DTSTART;TZID=Asia/Shanghai:20261205T200000
 DTEND;TZID=Asia/Shanghai:20261205T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-311023
 DESCRIPTION:艺人: 危房改造\n票价: ¥55起\n购票: https://www.sho
  wstart.com/event/311023\n来源: 秀动 showstart.com
@@ -972,7 +972,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜A公馆摇滚铁人三项2026巡演 深圳站
 DTSTART;TZID=Asia/Shanghai:20261205T200000
 DTEND;TZID=Asia/Shanghai:20261205T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-311085
 DESCRIPTION:艺人: A公馆\n票价: ¥99起\n购票: https://www.showstar
  t.com/event/311085\n来源: 秀动 showstart.com
@@ -989,7 +989,7 @@ SUMMARY:珠海｜放风乐队「大家一起来放风」2026巡演 珠海
  站
 DTSTART;TZID=Asia/Shanghai:20261205T200000
 DTEND;TZID=Asia/Shanghai:20261205T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313625
 DESCRIPTION:艺人: 放风乐队\n票价: ¥68起\n购票: https://www.sho
  wstart.com/event/313625\n来源: 秀动 showstart.com
@@ -1006,7 +1006,7 @@ SUMMARY:惠州｜attosec阿托秒「The Last Optimist」最后的乐观主
  义者巡演 惠州站
 DTSTART;TZID=Asia/Shanghai:20261205T203000
 DTEND;TZID=Asia/Shanghai:20261205T233000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313288
 DESCRIPTION:艺人: attosec\n票价: ¥59起\n购票: https://www.showstar
  t.com/event/313288\n来源: 秀动 showstart.com
@@ -1022,7 +1022,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜苏菲花园“同花顺”巡演 广州站
 DTSTART;TZID=Asia/Shanghai:20261206T200000
 DTEND;TZID=Asia/Shanghai:20261206T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313946
 DESCRIPTION:艺人: 苏菲花园\n票价: ¥68起\n购票: https://www.sho
  wstart.com/event/313946\n来源: 秀动 showstart.com
@@ -1039,7 +1039,7 @@ SUMMARY:广州｜「今夜谁都别想全身而退」 Flame Dream X路子
  乐队湾区联合巡演 广州站
 DTSTART;TZID=Asia/Shanghai:20261206T200000
 DTEND;TZID=Asia/Shanghai:20261206T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-314197
 DESCRIPTION:艺人: 路子乐队/FlameDream炽热织梦\n票价: ¥56起\n
  购票: https://www.showstart.com/event/314197\n来源: 秀动 showstart.c
@@ -1057,7 +1057,7 @@ SUMMARY:珠海｜失落掠夺2026《大盗归来》同名EP巡演 珠海
  站
 DTSTART;TZID=Asia/Shanghai:20261206T200000
 DTEND;TZID=Asia/Shanghai:20261206T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313903
 DESCRIPTION:艺人: 失落掠夺theLostLooting\n票价: ¥49起\n购票: h
  ttps://www.showstart.com/event/313903\n来源: 秀动 showstart.com
@@ -1074,7 +1074,7 @@ SUMMARY:惠州｜放风乐队「大家一起来放风」2026巡演 惠州
  站
 DTSTART;TZID=Asia/Shanghai:20261206T200000
 DTEND;TZID=Asia/Shanghai:20261206T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313626
 DESCRIPTION:艺人: 放风乐队\n票价: ¥68起\n购票: https://www.sho
  wstart.com/event/313626\n来源: 秀动 showstart.com
@@ -1091,7 +1091,7 @@ SUMMARY:广州｜肖骏【22:22 档案·莫比乌斯现场（22:22 Live: E
  nter the Loop）】巡演 广州站
 DTSTART;TZID=Asia/Shanghai:20261212T200000
 DTEND;TZID=Asia/Shanghai:20261212T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-314565
 DESCRIPTION:艺人: 肖骏\n票价: ¥228起\n购票: https://www.showstar
  t.com/event/314565\n来源: 秀动 showstart.com
@@ -1108,7 +1108,7 @@ SUMMARY:惠州｜「风舞乾坤」 莫诺利斯X大吃懒 湾区联合巡
  演 惠州站
 DTSTART;TZID=Asia/Shanghai:20261212T200000
 DTEND;TZID=Asia/Shanghai:20261212T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-314440
 DESCRIPTION:艺人: 莫诺利斯monolith./大吃懒\n票价: ¥56起\n购
  票: https://www.showstart.com/event/314440\n来源: 秀动 showstart.com
@@ -1124,7 +1124,7 @@ BEGIN:VEVENT
 SUMMARY:佛山｜布衣乐队《云起时》巡演佛山站
 DTSTART;TZID=Asia/Shanghai:20261216T200000
 DTEND;TZID=Asia/Shanghai:20261216T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-307981
 DESCRIPTION:艺人: 布衣乐队\n票价: ¥108起\n购票: https://www.sh
  owstart.com/event/307981\n来源: 秀动 showstart.com
@@ -1140,7 +1140,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜歌之初乐队「相见如初」巡演 广州站
 DTSTART;TZID=Asia/Shanghai:20261218T200000
 DTEND;TZID=Asia/Shanghai:20261218T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-303780
 DESCRIPTION:艺人: 歌之初乐队\n票价: ¥100起\n购票: https://www
  .showstart.com/event/303780\n来源: 秀动 showstart.com
@@ -1157,7 +1157,7 @@ SUMMARY:广州｜「本该走神的」张醒婵首次专场巡演-广州
  站
 DTSTART;TZID=Asia/Shanghai:20261218T200000
 DTEND;TZID=Asia/Shanghai:20261218T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313669
 DESCRIPTION:艺人: 张醒婵\n票价: ¥117起\n购票: https://www.shows
  tart.com/event/313669\n来源: 秀动 showstart.com
@@ -1173,7 +1173,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜布衣乐队《云起时》巡演广州站
 DTSTART;TZID=Asia/Shanghai:20261218T200000
 DTEND;TZID=Asia/Shanghai:20261218T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-307982
 DESCRIPTION:艺人: 布衣乐队\n票价: ¥108起\n购票: https://www.sh
  owstart.com/event/307982\n来源: 秀动 showstart.com
@@ -1190,7 +1190,7 @@ SUMMARY:深圳｜同创声浪音乐节深圳站（粤语说唱+流行港
  乐专场）
 DTSTART;TZID=Asia/Shanghai:20261219T183000
 DTEND;TZID=Asia/Shanghai:20261219T213000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-314421
 DESCRIPTION:艺人: 讲者（Prosa）/Whyyyy./陈老师lilc/Handsome Lau
  （刘汉森）/Hypeezy/CHECKYHON（冯仔）/LAMZz/刘炀/Abbly邓乐怡/
@@ -1209,7 +1209,7 @@ SUMMARY:深圳｜「本该走神的」张醒婵首次专场巡演-深圳
  站
 DTSTART;TZID=Asia/Shanghai:20261219T193000
 DTEND;TZID=Asia/Shanghai:20261219T223000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313674
 DESCRIPTION:艺人: 张醒婵\n票价: ¥117起\n购票: https://www.shows
  tart.com/event/313674\n来源: 秀动 showstart.com
@@ -1226,7 +1226,7 @@ SUMMARY:惠州｜12.19【惠州】 经典回响追忆家驹beyond金曲演
  唱会
 DTSTART;TZID=Asia/Shanghai:20261219T193000
 DTEND;TZID=Asia/Shanghai:20261219T223000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313225
 DESCRIPTION:艺人: 永恒乐队\n票价: ¥80起\n购票: https://www.sho
  wstart.com/event/313225\n来源: 秀动 showstart.com
@@ -1242,7 +1242,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜张荡荡2026【寻人启事】巡演 广州站
 DTSTART;TZID=Asia/Shanghai:20261219T200000
 DTEND;TZID=Asia/Shanghai:20261219T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-312063
 DESCRIPTION:艺人: 张荡荡\n票价: ¥98起\n购票: https://www.showst
  art.com/event/312063\n来源: 秀动 showstart.com
@@ -1258,7 +1258,7 @@ BEGIN:VEVENT
 SUMMARY:深圳｜歌之初乐队「相见如初」巡演 深圳站
 DTSTART;TZID=Asia/Shanghai:20261219T200000
 DTEND;TZID=Asia/Shanghai:20261219T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-305144
 DESCRIPTION:艺人: 歌之初乐队\n票价: ¥100起\n购票: https://www
  .showstart.com/event/305144\n来源: 秀动 showstart.com
@@ -1275,7 +1275,7 @@ SUMMARY:珠海｜attosec阿托秒「The Last Optimist」最后的乐观主
  义者巡演 珠海站
 DTSTART;TZID=Asia/Shanghai:20261219T203000
 DTEND;TZID=Asia/Shanghai:20261219T233000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313460
 DESCRIPTION:艺人: attosec\n票价: ¥59起\n购票: https://www.showstar
  t.com/event/313460\n来源: 秀动 showstart.com
@@ -1291,7 +1291,7 @@ BEGIN:VEVENT
 SUMMARY:广州｜Fayzz + Shanghai Qiutian 巡演 2026 广州站
 DTSTART;TZID=Asia/Shanghai:20261220T200000
 DTEND;TZID=Asia/Shanghai:20261220T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313409
 DESCRIPTION:艺人: fayzz/Shanghai Qiutian\n票价: ¥150\n购票: https:/
  /www.showstart.com/event/313409\n来源: 秀动 showstart.com
@@ -1308,7 +1308,7 @@ SUMMARY:广州｜王啸坤「那些你们喜欢的不喜欢的我都喜欢
  的啸坤呐」2026巡演-广州站
 DTSTART;TZID=Asia/Shanghai:20261220T200000
 DTEND;TZID=Asia/Shanghai:20261220T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-313926
 DESCRIPTION:艺人: 王啸坤\n票价: ¥168起\n购票: https://www.shows
  tart.com/event/313926\n来源: 秀动 showstart.com
@@ -1325,7 +1325,7 @@ SUMMARY:珠海｜「今夜谁都别想全身而退」 Flame Dream X路子
  乐队湾区联合巡演-珠海站
 DTSTART;TZID=Asia/Shanghai:20261220T200000
 DTEND;TZID=Asia/Shanghai:20261220T230000
-DTSTAMP:20261106T085851Z
+DTSTAMP:20261106T113351Z
 UID:showstart.gd.qqq-monitor-314320
 DESCRIPTION:艺人: 路子乐队/FlameDream炽热织梦\n票价: ¥56起\n
  购票: https://www.showstart.com/event/314320\n来源: 秀动 showstart.c
